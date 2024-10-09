@@ -6,8 +6,14 @@
 #include <fftw3.h>
 
 #define FRAME_LENGTH 1024
+#define Spectro_LEN  513
+#define NUM_OF_MEl_BINS 80
+
 #define FRAME_STEP 256
 #define SAMPLE_RATE 44100
+#define NUM_OF_MFCCS 13
+#define LOWER_F 80.0
+#define HUGHER_F 7600.0
 
 // WAV file header structure
 #pragma pack(push, 1)
@@ -27,21 +33,6 @@ typedef struct {
     uint32_t subchunk2Size;      // Size of the data chunk
 } WAVHeader;
 #pragma pack(pop)
-
-// Function to normalize the audio signal
-void normalizeSignal(double* signal, size_t length) {
-    double maxVal = 0;
-    for (size_t i = 0; i < length; i++) {
-        if (fabs(signal[i]) > maxVal) {
-            maxVal = fabs(signal[i]);
-        }
-    }
-    if (maxVal > 0) {
-        for (size_t i = 0; i < length; i++) {
-            signal[i] /= maxVal; // Normalize to range [-1, 1]
-        }
-    }
-}
 
 // Function to apply Hamming window
 void applyHammingWindow(double* frame, size_t length) {
@@ -134,13 +125,12 @@ int main() {
         return -1;
     }
 
-    // Assume mfcc_frame contains the MFCC coefficients for each frame
-FILE *out = fopen("mfccs_c.txt", "w");  // Open the file for writing
+    FILE *out_spectrogram = fopen("spectrogram_c.txt", "w");  // Open the file for writing
 
-if (out== NULL) {
-    printf("Error opening file out!\n");
-    return 1;  // Exit if file can't be opened
-}
+    if (out_spectrogram== NULL) {
+        printf("Error opening file out!\n");
+        return 1;  // Exit if file can't be opened
+    }
 
     for (size_t i = 0; i < num_samples; i++) {
         int16_t sample;
@@ -152,61 +142,64 @@ if (out== NULL) {
     printf("Num of samples: %ld\n", num_samples);
     for(int i =0; i<10;i++)
     {
-        printf("%f ", signal[i]);
+        printf("%15.12f ", signal[i]);
     }
     printf("%15.12f", signal[num_samples-1]);
     printf("\n");
-
-    // Normalize the signal
-    //normalizeSignal(signal, num_samples);
 
     // Calculate the number of frames
     int num_frames = (num_samples - FRAME_LENGTH) / FRAME_STEP + 1;
     printf("Num of frames: %d\n", num_frames);
 
-    int num_mel_filters = 80;
-    int num_mfccs = 13;
 
-    double mel_energies[num_mel_filters];
-    double magnitude[FRAME_LENGTH / 2];
-    double filterbank[num_mel_filters * (FRAME_LENGTH / 2)];
-    create_mel_filterbank(filterbank, num_mel_filters, FRAME_LENGTH, 44100, 80.0, 7600.0);
+
+    double frame[FRAME_LENGTH];
+    double spectrogram[Spectro_LEN];
+    double mel_spectro[NUM_OF_MEl_BINS];
+    double mfccs[NUM_OF_MFCCS];
 
     fftw_plan plan;
-    fftw_complex fft_output[FRAME_LENGTH / 2 + 1]; 
+    fftw_complex fft_output[Spectro_LEN]; 
+   
+    //double filterbank[num_mel_filters * (FRAME_LENGTH / 2)];
+    //create_mel_filterbank(filterbank, num_mel_filters, FRAME_LENGTH, 44100, 80.0, 7600.0);
+
     // Process each frame
     for (int i = 0; i < num_frames; i++) {
-        double frame[FRAME_LENGTH];
+
         memcpy(frame, signal + i * FRAME_STEP, FRAME_LENGTH * sizeof(double));
         applyHammingWindow(frame, FRAME_LENGTH);
-
-
 
         plan = fftw_plan_dft_r2c_1d(FRAME_LENGTH, frame, fft_output, FFTW_ESTIMATE);
         fftw_execute(plan);
         // Step 4: Compute the magnitudes of the FFT output
-        for (int i = 0; i < FRAME_LENGTH/ 2; i++) {
+        for (int i = 0; i < Spectro_LEN; i++) {
             double real = fft_output[i][0]; // Real part
             double imag = fft_output[i][1]; // Imaginary part
-            magnitude[i] = sqrt(real * real + imag * imag); // Magnitude
+            spectrogram[i] = sqrt(real * real + imag * imag); // Magnitude
         }
 
-    
+        for (int j = 0; j < Spectro_LEN; j++) {
+           fprintf(out_spectrogram, "%f ", spectrogram[j]);  // Write each coefficient
+        }
+
+        //spectro_to_mel_spectro(spectrogram, mel_spectro);
+
         // Apply Mel filter bank to get Mel energies
-        apply_mel_filterbank(magnitude, mel_energies, filterbank, num_mel_filters, FRAME_LENGTH);
+        //apply_mel_filterbank(magnitude, mel_energies, filterbank, num_mel_filters, FRAME_LENGTH);
 
         // Take log of Mel energies
-        log_mel_energies(mel_energies, num_mel_filters);
+        //log_mel_energies(mel_energies, num_mel_filters);
 
         // Compute MFCCs using DCT
-        double mfcc_frame[num_mfccs];
-        dct(mel_energies, mfcc_frame, num_mel_filters, num_mfccs);
+        //double mfcc_frame[num_mfccs];
+        //dct(mel_energies, mfcc_frame, num_mel_filters, num_mfccs);
 
         // Store MFCCs for the current frame
-        for (int i = 0; i < num_mfccs; i++) {
-        fprintf(out, "%f ", mfcc_frame[i]);  // Write each coefficient
-    }
-    fprintf(out, "\n"); 
+        //for (int i = 0; i < num_mfccs; i++) {
+        //fprintf(out, "%f ", mfcc_frame[i]);  // Write each coefficient
+    //}
+    fprintf(out_spectrogram, "\n"); 
         
     }
 
@@ -218,7 +211,7 @@ if (out== NULL) {
 
     fftw_destroy_plan(plan);
     fftw_cleanup();
-    fclose(out);
+    fclose(out_spectrogram);
     
     return 0;
 }

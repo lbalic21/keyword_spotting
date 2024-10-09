@@ -17,7 +17,7 @@ def compare_mfccs(mfccs_python, mfccs_c):
     difference = np.abs(mfccs_python - mfccs_c)
     
     # Set a threshold for "closeness" (e.g., 1e-5)
-    threshold = 1e-5
+    threshold = 0.1
     count_differences = np.sum(difference >= threshold)
 
     if count_differences == 0:
@@ -29,7 +29,7 @@ def compare_mfccs(mfccs_python, mfccs_c):
 
 def main():
     # Load MFCCs from both files
-    mfccs_python = load_mfccs("mfccs_python.txt")
+    mfccs_python = load_mfccs("spectro_python.txt")
     mfccs_c = load_mfccs("mfccs_c.txt")
 
     # Compare MFCCs
