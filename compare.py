@@ -1,6 +1,6 @@
 import numpy as np
 
-THRESHOLD = 0.1
+THRESHOLD = 0.001
 
 file1 = "spectro_python.txt"
 file2 = "spectrogram_c.txt"
@@ -27,18 +27,18 @@ def compare_files(file_python, file_c, diff_filename):
     difference = np.abs(file_python - file_c)
 
     count_differences = np.sum(difference >= THRESHOLD)
+    num_of_elements = file_c.shape[0] * file_c.shape[1]
 
     if count_differences == 0:
         print("File are approximately equal within the threshold.")
     else:
-        print(f"Files differ beyond the threshold in {count_differences} elements.")
+        print(f"Files differ beyond the threshold in {count_differences}/{num_of_elements} elements => {count_differences / num_of_elements * 100} %")
     
     # Save differences to a file in the same format
     np.savetxt(diff_filename, difference, fmt='%.6f')
     
-    print(f"Differences written to {diff_filename}")
-    
-    return True
+    #print(f"Differences written to {diff_filename}")
+
 
 def main():
 
@@ -47,12 +47,7 @@ def main():
 
     if file_python is not None and file_c is not None:
         # Compare files and write differences to a file
-        are_equal = compare_files(file_python, file_c, output_file)
-        
-        if are_equal:
-            print("The outputs from Python and C have been compared and differences saved.")
-        else:
-            print("The outputs from Python and C are NOT equivalent.")
+        compare_files(file_python, file_c, output_file)
     else:
         print("Failed to load one or both files.")
 
