@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
+#include <fftw3.h>
 
 #define FRAME_LENGTH 1024
 #define FRAME_STEP 256
@@ -47,100 +48,6 @@ void applyHammingWindow(double* frame, size_t length) {
     for (size_t n = 0; n < length; n++) {
         frame[n] *= 0.54 - 0.46 * cos((2 * M_PI * n) / (length - 1)); // Hamming window formula
     }
-}
-
-void fft(const double* x, double* out_real, double* out_imag, size_t N) {
-    if (N <= 1) {
-        out_real[0] = x[0];
-        out_imag[0] = 0.0;
-        return;
-    }
-
-    // Split the array into even and odd parts
-    double* even_real = (double*)malloc(N / 2 * sizeof(double));
-    double* even_imag = (double*)malloc(N / 2 * sizeof(double));
-    double* odd_real = (double*)malloc(N / 2 * sizeof(double));
-    double* odd_imag = (double*)malloc(N / 2 * sizeof(double));
-
-    for (size_t i = 0; i < N / 2; i++) {
-        even_real[i] = x[i * 2];
-        even_imag[i] = 0.0; // Imaginary part for even indices
-        odd_real[i] = x[i * 2 + 1];
-        odd_imag[i] = 0.0;  // Imaginary part for odd indices
-    }
-
-    // Recursive FFT
-    fft(even_real, out_real, out_imag, N / 2); // FFT for even indexed elements
-    fft(odd_real, out_real + N / 2, out_imag + N / 2, N / 2); // FFT for odd indexed elements
-
-    // Combine the results
-    for (size_t k = 0; k < N / 2; k++) {
-        double t_real = cos(2 * M_PI * k / N) * out_real[k + N / 2] + 
-                        sin(2 * M_PI * k / N) * out_imag[k + N / 2];
-        double t_imag = -sin(2 * M_PI * k / N) * out_real[k + N / 2] + 
-                        cos(2 * M_PI * k / N) * out_imag[k + N / 2];
-
-        out_real[k + N / 2] = out_real[k] - t_real;
-        out_imag[k + N / 2] = out_imag[k] - t_imag;
-        out_real[k] += t_real;
-        out_imag[k] += t_imag;
-    }
-
-    // Clean up
-    free(even_real);
-    free(even_imag);
-    free(odd_real);
-    free(odd_imag);
-}
-
-// Function to compute magnitudes after FFT
-void compute_fft_magnitudes(const double* input, size_t num, double* magnitudes) {
-    // Allocate output arrays for real and imaginary parts
-    double* out_real = (double*)malloc(num * sizeof(double));
-    double* out_imag = (double*)malloc(num * sizeof(double));
-    
-    // Perform FFT
-    fft(input, out_real, out_imag, num);
-
-    // Compute magnitudes
-    for (size_t i = 0; i < num / 2; i++) {
-        magnitudes[i] = sqrt(out_real[i] * out_real[i] + out_imag[i] * out_imag[i]);
-    }
-
-    // Clean up
-    free(out_real);
-    free(out_imag);
-}
-// Function to compute and save MFCCs (Placeholder)
-void computeMFCC(double* spectrogram, size_t num_frames) {
-    // Dummy MFCC computation: simply print the spectrogram values as MFCCs
-    FILE* mfcc_file = fopen("mfccs_c.txt", "w");
-    if (!mfcc_file) {
-        fprintf(stderr, "Error opening MFCC output file!\n");
-        return;
-    }
-
-    for (size_t i = 0; i < num_frames; i++) {
-        // For demonstration, writing the first 13 values as MFCCs
-        fprintf(mfcc_file, "%f %f %f %f %f %f %f %f %f %f %f %f %f\n",
-                spectrogram[i * FRAME_LENGTH], // Replace this with actual MFCC calculation
-                spectrogram[i * FRAME_LENGTH + 1],
-                spectrogram[i * FRAME_LENGTH + 2],
-                spectrogram[i * FRAME_LENGTH + 3],
-                spectrogram[i * FRAME_LENGTH + 4],
-                spectrogram[i * FRAME_LENGTH + 5],
-                spectrogram[i * FRAME_LENGTH + 6],
-                spectrogram[i * FRAME_LENGTH + 7],
-                spectrogram[i * FRAME_LENGTH + 8],
-                spectrogram[i * FRAME_LENGTH + 9],
-                spectrogram[i * FRAME_LENGTH + 10],
-                spectrogram[i * FRAME_LENGTH + 11],
-                spectrogram[i * FRAME_LENGTH + 12]
-        );
-    }
-
-    fclose(mfcc_file);
-    printf("MFCCs saved to mfccs_c.txt\n");
 }
 
 double hz_to_mel(double freq) {
@@ -227,6 +134,14 @@ int main() {
         return -1;
     }
 
+    // Assume mfcc_frame contains the MFCC coefficients for each frame
+FILE *out = fopen("mfccs_c.txt", "w");  // Open the file for writing
+
+if (out== NULL) {
+    printf("Error opening file out!\n");
+    return 1;  // Exit if file can't be opened
+}
+
     for (size_t i = 0; i < num_samples; i++) {
         int16_t sample;
         fread(&sample, sizeof(int16_t), 1, file);
@@ -234,7 +149,7 @@ int main() {
     }
     fclose(file);
 
-    printf("Num of samples: %d\n", num_samples);
+    printf("Num of samples: %ld\n", num_samples);
     for(int i =0; i<10;i++)
     {
         printf("%f ", signal[i]);
@@ -257,15 +172,25 @@ int main() {
     double filterbank[num_mel_filters * (FRAME_LENGTH / 2)];
     create_mel_filterbank(filterbank, num_mel_filters, FRAME_LENGTH, 44100, 80.0, 7600.0);
 
-
+    fftw_plan plan;
+    fftw_complex fft_output[FRAME_LENGTH / 2 + 1]; 
     // Process each frame
     for (int i = 0; i < num_frames; i++) {
         double frame[FRAME_LENGTH];
         memcpy(frame, signal + i * FRAME_STEP, FRAME_LENGTH * sizeof(double));
         applyHammingWindow(frame, FRAME_LENGTH);
 
-        compute_fft_magnitudes(frame, FRAME_LENGTH, magnitude);
-        
+
+
+        plan = fftw_plan_dft_r2c_1d(FRAME_LENGTH, frame, fft_output, FFTW_ESTIMATE);
+        fftw_execute(plan);
+        // Step 4: Compute the magnitudes of the FFT output
+        for (int i = 0; i < FRAME_LENGTH/ 2; i++) {
+            double real = fft_output[i][0]; // Real part
+            double imag = fft_output[i][1]; // Imaginary part
+            magnitude[i] = sqrt(real * real + imag * imag); // Magnitude
+        }
+
     
         // Apply Mel filter bank to get Mel energies
         apply_mel_filterbank(magnitude, mel_energies, filterbank, num_mel_filters, FRAME_LENGTH);
@@ -278,21 +203,22 @@ int main() {
         dct(mel_energies, mfcc_frame, num_mel_filters, num_mfccs);
 
         // Store MFCCs for the current frame
-        for (int i = 0; i < num_mfccs; ++i) {
-            mfcc_out[frame * num_mfccs + i] = mfcc_frame[i];
-        }
+        for (int i = 0; i < num_mfccs; i++) {
+        fprintf(out, "%f ", mfcc_frame[i]);  // Write each coefficient
+    }
+    fprintf(out, "\n"); 
+        
     }
 
     // Output spectrogram dimensions
-    printf("Spectrogram size: %d frames, %d points per frame.\n", num_frames, FRAME_LENGTH);
-
-    // Compute MFCCs
-    computeMFCC(spectrogram_real, num_frames);
+   
 
     // Clean up
     free(signal);
-    free(spectrogram_real);
-    free(spectrogram_imag);
 
+    fftw_destroy_plan(plan);
+    fftw_cleanup();
+    fclose(out);
+    
     return 0;
 }
