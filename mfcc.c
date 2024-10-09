@@ -182,6 +182,7 @@ int main() {
         for (int j = 0; j < Spectro_LEN; j++) {
            fprintf(out_spectrogram, "%f ", spectrogram[j]);  // Write each coefficient
         }
+        fprintf(out_spectrogram, "\n"); 
 
         //spectro_to_mel_spectro(spectrogram, mel_spectro);
 
@@ -199,7 +200,6 @@ int main() {
         //for (int i = 0; i < num_mfccs; i++) {
         //fprintf(out, "%f ", mfcc_frame[i]);  // Write each coefficient
     //}
-    fprintf(out_spectrogram, "\n"); 
         
     }
 

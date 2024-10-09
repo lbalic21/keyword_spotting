@@ -1,44 +1,60 @@
 import numpy as np
 
-def load_mfccs(filename):
-    """Load MFCCs from a given filename."""
-    return np.loadtxt(filename)
+THRESHOLD = 0.1
 
-def compare_mfccs(mfccs_python, mfccs_c):
-    """Compare two sets of MFCCs and print the results."""
+file1 = "spectro_python.txt"
+file2 = "spectrogram_c.txt"
+output_file = "spectro_diff.txt"
+
+def load_file(filename):
+    """Load file from a given filename."""
+    try:
+        return np.loadtxt(filename)
+    except Exception as e:
+        print(f"Error loading {filename}: {e}")
+        return None
+
+def compare_files(file_python, file_c, diff_filename):
+    """Compare two sets of files and save the differences in the same format."""
     # Check if shapes are the same
-    if mfccs_python.shape != mfccs_c.shape:
-        print("MFCC shapes are different:")
-        print(f"Python MFCCs shape: {mfccs_python.shape}")
-        print(f"C MFCCs shape: {mfccs_c.shape}")
+    if file_python.shape != file_c.shape:
+        print("Shapes are different:")
+        print(f"Python file shape: {file_python.shape}")
+        print(f"C file shape: {file_c.shape}")
         return False
 
     # Calculate the difference
-    difference = np.abs(mfccs_python - mfccs_c)
-    
-    # Set a threshold for "closeness" (e.g., 1e-5)
-    threshold = 0.1
-    count_differences = np.sum(difference >= threshold)
+    difference = np.abs(file_python - file_c)
+
+    count_differences = np.sum(difference >= THRESHOLD)
 
     if count_differences == 0:
-        print("MFCCs are approximately equal within the threshold.")
+        print("File are approximately equal within the threshold.")
     else:
-        print(f"MFCCs differ beyond the threshold in {count_differences} elements.")
-
-    return count_differences == 0  # Return True if they are equal, False otherwise
+        print(f"Files differ beyond the threshold in {count_differences} elements.")
+    
+    # Save differences to a file in the same format
+    np.savetxt(diff_filename, difference, fmt='%.6f')
+    
+    print(f"Differences written to {diff_filename}")
+    
+    return True
 
 def main():
-    # Load MFCCs from both files
-    mfccs_python = load_mfccs("spectro_python.txt")
-    mfccs_c = load_mfccs("mfccs_c.txt")
 
-    # Compare MFCCs
-    are_equal = compare_mfccs(mfccs_python, mfccs_c)
-    
-    if are_equal:
-        print("The MFCC outputs from Python and C are equivalent.")
+    file_python = load_file(file1)
+    file_c = load_file(file2)
+
+    if file_python is not None and file_c is not None:
+        # Compare files and write differences to a file
+        are_equal = compare_files(file_python, file_c, output_file)
+        
+        if are_equal:
+            print("The outputs from Python and C have been compared and differences saved.")
+        else:
+            print("The outputs from Python and C are NOT equivalent.")
     else:
-        print("The MFCC outputs from Python and C are NOT equivalent.")
+        print("Failed to load one or both files.")
 
 if __name__ == "__main__":
     main()
