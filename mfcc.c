@@ -4,9 +4,14 @@
 #include <math.h>
 #include <string.h>
 
-#define ON_LINUX  0
+/**
+ * @brief START_FROM => 0 means raw signal is used
+ *                      1 means windowed spectrogram is loaded from TF implementation
+ *                      2 means log mel-spectrogram is loaded from TF implementation
+ */
+#define START_FROM 1
 
-#if ON_LINUX == 1
+#if START_FROM == 0
     #include <fftw3.h>
 #endif
 
@@ -14,14 +19,19 @@
     #define M_PI 3.14159265358979323846
 #endif
 
-#define FRAME_LENGTH            1024
+#define FRAME_LENGTH            128
 #define SPECTROGRAM_LENGTH      ((FRAME_LENGTH / 2) + 1)
+#define FRAME_STEP              32
+
 #define NUM_OF_MEL_BINS         80
-#define FRAME_STEP              256
-#define SAMPLE_RATE             44100
 #define NUM_OF_MFCCS            13
+
+#define SAMPLE_RATE             44100
 #define LOWER_F                 80.0
 #define HIGHER_F                7600.0
+
+#define MEL_BREAK_FREQUENCY_HERTZ      700.0
+#define MEL_HIGH_FREQUENCY_Q           1127.0
 
 // WAV file header structure
 #pragma pack(push, 1)
@@ -43,52 +53,94 @@ typedef struct
 } WAVHeader;
 #pragma pack(pop)
 
-// Function to apply Hamming window
-void applyHammingWindow(double* frame, size_t length) 
+/* STEP 0 */
+void applyHammingWindow(float* frame, size_t length) 
 {
     for (size_t n = 0; n < length; n++) {
         frame[n] *= 0.54 - 0.46 * cos((2 * M_PI * n) / (length - 1)); // Hamming window formula
     }
 }
 
-double hz_to_mel(double freq) {
-    return 2595.0f * log10f(1.0f + freq / 700.0f);
-}
-
-double mel_to_hz(double mel) {
-    return 700.0f * (powf(10.0f, mel / 2595.0f) - 1.0f);
-}
-
-void dct(double *input, double *output) 
+/* STEP 1 */
+float hz_to_mel(float freq)
 {
-    for (int i = 0; i < NUM_OF_MFCCS; ++i) {
-        output[i] = 0.0;
-        for (int j = 0; j < NUM_OF_MEL_BINS; ++j) {
-            output[i] += input[j] * cos(M_PI * i * (j + 0.5) / NUM_OF_MEL_BINS);
-        }
-        // Normalize the DCT coefficients
-        if (i == 0) {
-            output[i] *= sqrt(1.0 / NUM_OF_MEL_BINS); // First coefficient normalization
-        } else {
-            output[i] *= sqrt(2.0 / NUM_OF_MEL_BINS); // Other coefficients normalization
-        }
-    }
+    return MEL_HIGH_FREQUENCY_Q * log10f(1.0f + freq / MEL_BREAK_FREQUENCY_HERTZ);
 }
 
-void log_mel_energies(double *mel_energies) 
+float mel_to_hz(float mel)
+{
+    return MEL_BREAK_FREQUENCY_HERTZ * (powf(10.0f, mel / MEL_HIGH_FREQUENCY_Q) - 1.0f);
+}
+
+void log_mel_energies(float *mel_energies) 
 {
     for (int i = 0; i < NUM_OF_MEL_BINS; ++i) {
         mel_energies[i] = logf(mel_energies[i] + 1e-6f);  // Add small epsilon to avoid log(0)
     }
 }
 
-void spectro_to_mel_spectro(double* spectrogram, double* mel_spectrogram) 
-{
-    double lower_mel = hz_to_mel(LOWER_F);
-    double upper_mel = hz_to_mel(HIGHER_F);
+// Compute the Mel coefficients for one spectrogram frame
+void compute_mel_coeffs(const float *spectrum, float *mel_coeffs,
+                        int num_mel_bins, int num_spectrogram_bins,
+                        float sample_rate, float lower_edge_hertz,
+                        float upper_edge_hertz) {
+    // Nyquist frequency (half the sampling rate)
+    float nyquist_hertz = sample_rate / 2.0;
 
-    double mel_step = (upper_mel - lower_mel) / (NUM_OF_MEL_BINS + 1);
-    double* mel_points = (double*)malloc((NUM_OF_MEL_BINS + 2) * sizeof(double));
+    // Calculate Mel frequency range
+    float lower_edge_mel = hz_to_mel(lower_edge_hertz);
+    float upper_edge_mel = hz_to_mel(upper_edge_hertz);
+
+    // Create an array to store the Mel bin edges in Hertz
+    float *mel_bin_edges_hertz = (float *)malloc((num_mel_bins + 2) * sizeof(float));
+
+    // Calculate the Mel bin edges
+    for (int i = 0; i < num_mel_bins + 2; i++) {
+        float mel = lower_edge_mel + (upper_edge_mel - lower_edge_mel) * i / (num_mel_bins + 1);
+        mel_bin_edges_hertz[i] = mel_to_hz(mel);
+    }
+
+    // Clear the mel_coeffs array
+    for (int i = 0; i < num_mel_bins; i++) {
+        mel_coeffs[i] = 0.0;
+    }
+
+    // Linear frequencies corresponding to the spectrogram bins
+    for (int j = 0; j < num_spectrogram_bins; j++) {
+        float linear_freq_hz = nyquist_hertz * (float)j / (num_spectrogram_bins - 1);
+
+        // Find the contribution of this spectrogram bin to each Mel bin
+        for (int i = 1; i <= num_mel_bins; i++) {
+            float lower_hz = mel_bin_edges_hertz[i - 1];
+            float center_hz = mel_bin_edges_hertz[i];
+            float upper_hz = mel_bin_edges_hertz[i + 1];
+
+            if (linear_freq_hz >= lower_hz && linear_freq_hz <= upper_hz) {
+                float weight = 0.0;
+
+                if (linear_freq_hz <= center_hz) {
+                    weight = (linear_freq_hz - lower_hz) / (center_hz - lower_hz);
+                } else {
+                    weight = (upper_hz - linear_freq_hz) / (upper_hz - center_hz);
+                }
+
+                // Accumulate the weighted contribution of this frequency bin
+                mel_coeffs[i - 1] += weight * spectrum[j];
+            }
+        }
+    }
+
+    // Free memory used for Mel bin edges
+    free(mel_bin_edges_hertz);
+}
+
+void spectro_to_mel_spectro(float* spectrogram, float* mel_spectrogram) 
+{
+    float lower_mel = hz_to_mel(LOWER_F);
+    float upper_mel = hz_to_mel(HIGHER_F);
+
+    float mel_step = (upper_mel - lower_mel) / (NUM_OF_MEL_BINS + 1);
+    float* mel_points = (float*)malloc((NUM_OF_MEL_BINS + 2) * sizeof(float));
     if (!mel_points) 
     {
         fprintf(stderr, "Memory allocation failed for mel_points!\n");
@@ -104,14 +156,14 @@ void spectro_to_mel_spectro(double* spectrogram, double* mel_spectrogram)
     for (int m = 0; m < NUM_OF_MEL_BINS; m++) 
     {
         mel_spectrogram[m] = 0.0;  // Initialize the mel spectrogram bins to zero
-        double left = mel_points[m];
-        double center = mel_points[m + 1];
-        double right = mel_points[m + 2];
+        float left = mel_points[m];
+        float center = mel_points[m + 1];
+        float right = mel_points[m + 2];
 
         // Apply the triangular filter to compute the mel spectrogram value
         for (int k = 0; k < SPECTROGRAM_LENGTH; k++) 
         {
-            double frequency = (double)k * SAMPLE_RATE / (2.0 * (SPECTROGRAM_LENGTH - 1));  // Convert index to frequency
+            float frequency = (float)k * SAMPLE_RATE / (2.0 * (SPECTROGRAM_LENGTH - 1));  // Convert index to frequency
 
             if (frequency >= left && frequency <= center) 
             {
@@ -125,6 +177,19 @@ void spectro_to_mel_spectro(double* spectrogram, double* mel_spectrogram)
     }
 
     free(mel_points); // Free the allocated memory
+}
+
+/* STEP 2 */
+void dct(float *input, float *output)
+{
+    for (int i = 0; i < NUM_OF_MFCCS; i++) {
+        output[i] = 0.0;
+        for (int j = 0; j < NUM_OF_MEL_BINS; j++)
+        {
+            output[i] += input[j] * cos(M_PI * i * (j + 0.5) / NUM_OF_MEL_BINS);
+        }
+        output[i] *= sqrt(2.0 / NUM_OF_MEL_BINS);
+    }
 }
 
 FILE* open_file(const char* path, const char* rwb)
@@ -141,7 +206,7 @@ FILE* open_file(const char* path, const char* rwb)
 // Main function
 int main() {
     /* Reading wav file */
-    FILE* wav = open_file("recordings/asistent.wav", "rb");
+    FILE* wav = open_file("recordings/ugasi/ugasi.wav", "rb");
     WAVHeader header;
     fread(&header, sizeof(WAVHeader), 1, wav);
     if (header.audioFormat != 1) { 
@@ -154,8 +219,9 @@ int main() {
     printf("Num of samples: %ld\n", num_samples);
     int num_frames = (num_samples - FRAME_LENGTH) / FRAME_STEP + 1;
     printf("Num of frames: %d\n", num_frames);
+    printf("Spectrogram length: %d", SPECTROGRAM_LENGTH);
 
-    double* signal = (double*)malloc(num_samples * sizeof(double));
+    float* signal = (float*)malloc(num_samples * sizeof(float));
     if (!signal) {
         fprintf(stderr, "Memory allocation failed!\n");
         fclose(wav);
@@ -170,21 +236,25 @@ int main() {
             fclose(wav);
             return -1;
         }
-        signal[i] = (double)sample / 32768.0; // Normalize to [-1, 1]
+        signal[i] = (float)sample / 32768.0; // Normalize to [-1, 1]
     }
     fclose(wav);
 
     FILE* out_spectrogram = open_file("spectrogram_c.txt", "rw");
-    FILE *out_mel_spectrogram = open_file("mel_spectrogram_c.txt", "w");
-    FILE *out_log_mel_spectrogram = open_file("log_mel_spectrogram_c.txt", "w"); 
+    FILE *out_mel_spectrogram = open_file("mel_spectrogram_c.txt", "rw");
+    FILE *out_log_mel_spectrogram = open_file("log_mel_spectrogram_c.txt", "rw"); 
     FILE *out_mfccs = open_file("mfccs_c.txt", "w");
 
-    double frame[FRAME_LENGTH];
-    double spectrogram[SPECTROGRAM_LENGTH];
-    double mel_spectro[NUM_OF_MEL_BINS];
-    double mfccs[NUM_OF_MFCCS];
+    FILE* spectro_py = open_file("spectro_python.txt", "r");
+    FILE *log_mel_py = open_file("log_mel_spectro_python.txt", "r");
+    FILE *write_test = open_file("write_test.txt", "w");
 
-    #if ON_LINUX == 1
+    float frame[FRAME_LENGTH];
+    float spectrogram[SPECTROGRAM_LENGTH];
+    float mel_spectro[NUM_OF_MEL_BINS];
+    float mfccs[NUM_OF_MFCCS];
+
+    #if START_FROM == 0
         fftw_plan plan;
         fftw_complex fft_output[SPECTROGRAM_LENGTH]; 
     #endif
@@ -192,8 +262,8 @@ int main() {
     /* Process each frame */
     for (int i = 0; i < num_frames; i++) 
     {
-        #if ON_LINUX == 1
-            memcpy(frame, signal + i * FRAME_STEP, FRAME_LENGTH * sizeof(double));
+        #if START_FROM == 0
+            memcpy(frame, signal + i * FRAME_STEP, FRAME_LENGTH * sizeof(float));
             applyHammingWindow(frame, FRAME_LENGTH);
 
             plan = fftw_plan_dft_r2c_1d(FRAME_LENGTH, frame, fft_output, FFTW_ESTIMATE);
@@ -201,8 +271,8 @@ int main() {
             
             for (int j = 0; j < SPECTROGRAM_LENGTH; j++) 
             {
-                double real = fft_output[j][0]; // Real part
-                double imag = fft_output[j][1]; // Imaginary part
+                float real = fft_output[j][0]; // Real part
+                float imag = fft_output[j][1]; // Imaginary part
                 spectrogram[j] = sqrt(real * real + imag * imag); // Magnitude
             }
 
@@ -212,38 +282,82 @@ int main() {
             }
             fprintf(out_spectrogram, "\n"); 
 
-        #else
-            for (int j = 0; j < SPECTROGRAM_LENGTH; j++) 
+            spectro_to_mel_spectro(spectrogram, mel_spectro);
+            for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
             {
-                fscanf(out_spectrogram, "%lf", &spectrogram[j]);
+                fprintf(out_mel_spectrogram, "%f ", mel_spectro[j]);
             }
+            fprintf(out_mel_spectrogram, "\n");
+
+            log_mel_energies(mel_spectro);
+            for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
+            {
+               fprintf(out_log_mel_spectrogram, "%f ", mel_spectro[j]); 
+            }
+            fprintf(out_mel_spectrogram, "\n");
+
+            dct(mel_spectro, mfccs);
+            for(int j = 0; j < NUM_OF_MFCCS; j++) 
+            {
+                fprintf(out_mfccs, "%f ", mfccs[j]);
+            }
+            fprintf(out_mfccs, "\n");
+
         #endif
 
-        spectro_to_mel_spectro(spectrogram, mel_spectro);
-        for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
-        {
-            fprintf(out_mel_spectrogram, "%f ", mel_spectro[j]);
-        }
-        fprintf(out_mel_spectrogram, "\n"); 
+        #if START_FROM == 1
+            for (int j = 0; j < SPECTROGRAM_LENGTH; j++) 
+            {
+                fscanf(spectro_py, "%f", &spectrogram[j]);
+                fprintf(write_test, "%f ", spectrogram[j]); 
+            }
+            fprintf(write_test, "\n");
 
-        log_mel_energies(mel_spectro);
-        for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
-        {
-            fprintf(out_log_mel_spectrogram, "%f ", mel_spectro[j]);
-        }
-        fprintf(out_log_mel_spectrogram, "\n");
+            spectro_to_mel_spectro(spectrogram, mel_spectro);
+            //compute_mel_coeffs(spectrogram, mel_spectro, NUM_OF_MEL_BINS, SPECTROGRAM_LENGTH, SAMPLE_RATE, LOWER_F, HIGHER_F);
+            for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
+            {
+                fprintf(out_mel_spectrogram, "%f ", mel_spectro[j]);
+            }
+            fprintf(out_mel_spectrogram, "\n");
 
-        dct(mel_spectro, mfccs);
-        for(int j = 0; j < NUM_OF_MFCCS; j++) 
-        {
-            fprintf(out_mfccs, "%f ", mfccs[j]);
-        }
-        fprintf(out_mfccs, "\n");
+            log_mel_energies(mel_spectro);
+            for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
+            {
+               fprintf(out_log_mel_spectrogram, "%f ", mel_spectro[j]); 
+            }
+            fprintf(out_mel_spectrogram, "\n");
+
+            dct(mel_spectro, mfccs);
+            for(int j = 0; j < NUM_OF_MFCCS; j++) 
+            {
+                fprintf(out_mfccs, "%f ", mfccs[j]);
+            }
+            fprintf(out_mfccs, "\n");
+
+        #endif
+
+        #if START_FROM == 2
+            for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
+            {
+               fscanf(log_mel_py, "%f", &mel_spectro[j]);
+               fprintf(write_test, "%f ", mel_spectro[j]); 
+            }
+            fprintf(write_test, "\n");
+
+            dct(mel_spectro, mfccs);
+            for(int j = 0; j < NUM_OF_MFCCS; j++) 
+            {
+                fprintf(out_mfccs, "%f ", mfccs[j]);
+            }
+            fprintf(out_mfccs, "\n");
+
+        #endif
     }
 
     free(signal);
 
-    #if ON_LINUX == 1
+    #if START_FROM == 0
         fftw_destroy_plan(plan);
         fftw_cleanup();
     #endif
@@ -252,6 +366,9 @@ int main() {
     fclose(out_mel_spectrogram);
     fclose(out_log_mel_spectrogram);
     fclose(out_mfccs);
+    fclose(spectro_py);
+    fclose(log_mel_py);
+    fclose(write_test);
 
     return 0;
 }
