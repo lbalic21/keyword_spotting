@@ -1,2 +1,2 @@
-# mfcc_comparator
-Generating MFCCs with both Pytnon and C and comparing the results.
+# KWS
+Keyword spotting system based on neural network implemented on ESP32.
