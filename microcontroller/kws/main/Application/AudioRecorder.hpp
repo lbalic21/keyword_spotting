@@ -20,7 +20,7 @@ class AudioRecorder
         static void captureAudioTask(void* pvParameters);
 
     public:
-        AudioRecorder(uint32_t sampleRate) : sampleRate(sampleRate) {}
+        AudioRecorder(uint32_t sampleRate) : sampleRate(sampleRate), ringBuffer(NULL), captureAudioHandle(NULL) {}
         ~AudioRecorder();
         void set(void);
         void start(void);

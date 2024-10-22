@@ -35,6 +35,7 @@ void AudioRecorder::start(void)
     ringBuffer = xRingbufferCreate(1024 * 32, RINGBUF_TYPE_BYTEBUF);
     if (ringBuffer == NULL) {
         ESP_LOGE(TAG, "Creating ring buffer failed");
+        while(1);
     }
 
     BaseType_t value = xTaskCreate(
@@ -44,29 +45,55 @@ void AudioRecorder::start(void)
         this,                        // Parameters passed to the task
         10,                          // Task priority
         &(this->captureAudioHandle));   // Handle to the created task
+    
     if(value != pdPASS) 
     {
         ESP_LOGE(TAG, "Creating audio capturing task failed");
+        while(1);
     }
 }
 
 void AudioRecorder::captureAudioTask(void* pvParameters)
 {
-    int16_t i2s_read_buff[512];
-    size_t bytes_read;
+    AudioRecorder* recorder = static_cast<AudioRecorder*>(pvParameters); 
+    int16_t i2sReadBuffer[512];
+    size_t bytesRead;
 
     while (1) {
-        i2s_read(I2S_NUM_0, i2s_read_buff, sizeof(i2s_read_buff), &bytes_read, portMAX_DELAY);
+        i2s_read(I2S_NUM_0, i2sReadBuffer, sizeof(i2sReadBuffer), &bytesRead, portMAX_DELAY);
+        ESP_LOGI(TAG, "Bytes read: %d", bytesRead);
 
         // Print the raw audio samples in hexadecimal
-        for (int i = 0; i < bytes_read / sizeof(int16_t); i++) {
+        /*
+        for (int i = 0; i < bytesRead / sizeof(int16_t); i++) {
             printf("%d\n", i2s_read_buff[i]);
         }
+        */
+
+        // Send data to the ring buffer
+        if (xRingbufferSend(recorder->ringBuffer, (void*)i2sReadBuffer, bytesRead, pdMS_TO_TICKS(100)) != pdTRUE) {
+            ESP_LOGE(TAG, "Failed to send data to the ring buffer");
+        }
+
+
         vTaskDelay(pdMS_TO_TICKS(10)); 
     }
 }
 
 uint32_t AudioRecorder::getSamples(int16_t* samples, uint32_t numOfSamples)
 {
-   return 0;
+    size_t buffer_size;
+    // Retrieve the data from the ring buffer
+    uint8_t* data = (uint8_t*)xRingbufferReceive(ringBuffer, &buffer_size, portMAX_DELAY);
+    
+    if (data != NULL) {
+        uint32_t sampleCount = buffer_size / sizeof(int16_t);
+        if (sampleCount > numOfSamples) {
+            sampleCount = numOfSamples; // Limit to the requested number of samples
+        }
+        memcpy(samples, data, sampleCount * sizeof(int16_t)); // Copy samples to the provided buffer
+        vRingbufferReturnItem(ringBuffer, (void*)data); // Return the buffer back to the ring buffer
+        return sampleCount; // Return the number of samples retrieved
+    }
+    return 0; // No samples retrieved
 }
