@@ -1,14 +1,10 @@
 #ifndef _Audio_Recorder_
 #define _Audio_Recorder_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include <string.h>
 #include "audio_pipeline.h"
 #include "i2s_stream.h"
 #include "board.h"
@@ -17,22 +13,18 @@ extern "C" {
 class AudioRecorder
 {
     private:
-        audio_element_handle_t i2s_stream_reader;
+        uint32_t sampleRate;
         RingbufHandle_t ringBuffer;
         TaskHandle_t captureAudioHandle;
-        
-        void captureAudioTask();
+
+        static void captureAudioTask(void* pvParameters);
 
     public:
-        AudioRecorder();
+        AudioRecorder(uint32_t sampleRate) : sampleRate(sampleRate) {}
         ~AudioRecorder();
+        void set(void);
+        void start(void);
         uint32_t getSamples(int16_t* samples, uint32_t numOfSamples);
 };
-
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* _Audio_Recorder_ */
