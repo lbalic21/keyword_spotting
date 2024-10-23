@@ -53,13 +53,19 @@ void AudioRecorder::start(void)
     }
 }
 
+static uint32_t samplesSum = 0;
+
 void AudioRecorder::captureAudioTask(void* pvParameters)
 {
+    size_t wantedNumOfBytes = 512;
     AudioRecorder* recorder = static_cast<AudioRecorder*>(pvParameters); 
-    int16_t i2sReadBuffer[512];
+    int16_t i2sReadBuffer[256];
     size_t bytesRead;
 
     while (1) {
+        UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+        ESP_LOGI(TAG, "Stack high watermark: %d", stackHighWaterMark);
+
         i2s_read(I2S_NUM_0, i2sReadBuffer, sizeof(i2sReadBuffer), &bytesRead, portMAX_DELAY);
         ESP_LOGI(TAG, "Bytes read: %d", bytesRead);
 
@@ -69,31 +75,76 @@ void AudioRecorder::captureAudioTask(void* pvParameters)
             printf("%d\n", i2s_read_buff[i]);
         }
         */
+        samplesSum += bytesRead;
+        ESP_LOGI(TAG, "SAMPLES: %ld", samplesSum);
 
-        // Send data to the ring buffer
-        if (xRingbufferSend(recorder->ringBuffer, (void*)i2sReadBuffer, bytesRead, pdMS_TO_TICKS(100)) != pdTRUE) {
-            ESP_LOGE(TAG, "Failed to send data to the ring buffer");
+        if(bytesRead < wantedNumOfBytes)
+        {
+            ESP_LOGE(TAG, "Wanted %d bytes - retrieved %dbytes", wantedNumOfBytes, bytesRead);
+            while(1);
         }
 
-
-        vTaskDelay(pdMS_TO_TICKS(10)); 
+        // Send data to the ring buffer
+        if (xRingbufferSend(recorder->ringBuffer, (void*)i2sReadBuffer, bytesRead, portMAX_DELAY) != pdTRUE) {
+            ESP_LOGE(TAG, "Failed to send data to the ring buffer");
+            while(1);
+        }
+        vTaskDelay(pdMS_TO_TICKS(1));
     }
 }
 
-uint32_t AudioRecorder::getSamples(int16_t* samples, uint32_t numOfSamples)
+uint32_t AudioRecorder::getSamples(int16_t* samples, size_t numOfSamples)
 {
-    size_t buffer_size;
-    // Retrieve the data from the ring buffer
-    uint8_t* data = (uint8_t*)xRingbufferReceive(ringBuffer, &buffer_size, portMAX_DELAY);
-    
-    if (data != NULL) {
-        uint32_t sampleCount = buffer_size / sizeof(int16_t);
-        if (sampleCount > numOfSamples) {
-            sampleCount = numOfSamples; // Limit to the requested number of samples
-        }
-        memcpy(samples, data, sampleCount * sizeof(int16_t)); // Copy samples to the provided buffer
-        vRingbufferReturnItem(ringBuffer, (void*)data); // Return the buffer back to the ring buffer
-        return sampleCount; // Return the number of samples retrieved
+    size_t bytesNeeded = numOfSamples * 2;
+
+    size_t bytesInTheBuffer;
+    vRingbufferGetInfo(this->ringBuffer, NULL, NULL, NULL, NULL, &bytesInTheBuffer);
+    if(bytesInTheBuffer < bytesNeeded)
+    {
+        ESP_LOGE(TAG, "Not enough data in the ring buffer");
+        return 0;
     }
-    return 0; // No samples retrieved
+
+    size_t bytesRetrieved;
+    // Retrieve the data from the ring buffer
+    uint16_t* data = NULL;
+    data = (uint16_t*)xRingbufferReceiveUpTo(this->ringBuffer, &bytesRetrieved, portMAX_DELAY, bytesNeeded);
+    
+    if(data != NULL) 
+    {
+        memcpy(samples, data, bytesRetrieved);
+        vRingbufferReturnItem(this->ringBuffer, (void*)data);
+
+        //if wraparound happened
+        if(bytesRetrieved < bytesNeeded)
+        {
+            samples += bytesRetrieved;
+
+            size_t newBytesRetrieved;
+            data = NULL;
+            data = (uint16_t*)xRingbufferReceiveUpTo(this->ringBuffer, &newBytesRetrieved, portMAX_DELAY, bytesNeeded - bytesRetrieved);
+            if(data == NULL)
+            {
+                ESP_LOGE(TAG, "Data is NULL");
+            }
+
+            memcpy(samples, data, newBytesRetrieved);
+            vRingbufferReturnItem(this->ringBuffer, (void*)data);
+
+            if((bytesRetrieved + newBytesRetrieved) != bytesNeeded)
+            {
+                ESP_LOGE(TAG, "Not all data retrieved - (%d + %d) != %d", bytesRetrieved, newBytesRetrieved, bytesNeeded);
+                while(1);
+            }
+            return bytesRetrieved + newBytesRetrieved;
+        }
+
+        if(bytesRetrieved != bytesNeeded)
+        {
+            ESP_LOGE(TAG, "Not all data retrieved - %d != %d", bytesRetrieved, bytesNeeded);
+            while(1);
+        }
+        return bytesRetrieved;
+    }
+    return 0; 
 }

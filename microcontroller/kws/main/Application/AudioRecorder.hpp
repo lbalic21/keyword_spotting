@@ -21,10 +21,10 @@ class AudioRecorder
 
     public:
         AudioRecorder(uint32_t sampleRate) : sampleRate(sampleRate), ringBuffer(NULL), captureAudioHandle(NULL) {}
-        ~AudioRecorder();
+        ~AudioRecorder() = default;
         void set(void);
         void start(void);
-        uint32_t getSamples(int16_t* samples, uint32_t numOfSamples);
+        uint32_t getSamples(int16_t* samples, size_t numOfSamples);
 };
 
 #endif /* _Audio_Recorder_ */
