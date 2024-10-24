@@ -8,6 +8,7 @@
 
 #include "Application.hpp"
 #include "AudioRecorder.hpp"
+#include "FeatureGenerator.hpp"
 
 #ifndef pdMS_TO_TICKS
 #define pdMS_TO_TICKS(xTimeInMs) ((xTimeInMs * configTICK_RATE_HZ) / 1000)
@@ -16,6 +17,7 @@
 static const char *TAG = "MAIN";
 
 AudioRecorder audioRecorder(SAMPLE_RATE);
+FeatureGenerator featureGenerator(WINDOW_SIZE, NUMBER_OF_MFCCS);
 
 void Application(void)
 {
@@ -39,11 +41,11 @@ void Application(void)
         uint32_t bytesRead = audioRecorder.getSamples(audioFrame, WINDOW_SIZE);
         ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
 
-    
-
-
-
-
+        bool success = featureGenerator.generateFeatures(audioFrame, featureImage);
+        if(!success)
+        {
+            ESP_LOGE(TAG, "Generating feature unsuccessfull");
+        }
 
 
         if(xTaskDelayUntil(&lastInferenceTicks, minimalInferenceTicks) != pdTRUE)
