@@ -73,9 +73,9 @@ void AudioRecorder::captureAudioTask(void* pvParameters)
         // Print the raw audio samples in hexadecimal
         /*
         for (int i = 0; i < bytesRead / sizeof(int16_t); i++) {
-            printf("%d\n", i2s_read_buff[i]);
+            printf("%d\n", i2sReadBuffer[i]);
         }
-        */
+        */  
 
         //samplesSum += bytesRead;
         //ESP_LOGI(TAG, "SAMPLES: %ld", samplesSum);
