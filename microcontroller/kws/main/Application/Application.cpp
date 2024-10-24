@@ -30,15 +30,12 @@ void Application(void)
 
     while(1)
     {
-        UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-        //ESP_LOGI(TAG, "Main loop stack high watermark: %d", stackHighWaterMark);
-        //ESP_LOGI(TAG, "Running");
 
         uint32_t bytesRead = audioRecorder.getSamples(audioFrame, 480);
-        ESP_LOGI(TAG, "Samples retrieved: %ld", bytesRead/2);
+        ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead/2, bytesRead);
 
 
-       vTaskDelay(pdMS_TO_TICKS(30));
+       vTaskDelay(pdMS_TO_TICKS(20));
     }
     
 }
