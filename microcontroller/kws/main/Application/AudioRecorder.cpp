@@ -68,7 +68,7 @@ void AudioRecorder::captureAudioTask(void* pvParameters)
         //ESP_LOGI(TAG, "Stack high watermark: %d", stackHighWaterMark);
 
         i2s_read(I2S_NUM_0, i2sReadBuffer, sizeof(i2sReadBuffer), &bytesRead, portMAX_DELAY);
-        ESP_LOGI(TAG, "Bytes read: %d", bytesRead);
+        //ESP_LOGI(TAG, "Bytes read: %d", bytesRead);
 
         // Print the raw audio samples in hexadecimal
         /*
