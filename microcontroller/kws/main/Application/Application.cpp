@@ -20,12 +20,15 @@ AudioRecorder audioRecorder(SAMPLE_RATE);
 void Application(void)
 {
     ESP_LOGI(TAG, "Application started");
+    ESP_LOGI(TAG, "Time slices in a second: %d", NUMBER_OF_TIME_SLICES);
+    UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
+    ESP_LOGI(TAG, "Stack high watermark: %d", stackHighWaterMark);
 
     audioRecorder.set();
     audioRecorder.start();
     
     int16_t audioFrame[WINDOW_SIZE] = {0}; 
-     
+    int8_t featureImage[NUMBER_OF_TIME_SLICES * NUMBER_OF_MFCCS] = {0};
 
     ESP_LOGI(TAG, "Starting the main system loop");
     TickType_t lastInferenceTicks = xTaskGetTickCount();
@@ -38,11 +41,15 @@ void Application(void)
 
     
 
+
+
+
+
+
         if(xTaskDelayUntil(&lastInferenceTicks, minimalInferenceTicks) != pdTRUE)
         {
             ESP_LOGE(TAG, "Sleep not working");
         }
-
     }
     
 }
