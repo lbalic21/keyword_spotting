@@ -7,8 +7,10 @@
 #include "board.h"
 
 #include "Application.hpp"
+#include "Configuration.hpp"
 #include "AudioRecorder.hpp"
 #include "FeatureGenerator.hpp"
+#include "Window.hpp"
 
 #ifndef pdMS_TO_TICKS
 #define pdMS_TO_TICKS(xTimeInMs) ((xTimeInMs * configTICK_RATE_HZ) / 1000)
@@ -16,8 +18,9 @@
 
 static const char *TAG = "MAIN";
 
-AudioRecorder audioRecorder(SAMPLE_RATE);
-FeatureGenerator featureGenerator(WINDOW_SIZE, NUMBER_OF_MFCCS);
+static AudioRecorder audioRecorder(SAMPLE_RATE);
+static Window hannWindow;
+static FeatureGenerator featureGenerator(&hannWindow);
 
 void Application(void)
 {
@@ -38,8 +41,15 @@ void Application(void)
 
     while(1)
     {
-        uint32_t bytesRead = audioRecorder.getSamples(audioFrame, WINDOW_SIZE);
+        int16_t newSamples[STEP_SIZE];
+        uint32_t bytesRead = audioRecorder.getSamples(newSamples, STEP_SIZE);
         ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
+        if(bytesRead < STEP_SIZE)
+        {
+            continue;
+        }
+        memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
+        memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE * 2);
 
         bool success = featureGenerator.generateFeatures(audioFrame, featureImage);
         if(!success)
@@ -47,11 +57,11 @@ void Application(void)
             ESP_LOGE(TAG, "Generating feature unsuccessfull");
         }
 
-
-        if(xTaskDelayUntil(&lastInferenceTicks, minimalInferenceTicks) != pdTRUE)
-        {
-            ESP_LOGE(TAG, "Sleep not working");
-        }
+        vTaskDelay(1);
+        //if(xTaskDelayUntil(&lastInferenceTicks, minimalInferenceTicks) != pdTRUE)
+        //{
+        //    ESP_LOGE(TAG, "Sleep not working");
+        //}
     }
     
 }

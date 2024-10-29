@@ -102,7 +102,7 @@ uint32_t AudioRecorder::getSamples(int16_t* samples, size_t numOfSamples)
     vRingbufferGetInfo(this->ringBuffer, NULL, NULL, NULL, NULL, &bytesInTheBuffer);
     if(bytesInTheBuffer < bytesNeeded)
     {
-        ESP_LOGE(TAG, "Not enough data in the ring buffer, only %d bytes", bytesInTheBuffer);
+        ESP_LOGW(TAG, "Not enough data in the ring buffer, only %d bytes", bytesInTheBuffer);
         return 0;
     }
     ESP_LOGI(TAG, "In the buffer: %d bytes", bytesInTheBuffer);

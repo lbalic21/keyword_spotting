@@ -3,6 +3,7 @@ set(COMPONENT_SRCS
 "Application/Application.cpp"
 "Application/AudioRecorder.cpp"
 "Application/FeatureGenerator.cpp"
+"Application/Window.cpp"
 )
 set(COMPONENT_ADD_INCLUDEDIRS 
 .                          
