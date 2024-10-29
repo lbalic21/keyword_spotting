@@ -5,6 +5,7 @@ set(COMPONENT_SRCS
 "Application/FeatureGenerator.cpp"
 "Application/Window.cpp"
 "Application/FFT.cpp"
+"Application/MelSpectrogram.cpp"
 )
 set(COMPONENT_ADD_INCLUDEDIRS 
 .                          
