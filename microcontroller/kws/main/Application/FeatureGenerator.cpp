@@ -5,10 +5,11 @@
 
 static const char *TAG = "Feature Generator";
 
-FeatureGenerator::FeatureGenerator(Window* window)
+FeatureGenerator::FeatureGenerator(Window* window, FFT* fft)
 {
     ESP_LOGI(TAG, "Creating Feature Generator");
     this->window = window;
+    this->fft = fft;
 }
 
 bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlice)
@@ -17,23 +18,40 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlic
     /*************************** WINDOW ******************************/
     /*****************************************************************/
 
+    int16_t maximumAbsoluteValue = 0;
 
     for(size_t i = 0; i < WINDOW_SIZE; i++)
     {
         int32_t value = audioFrame[i] * window->data[i];
-        printf("%d - data %d * window %d = %ld\n", i, audioFrame[i], window->data[i], (value >> WINDOW_BITS));
+        //printf("%d - data %d * window %d = %ld\n", i, audioFrame[i], window->data[i], (value >> WINDOW_BITS));
         audioFrame[i] = value >> WINDOW_BITS;
-    }
 
-    
+        int16_t newAbsValue = (audioFrame[i] > 0) ? audioFrame[i] : -audioFrame[i];
+        if(newAbsValue > maximumAbsoluteValue)
+        {
+            maximumAbsoluteValue = newAbsValue;
+        }
+    }
 
     /*****************************************************************/
     /*************************** FFT *********************************/
     /*****************************************************************/
 
-    // Initialize the ESP-DSP library
-    //dsps_fft2r_init_fc32(NULL, CONFIG_DSP_MAX_FFT_SIZE);
+    // Apply the FFT to the window's output (and scale it so that the fixed point
+    // FFT can have as much resolution as possible).
 
+    //int shift = __builtin_clz(maximumAbsoluteValue);
+    //printf("value %d shift %d\n", maximumAbsoluteValue, shift);
+
+    uint32_t spectrogram[NUMBER_OF_SPECTROGRAM_BINS];
+    fft->compute(audioFrame, spectrogram);
+
+    /*
+    for(int i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
+    {
+        printf("%d -> %ld\n", i, spectrogram[i]);
+    }
+    */
 
     /*****************************************************************/
     /*********************** MEL SPECTRO *****************************/

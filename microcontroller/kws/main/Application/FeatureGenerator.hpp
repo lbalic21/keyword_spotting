@@ -7,15 +7,17 @@
 #include <string.h>
 #include "stdbool.h"
 #include "Window.hpp"
+#include "FFT.hpp"
 
 class FeatureGenerator
 {
     public:
-        FeatureGenerator(Window* window);
+        FeatureGenerator(Window* window, FFT* fft);
         bool generateFeatures(int16_t* audioFrame, int8_t* featureSlice);
 
     private:
         Window* window;
+        FFT* fft;
         
 
 };

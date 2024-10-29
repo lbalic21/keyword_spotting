@@ -11,6 +11,7 @@
 #include "AudioRecorder.hpp"
 #include "FeatureGenerator.hpp"
 #include "Window.hpp"
+#include "FFT.hpp"
 
 #ifndef pdMS_TO_TICKS
 #define pdMS_TO_TICKS(xTimeInMs) ((xTimeInMs * configTICK_RATE_HZ) / 1000)
@@ -20,7 +21,8 @@ static const char *TAG = "MAIN";
 
 static AudioRecorder audioRecorder(SAMPLE_RATE);
 static Window hannWindow;
-static FeatureGenerator featureGenerator(&hannWindow);
+static FFT fft;
+static FeatureGenerator featureGenerator(&hannWindow, &fft);
 
 void Application(void)
 {
@@ -43,7 +45,7 @@ void Application(void)
     {
         int16_t newSamples[STEP_SIZE];
         uint32_t bytesRead = audioRecorder.getSamples(newSamples, STEP_SIZE);
-        ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
+        //ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
         if(bytesRead < STEP_SIZE)
         {
             continue;
