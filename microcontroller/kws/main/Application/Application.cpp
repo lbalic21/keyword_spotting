@@ -12,6 +12,7 @@
 #include "FeatureGenerator.hpp"
 #include "Window.hpp"
 #include "FFT.hpp"
+#include "MelSpectrogram.hpp"
 
 #ifndef pdMS_TO_TICKS
 #define pdMS_TO_TICKS(xTimeInMs) ((xTimeInMs * configTICK_RATE_HZ) / 1000)
@@ -22,7 +23,8 @@ static const char *TAG = "MAIN";
 static AudioRecorder audioRecorder(SAMPLE_RATE);
 static Window hannWindow;
 static FFT fft;
-static FeatureGenerator featureGenerator(&hannWindow, &fft);
+static MelSpectrogram melSpectrogram;
+static FeatureGenerator featureGenerator(&hannWindow, &fft, &melSpectrogram);
 
 void Application(void)
 {

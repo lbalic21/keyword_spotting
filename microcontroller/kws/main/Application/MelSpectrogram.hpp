@@ -6,12 +6,17 @@
 
 class MelSpectrogram
 {
-    private:
-        int16_t data[NUMBER_OF_MEL_BINS];
-
     public:
         MelSpectrogram() {}
-        void generate(int16_t* spectrogram, int16_t* melSpectrogram);
+        void generate(uint32_t* spectrogram, uint32_t* melSpectrogram);
+
+    private:
+        uint32_t melPoints[NUMBER_OF_MEL_BINS + 2];
+        static const int FIXED_POINT_FRACTIONAL_BITS = 16; // Number of bits for the fractional part
+        static const uint32_t FIXED_POINT_ONE = (1 << FIXED_POINT_FRACTIONAL_BITS);
+
+        float hzToMel(float hz);
+        float melToHz(float mel);
 
 };
 

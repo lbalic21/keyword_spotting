@@ -5,11 +5,12 @@
 
 static const char *TAG = "Feature Generator";
 
-FeatureGenerator::FeatureGenerator(Window* window, FFT* fft)
+FeatureGenerator::FeatureGenerator(Window* window, FFT* fft, MelSpectrogram* melSpectrogram)
 {
     ESP_LOGI(TAG, "Creating Feature Generator");
     this->window = window;
     this->fft = fft;
+    this->melSpectrogram = melSpectrogram;
 }
 
 bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlice)
@@ -57,7 +58,14 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlic
     /*********************** MEL SPECTRO *****************************/
     /*****************************************************************/
 
+    uint32_t melSpectro[NUMBER_OF_MEL_BINS] = {0};
+    this->melSpectrogram->generate(spectrogram, melSpectro);
 
+    for(size_t i = 0; i < NUMBER_OF_MEL_BINS; i++)
+    {
+        printf("%d -> %ld\n", i, melSpectro[i]);
+    }
+    
     /*****************************************************************/
     /********************* LOG MEL SPECTRO ***************************/
     /*****************************************************************/
