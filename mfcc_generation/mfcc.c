@@ -9,7 +9,7 @@
  *                      1 means windowed spectrogram is loaded from TF implementation
  *                      2 means log mel-spectrogram is loaded from TF implementation
  */
-#define START_FROM 1
+#define START_FROM 0
 
 #if START_FROM == 0
     #include <fftw3.h>
@@ -19,9 +19,9 @@
     #define M_PI 3.14159265358979323846
 #endif
 
-#define FRAME_LENGTH            128
+#define FRAME_LENGTH            512
 #define SPECTROGRAM_LENGTH      ((FRAME_LENGTH / 2) + 1)
-#define FRAME_STEP              32
+#define FRAME_STEP              256
 
 #define NUM_OF_MEL_BINS         80
 #define NUM_OF_MFCCS            13
@@ -206,7 +206,7 @@ FILE* open_file(const char* path, const char* rwb)
 // Main function
 int main() {
     /* Reading wav file */
-    FILE* wav = open_file("recordings/ugasi/ugasi.wav", "rb");
+    FILE* wav = open_file("../recordings/ugasi/ugasi.wav", "rb");
     WAVHeader header;
     fread(&header, sizeof(WAVHeader), 1, wav);
     if (header.audioFormat != 1) { 
@@ -219,7 +219,7 @@ int main() {
     printf("Num of samples: %ld\n", num_samples);
     int num_frames = (num_samples - FRAME_LENGTH) / FRAME_STEP + 1;
     printf("Num of frames: %d\n", num_frames);
-    printf("Spectrogram length: %d", SPECTROGRAM_LENGTH);
+    printf("Spectrogram length: %d\n", SPECTROGRAM_LENGTH);
 
     float* signal = (float*)malloc(num_samples * sizeof(float));
     if (!signal) {
@@ -227,7 +227,10 @@ int main() {
         fclose(wav);
         return -1;
     }
-
+    FILE *write_test = open_file("samples512.txt", "w");
+  
+    int16_t testSignal[512];
+    int signalNum = 0;
     for (size_t i = 0; i < num_samples; i++) {
         int16_t sample;
         if (fread(&sample, sizeof(int16_t), 1, wav) != 1) {
@@ -236,18 +239,28 @@ int main() {
             fclose(wav);
             return -1;
         }
+
+        if(i >= 20001 && i <= 20512)
+        {
+            //printf("%d ", sample);
+            //fprintf(write_test, "%d\n", sample);
+            testSignal[signalNum++] = sample;
+            
+        }
         signal[i] = (float)sample / 32768.0; // Normalize to [-1, 1]
     }
     fclose(wav);
+   
+    
 
-    FILE* out_spectrogram = open_file("spectrogram_c.txt", "rw");
-    FILE *out_mel_spectrogram = open_file("mel_spectrogram_c.txt", "rw");
-    FILE *out_log_mel_spectrogram = open_file("log_mel_spectrogram_c.txt", "rw"); 
+
+    FILE* out_spectrogram = open_file("spectrogram_c.txt", "w");
+    FILE *out_mel_spectrogram = open_file("mel_spectrogram_c.txt", "w");
+    FILE *out_log_mel_spectrogram = open_file("log_mel_spectrogram_c.txt", "w"); 
     FILE *out_mfccs = open_file("mfccs_c.txt", "w");
 
     FILE* spectro_py = open_file("spectro_python.txt", "r");
     FILE *log_mel_py = open_file("log_mel_spectro_python.txt", "r");
-    FILE *write_test = open_file("write_test.txt", "w");
 
     float frame[FRAME_LENGTH];
     float spectrogram[SPECTROGRAM_LENGTH];
@@ -263,10 +276,23 @@ int main() {
     for (int i = 0; i < num_frames; i++) 
     {
         #if START_FROM == 0
-            memcpy(frame, signal + i * FRAME_STEP, FRAME_LENGTH * sizeof(float));
+            //memcpy(frame, signal + i * FRAME_STEP, FRAME_LENGTH * sizeof(float));
+            for(int w=0;w<512;w++)
+            {
+                frame[w] = (float)testSignal[w] / 32768.0;
+                //printf("%f ",frame[w]);
+            
+            }
             applyHammingWindow(frame, FRAME_LENGTH);
+            printf("\nWINDOWED\n");
+            for(int w=0;w<512;w++)
+            {
+               
+            //printf("%d - %f\n",w,frame[w]);
+            }
+            printf("\n");
 
-            plan = fftw_plan_dft_r2c_1d(FRAME_LENGTH, frame, fft_output, FFTW_ESTIMATE);
+            plan = fftw_plan_dft_r2c_1d(FRAME_LENGTH, (double*)frame, fft_output, FFTW_ESTIMATE);
             fftw_execute(plan);
             
             for (int j = 0; j < SPECTROGRAM_LENGTH; j++) 
@@ -275,17 +301,23 @@ int main() {
                 float imag = fft_output[j][1]; // Imaginary part
                 spectrogram[j] = sqrt(real * real + imag * imag); // Magnitude
             }
+            printf("\nFFT\n");
+            for(int w=0;w<SPECTROGRAM_LENGTH;w++){printf("FFT%d -> %f\n",w, spectrogram[w]);}
+            printf("\n");
 
             for (int j = 0; j < SPECTROGRAM_LENGTH; j++) 
             {
-                fprintf(out_spectrogram, "%f ", spectrogram[j]);  // Write each coefficient
+                fprintf(out_spectrogram, "%f\n", spectrogram[j]);  // Write each coefficient
             }
             fprintf(out_spectrogram, "\n"); 
 
             spectro_to_mel_spectro(spectrogram, mel_spectro);
+            printf("\nMEL\n");
             for(int j = 0; j < NUM_OF_MEL_BINS; j++) 
             {
-                fprintf(out_mel_spectrogram, "%f ", mel_spectro[j]);
+            printf("MEL%d -> %f\n",j, mel_spectro[j]);
+
+                fprintf(out_mel_spectrogram, "%f\n", mel_spectro[j]);
             }
             fprintf(out_mel_spectrogram, "\n");
 
@@ -302,6 +334,8 @@ int main() {
                 fprintf(out_mfccs, "%f ", mfccs[j]);
             }
             fprintf(out_mfccs, "\n");
+
+            break;
 
         #endif
 
