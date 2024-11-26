@@ -9,6 +9,7 @@
 #include "Application.hpp"
 #include "Configuration.hpp"
 #include "AudioRecorder/AudioRecorder.hpp"
+#include "Model/Model.hpp"
 
 #include "FeatureGenerator/FeatureGenerator.hpp"
 #include "FeatureGenerator/Window.hpp"
@@ -97,6 +98,7 @@ int16_t testSamples[512] = {
 static const char *TAG = "MAIN";
 
 static AudioRecorder audioRecorder(SAMPLE_RATE);
+static Model model;
 
 #if USE_FLOAT == 1
 
@@ -154,8 +156,15 @@ void Application(void)
         bool success = featureGenerator.generateFeatures(audioFrame, featureImage);
         if(!success)
         {
-            ESP_LOGE(TAG, "Generating feature unsuccessfull");
+            ESP_LOGE(TAG, "Generating feature failed");
         }
+
+        success = model.invoke(featureImage);
+        if(!success)
+        {
+            ESP_LOGE(TAG, "Model invoking failed");
+        }
+
 
         vTaskDelay(1);
     

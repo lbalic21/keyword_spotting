@@ -3,7 +3,12 @@
 
 FFTFloat::FFTFloat()
 {
-    dsps_fft2r_init_fc32(NULL, WINDOW_SIZE);
+    esp_err_t ret = dsps_fft2r_init_fc32_ae32(NULL, WINDOW_SIZE);
+    if(ret != ESP_OK)
+    {
+        ESP_LOGE("FFT", "Not possible to initialize FFT. Error = %i", ret);
+        while(1);
+    }
 }
 
 void FFTFloat::compute(float* frame, float* spectrogram)
