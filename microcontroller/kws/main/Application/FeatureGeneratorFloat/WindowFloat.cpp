@@ -18,5 +18,5 @@ WindowFloat::WindowFloat()
         //ESP_LOGI("HANN", "window[%d] = %d", i, this->data[i]);
     }
     */
-    dsps_wind_hann_f32(this->data, WINDOW_SIZE);
+    //dsps_wind_hann_f32(this->data, WINDOW_SIZE);
 }

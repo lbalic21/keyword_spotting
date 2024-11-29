@@ -13,6 +13,10 @@ set(COMPONENT_SRCS
 "Application/FeatureGeneratorFloat/FFTFloat.cpp"
 "Application/FeatureGeneratorFloat/MelSpectrogramFloat.cpp"
 
+"Application/Model/Model.cpp"
+"Application/CommandRecognizer/CommandRecognizer.cpp"
+"Application/CommandResponder/CommandResponder.cpp"
+
 )
 set(COMPONENT_ADD_INCLUDEDIRS 
 .                          

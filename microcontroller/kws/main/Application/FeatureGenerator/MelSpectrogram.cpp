@@ -12,7 +12,7 @@ float MelSpectrogram::melToHz(float mel)
     return MEL_BREAK_FREQUENCY_HERTZ * (powf(10.0f, mel / MEL_HIGH_FREQUENCY_Q) - 1.0f);
 }
 
-void MelSpectrogram::generate(uint32_t* spectrogram, float* melSpectrogram) {
+void MelSpectrogram::generate(uint32_t* spectrogram, int32_t* melSpectrogram) {
 
     // Convert lower and upper frequencies to mel scale (using integer approximation)
     float lowerMel = hzToMel(LOWER_BAND_LIMIT);

@@ -50,7 +50,7 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlic
     
     for(int i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
     {
-        printf("%d -> %ld\n", i, spectrogram[i]);
+        //printf("%d -> %ld\n", i, spectrogram[i]);
     }
     
 
@@ -58,12 +58,12 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlic
     /*********************** MEL SPECTRO *****************************/
     /*****************************************************************/
 
-    float melSpectro[NUMBER_OF_MEL_BINS] = {0.0};
+    int32_t melSpectro[NUMBER_OF_MEL_BINS] = {0};
     this->melSpectrogram->generate(spectrogram, melSpectro);
 
     for(size_t i = 0; i < NUMBER_OF_MEL_BINS; i++)
     {
-        printf("%d -> %f\n", i, melSpectro[i]);
+        //printf("%d -> %ld\n", i, melSpectro[i]);
     }
     
     /*****************************************************************/
@@ -74,6 +74,12 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, int8_t* featureSlic
     /*****************************************************************/
     /*************************** DCT *********************************/
     /*****************************************************************/
+
+    //dummy
+    for(size_t i = 0; i < NUMBER_OF_MFCCS; i++)
+    {
+        featureSlice[i] = i;
+    }
 
     return true;
 }

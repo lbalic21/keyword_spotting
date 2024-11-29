@@ -5,6 +5,12 @@ dependencies:
       service_url: https://api.components.espressif.com/
       type: service
     version: 1.5.2
+  espressif/esp-nn:
+    component_hash: f6f2851ce82137a66e4265071c9b852bbe0130b882a18dea9f03faea7bf1295a
+    source:
+      service_url: https://api.components.espressif.com/
+      type: service
+    version: 1.1.0
   espressif/jsmn:
     component_hash: d80350c41bbaa827c98a25b6072df00884e72f54885996fab4a4f0aebce6b6c3
     source:
@@ -22,6 +28,6 @@ dependencies:
     source:
       type: idf
     version: 5.1.2
-manifest_hash: 495a6d1d7fdc5be7743a919e663d3d4bcab9aa98299344badbdcf6b9acf54847
+manifest_hash: a97d6ae5a8bd4c64dce4ccd3b48fb53325d289a091dd3197008ed8351ccd52f0
 target: esp32
 version: 1.0.0

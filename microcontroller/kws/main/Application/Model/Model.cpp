@@ -1,6 +1,6 @@
 #include "Model.hpp"
 
-bool Model::invoke(void)
+bool Model::invoke(int8_t* featureImage)
 {
     return true;
 }

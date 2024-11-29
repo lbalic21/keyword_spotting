@@ -8,7 +8,7 @@ class MelSpectrogram
 {
     public:
         MelSpectrogram() {}
-        void generate(uint32_t* spectrogram, float* melSpectrogram);
+        void generate(uint32_t* spectrogram, int32_t* melSpectrogram);
 
     private:
         float melPoints[NUMBER_OF_MEL_BINS + 2];

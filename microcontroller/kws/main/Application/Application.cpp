@@ -10,6 +10,8 @@
 #include "Configuration.hpp"
 #include "AudioRecorder/AudioRecorder.hpp"
 #include "Model/Model.hpp"
+#include "CommandRecognizer/CommandRecognizer.hpp"
+#include "CommandResponder/CommandResponder.hpp"
 
 #include "FeatureGenerator/FeatureGenerator.hpp"
 #include "FeatureGenerator/Window.hpp"
@@ -21,7 +23,6 @@
 #include "FeatureGeneratorFloat/FFTFloat.hpp"
 #include "FeatureGeneratorFloat/MelSpectrogramFloat.hpp"
 
-#define USE_FLOAT   1
 
 int16_t testSamples[512] = {
     -6927, -6556, -6013, -5513, -4946, -4403, -3912, -3422,
@@ -90,84 +91,161 @@ int16_t testSamples[512] = {
     5160,  5516,  5854,  6119,  6335,  6533,  6636,  6724
 };
 
-
-#ifndef pdMS_TO_TICKS
-#define pdMS_TO_TICKS(xTimeInMs) ((xTimeInMs * configTICK_RATE_HZ) / 1000)
-#endif
-
+#define USE_FLOAT   0
 static const char *TAG = "MAIN";
 
+
+/******************************************************************************/
+/********************** STATIC OBJECTS INITIALIZATION *************************/
+/******************************************************************************/
+
 static AudioRecorder audioRecorder(SAMPLE_RATE);
-static Model model;
 
 #if USE_FLOAT == 1
-
 static WindowFloat hannWindow;
 static FFTFloat fft;
 static MelSpectrogramFloat melSpectrogram;
 static FeatureGeneratorFloat featureGenerator(&hannWindow, &fft, &melSpectrogram);
-
 #else
-
 static Window hannWindow;
 static FFT fft;
 static MelSpectrogram melSpectrogram;
 static FeatureGenerator featureGenerator(&hannWindow, &fft, &melSpectrogram);
-
 #endif
+
+static Model model;
+//static CommandRecognizer recognizer;
+//static CommandResponder responder;
+
+
+/******************************************************************************/
+/****************************** MAIN APPLICATION ******************************/
+/******************************************************************************/
 
 void Application(void)
 {
     ESP_LOGI(TAG, "Application started");
     ESP_LOGI(TAG, "Time slices in a second: %d", NUMBER_OF_TIME_SLICES);
-  
-    //audioRecorder.set();
-    //audioRecorder.start();
-    
+    ESP_LOGI(TAG, "Number of MFCCs in one time slice: %d", NUMBER_OF_MFCCS);
+    ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
+
+    /******************************************************************************/
+    /************************** BUFFERS INITIALIZATION ****************************/
+    /******************************************************************************/
+
+    int16_t newSamples[STEP_SIZE];
     int16_t audioFrame[WINDOW_SIZE] = {0}; 
 
     #if USE_FLOAT == 1
-    float featureImage[NUMBER_OF_TIME_SLICES * NUMBER_OF_MFCCS] = {0};
+    float featureSlice[NUMBER_OF_MFCCS];
+    float featureImage[NUMBER_OF_FEATURES] = {0};
     #else
-    int8_t featureImage[NUMBER_OF_TIME_SLICES * NUMBER_OF_MFCCS] = {0};
+    int8_t featureSlice[NUMBER_OF_MFCCS];
+    int8_t featureImage[NUMBER_OF_FEATURES] = {0};
     #endif
 
-    bool success = featureGenerator.generateFeatures(testSamples, featureImage);
-    if(!success)
-    {
-        ESP_LOGE(TAG, "Generating feature unsuccessfull");
-    }
-    while(1);
+
+    /******************************************************************************/
+    /************************** STARTING AUDIO RECORDER ***************************/
+    /******************************************************************************/
+  
+    audioRecorder.set();
+    audioRecorder.start();
+
+
+    /******************************************************************************/
+    /****************************** MAIN SYSTEM LOOP ******************************/
+    /******************************************************************************/
 
     ESP_LOGI(TAG, "Starting the main system loop");
 
     while(1)
     {
-        int16_t newSamples[STEP_SIZE];
+        ESP_LOGI(TAG, "LOOP");
+
+        /**********************************************************************/
+        /*********************** ACQUIRING NEW SAMPLES ************************/
+        /**********************************************************************/
+
         uint32_t bytesRead = audioRecorder.getSamples(newSamples, STEP_SIZE);
         //ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
-        if(bytesRead < STEP_SIZE)
+        if((bytesRead / 2) < STEP_SIZE)
         {
+            ESP_LOGE(TAG, "Did not get enough samples");
             continue;
         }
+
+        /**
+        * Sliding window with overlap. Audio frame holds WINDOW_SIZE samples. Each
+        * update shifts "Samples to Keep" to the start of the buffer, discards 
+        * "Old Samples," and makes space at the end for "New Samples."
+        *
+        * Before:
+        * -------------------------------------------------------------
+        * | Old Samples           | Samples to Keep                   |
+        * -------------------------------------------------------------
+        * |<----- STEP_SIZE ----->|<---- WINDOW_SIZE - STEP_SIZE ---->|
+        * -------------------------------------------------------------
+        *
+        * After:
+        * -------------------------------------------------------------
+        * | Kept Samples                      | New Samples           |
+        * -------------------------------------------------------------
+        * |<---- WINDOW_SIZE - STEP_SIZE ---->|<----- STEP_SIZE ----->|
+        * -------------------------------------------------------------
+        */
         memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
         memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE * 2);
 
-        bool success = featureGenerator.generateFeatures(audioFrame, featureImage);
+
+        /**********************************************************************/
+        /************************ GENERATING FEATURES *************************/
+        /**********************************************************************/
+
+        bool success = featureGenerator.generateFeatures(audioFrame, featureSlice);
         if(!success)
         {
             ESP_LOGE(TAG, "Generating feature failed");
+            continue;
         }
+
+        /**
+         * The same process, as was shown earlier with raw audio samples, occurs
+         * here. One time slice that has NUMBER_OF_MFCCS features is copied to the
+         * begginning of the buffer and a new feature slice is added to the end of
+         * the buffer completing the whole feature image that can be fed to the
+         * neural network.
+         */
+
+        memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, NUMBER_OF_FEATURES - NUMBER_OF_MFCCS);
+        memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, NUMBER_OF_MFCCS);
+
+
+        /**********************************************************************/
+        /******************** INVOKING THE NEURAL NETWORK *********************/
+        /**********************************************************************/
 
         success = model.invoke(featureImage);
         if(!success)
         {
             ESP_LOGE(TAG, "Model invoking failed");
+            continue;
         }
 
 
+        /**********************************************************************/
+        /*********************** RECOGNIZING COMMANDS *************************/
+        /**********************************************************************/
+
+
+
+
+        /**********************************************************************/
+        /********************** RESPONDING TO A COMMAND ***********************/
+        /**********************************************************************/
+        
+
+
         vTaskDelay(1);
-    
     }
-    
 }

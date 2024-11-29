@@ -24,7 +24,7 @@ bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, float* feature
     for(size_t i = 0; i < WINDOW_SIZE; i++)
     {
         windowedFrame[i] = audioFrame[i] * window->data[i] / 32768;
-        //printf("%d - %f\n", i, windowedFrame[i]);
+        printf("WINDOWED %d - %f\n", i, windowedFrame[i]);
     }
 
     /*****************************************************************/
