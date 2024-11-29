@@ -1,5 +1,6 @@
 ## IDF Component Manager Manifest File
 dependencies:
+  espressif/esp-tflite-micro: "^1.3.2"
   espressif/esp-nn: "^1.1.0"
   ## Required IDF version
   idf:

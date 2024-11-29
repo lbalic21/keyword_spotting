@@ -9,20 +9,21 @@
 #include "Application.hpp"
 #include "Configuration.hpp"
 #include "AudioRecorder/AudioRecorder.hpp"
-#include "Model/Model.hpp"
+#include "NeuralNetwork/NeuralNetwork.hpp"
 #include "CommandRecognizer/CommandRecognizer.hpp"
 #include "CommandResponder/CommandResponder.hpp"
 
-#include "FeatureGenerator/FeatureGenerator.hpp"
-#include "FeatureGenerator/Window.hpp"
-#include "FeatureGenerator/FFT.hpp"
-#include "FeatureGenerator/MelSpectrogram.hpp"
-
+#if USE_FLOAT == 1
 #include "FeatureGeneratorFloat/FeatureGeneratorFloat.hpp"
 #include "FeatureGeneratorFloat/WindowFloat.hpp"
 #include "FeatureGeneratorFloat/FFTFloat.hpp"
 #include "FeatureGeneratorFloat/MelSpectrogramFloat.hpp"
-
+#else
+#include "FeatureGenerator/FeatureGenerator.hpp"
+#include "FeatureGenerator/Window.hpp"
+#include "FeatureGenerator/FFT.hpp"
+#include "FeatureGenerator/MelSpectrogram.hpp"
+#endif
 
 int16_t testSamples[512] = {
     -6927, -6556, -6013, -5513, -4946, -4403, -3912, -3422,
@@ -91,9 +92,7 @@ int16_t testSamples[512] = {
     5160,  5516,  5854,  6119,  6335,  6533,  6636,  6724
 };
 
-#define USE_FLOAT   0
 static const char *TAG = "MAIN";
-
 
 /******************************************************************************/
 /********************** STATIC OBJECTS INITIALIZATION *************************/
@@ -113,7 +112,7 @@ static MelSpectrogram melSpectrogram;
 static FeatureGenerator featureGenerator(&hannWindow, &fft, &melSpectrogram);
 #endif
 
-static Model model;
+static NeuralNetwork network;
 //static CommandRecognizer recognizer;
 //static CommandResponder responder;
 
@@ -148,7 +147,7 @@ void Application(void)
     /******************************************************************************/
     /************************** STARTING AUDIO RECORDER ***************************/
     /******************************************************************************/
-  
+
     audioRecorder.set();
     audioRecorder.start();
 
@@ -156,6 +155,9 @@ void Application(void)
     /******************************************************************************/
     /****************************** MAIN SYSTEM LOOP ******************************/
     /******************************************************************************/
+
+    /* tracks the number of new feature slices before invoking the network */
+    uint32_t numberOfNewSlices = 0; 
 
     ESP_LOGI(TAG, "Starting the main system loop");
 
@@ -220,16 +222,23 @@ void Application(void)
         memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, NUMBER_OF_FEATURES - NUMBER_OF_MFCCS);
         memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, NUMBER_OF_MFCCS);
 
+        numberOfNewSlices++;
+
 
         /**********************************************************************/
         /******************** INVOKING THE NEURAL NETWORK *********************/
         /**********************************************************************/
 
-        success = model.invoke(featureImage);
-        if(!success)
+        if(numberOfNewSlices == NUMBER_OF_NEW_SLICES_BEFORE_INVOKING)
         {
-            ESP_LOGE(TAG, "Model invoking failed");
-            continue;
+            ESP_LOGI(TAG, "NN invoked!");
+            success = network.invoke(featureImage);
+            if(!success)
+            {
+                ESP_LOGE(TAG, "Model invoking failed");
+                continue;
+            }
+            numberOfNewSlices = 0;
         }
 
 
