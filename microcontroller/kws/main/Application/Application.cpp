@@ -231,7 +231,8 @@ void Application(void)
 
         if(numberOfNewSlices == NUMBER_OF_NEW_SLICES_BEFORE_INVOKING)
         {
-            ESP_LOGI(TAG, "NN invoked!");
+            ESP_LOGI(TAG, "Invoking NN!");
+            network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
             success = network.invoke(featureImage);
             if(!success)
             {
@@ -245,7 +246,7 @@ void Application(void)
         /**********************************************************************/
         /*********************** RECOGNIZING COMMANDS *************************/
         /**********************************************************************/
-
+        
 
 
 
