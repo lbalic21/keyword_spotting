@@ -3,3 +3,7 @@ commands
 .venv
 saved
 download
+tensorflow
+train
+models
+logs
