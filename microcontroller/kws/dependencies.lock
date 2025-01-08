@@ -1,39 +1,69 @@
 dependencies:
   espressif/esp-dsp:
     component_hash: fa7fe74305df6da25867437ebcd4213e047cbfc0556cf92067ab657fce537c6e
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.2'
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.5.2
   espressif/esp-nn:
     component_hash: f6f2851ce82137a66e4265071c9b852bbe0130b882a18dea9f03faea7bf1295a
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.2'
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.1.0
   espressif/esp-tflite-micro:
     component_hash: 50911854762a4e4a1f71e236f38434d55d6a7bb02763dc8acac9029b741217bb
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    - name: espressif/esp-nn
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.1.0
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.3.2
   espressif/jsmn:
     component_hash: d80350c41bbaa827c98a25b6072df00884e72f54885996fab4a4f0aebce6b6c3
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.3'
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.1.0
   espressif/nghttp:
     component_hash: c52b83cc3d1083ae669751534ea4f7445974b86d91d49a5273bdb0fbf87f34d6
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=5.0'
     source:
-      service_url: https://api.components.espressif.com/
+      registry_url: https://components.espressif.com/
       type: service
     version: 1.62.1
   idf:
-    component_hash: null
     source:
       type: idf
     version: 5.1.2
-manifest_hash: fc0b4513ad0291be246636e07b6b78f865a8897c12749cfa1d534cf2bd506cab
+direct_dependencies:
+- espressif/esp-dsp
+- espressif/esp-nn
+- espressif/esp-tflite-micro
+- espressif/jsmn
+- espressif/nghttp
+- idf
+manifest_hash: aefef6c2fb46bf0d642e21c38929946cafdacb13c230e6c4c16fe9326fd73cb8
 target: esp32
-version: 1.0.0
+version: 2.0.0

@@ -8,8 +8,11 @@ class WindowFloat
 {
     public:
     
-        float data[WINDOW_SIZE];
         WindowFloat();
+        void apply(int16_t* input, float* output);
+        
+    private:
+        float data[WINDOW_SIZE];
 };
 
 #endif /* _WINDOW_H_ */

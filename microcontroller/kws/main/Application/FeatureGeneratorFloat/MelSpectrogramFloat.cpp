@@ -2,62 +2,35 @@
 #include <math.h>
 #include <cstdio>
 
-float MelSpectrogramFloat::hzToMel(float hz)
+MelSpectrogramFloat::MelSpectrogramFloat()
 {
-    return MEL_HIGH_FREQUENCY_Q * log10f(1.0f + hz / MEL_BREAK_FREQUENCY_HERTZ);
-}
-
-float MelSpectrogramFloat::melToHz(float mel)
-{
-    return MEL_BREAK_FREQUENCY_HERTZ * (powf(10.0f, mel / MEL_HIGH_FREQUENCY_Q) - 1.0f);
-}
-
-void MelSpectrogramFloat::generate(float* spectrogram, float* melSpectrogram) {
-
-    // Convert lower and upper frequencies to mel scale (using integer approximation)
-    float lowerMel = hzToMel(LOWER_BAND_LIMIT);
-    float upperMel = hzToMel(UPPER_BAND_LIMIT);
-    float melStep = (upperMel - lowerMel) / (NUMBER_OF_MEL_BINS + 1);
-
-    // Calculate mel points
-    //printf("Mel Points Calculation:\n");
+    this->lowerMel = 2595.0 * log10(1.0 + LOWER_BAND_LIMIT / 700.0);  // Lower frequency in Mel scale
+    this->upperMel = 2595.0 * log10(1.0 + UPPER_BAND_LIMIT / 700.0);  // Upper frequency in Mel scale
+    this->melStep = (this->upperMel - this->lowerMel) / (NUMBER_OF_MEL_BINS + 1); 
+    this->hzPerBin = SAMPLE_RATE / WINDOW_SIZE;
     for (int i = 0; i < NUMBER_OF_MEL_BINS + 2; i++) {
-        melPoints[i] = melToHz(lowerMel + i * melStep);
-        //printf("Mel Point %d: %f\n", i, melPoints[i]);
-    }
-
-    // Apply triangular filters
-    for (int m = 0; m < NUMBER_OF_MEL_BINS; m++) {
-        melSpectrogram[m] = 0.0; 
-        float left = melPoints[m];
-        float center = melPoints[m + 1];
-        float right = melPoints[m + 2];
-
-        // Debugging output for mel bin
-        //printf("Mel Bin %d: left=%f, center=%f, right=%f\n", m, left, center, right);
-
-        // Apply filter to the spectrogram
-        for (int k = 0; k < NUMBER_OF_SPECTROGRAM_BINS; k++) {
-            // Convert index to frequency
-            float frequency = (k * SAMPLE_RATE) / (2.0 * (NUMBER_OF_SPECTROGRAM_BINS - 1));
-            
-            // Debugging output for frequency
-            //printf("Frequency for bin %d: %f\n", k, frequency);
-
-            // Left side of triangle
-            if (frequency >= left && frequency <= center) {
-                melSpectrogram[m] += ((frequency - left) * (float)spectrogram[k]/32768 ) / (center - left);
-
-                // Debugging output for accumulation
-                //printf("Adding (left): melSpectrogram[%d] += %f (increment: %f)\n", m, melSpectrogram[m], (frequency - left) * (float)spectrogram[k]/32768 / (center - left));
-            }
-            // Right side of triangle
-            else if (frequency > center && frequency <= right) {
-                melSpectrogram[m] += ((right - frequency) * (float)spectrogram[k]/32768 ) / (right - center);
-
-                // Debugging output for accumulation
-                //printf("Adding (right): melSpectrogram[%d] += %f (increment: %f)\n", m, melSpectrogram[m], ((right - frequency) * (float)spectrogram[k]/32768) / (right - center));
-            }
-        }
+        this->melPoints[i] = 700.0 * (pow(10.0, (this->lowerMel + this->melStep * i) / 2595.0) - 1.0);  // Mel to Hz
     }
 }
+
+void MelSpectrogramFloat::generate(float *spectrogram, float *melSpectrogram) {
+
+    for (int melBin = 0; melBin < NUMBER_OF_MEL_BINS; melBin++) {
+        melSpectrogram[melBin] = 0.0;
+        for (int fftBin = 0; fftBin < NUMBER_OF_SPECTROGRAM_BINS; fftBin++) {
+            float freq = fftBin * hzPerBin;
+            float weight = 0.0;
+
+            if (freq >= melPoints[melBin] && freq < melPoints[melBin + 1]) {
+                weight = (freq - melPoints[melBin]) / (melPoints[melBin + 1] - melPoints[melBin]);
+            } else if (freq >= melPoints[melBin + 1] && freq < melPoints[melBin + 2]) {
+                weight = (melPoints[melBin + 2] - freq) / (melPoints[melBin + 2] - melPoints[melBin + 1]);
+            }
+
+            melSpectrogram[melBin] += spectrogram[fftBin] * weight;
+        }
+        // Apply log scaling with a safeguard against log(0)
+        melSpectrogram[melBin] = logf(fmaxf(melSpectrogram[melBin], 1e-6));
+    }
+}
+
