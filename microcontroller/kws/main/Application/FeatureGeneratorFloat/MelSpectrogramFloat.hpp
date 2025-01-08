@@ -7,14 +7,15 @@
 class MelSpectrogramFloat
 {
     public:
-        MelSpectrogramFloat() {}
+        MelSpectrogramFloat();
         void generate(float* spectrogram, float* melSpectrogram);
 
     private:
+        float lowerMel;
+        float upperMel;
+        float melStep;
+        float hzPerBin;
         float melPoints[NUMBER_OF_MEL_BINS + 2];
-
-        float hzToMel(float hz);
-        float melToHz(float mel);
 
 };
 

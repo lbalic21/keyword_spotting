@@ -5,62 +5,59 @@
 
 static const char *TAG = "Feature Generator Float";
 
-FeatureGeneratorFloat::FeatureGeneratorFloat(WindowFloat* window, FFTFloat* fft, MelSpectrogramFloat* melSpectrogram)
+FeatureGeneratorFloat::FeatureGeneratorFloat(WindowFloat* window, FFTFloat* fft, MelSpectrogramFloat* melSpectrogram, DCT* dct)
 {
-    ESP_LOGI(TAG, "Creating Feature Generator");
+    //ESP_LOGI(TAG, "Creating Feature Generator");
     this->window = window;
     this->fft = fft;
     this->melSpectrogram = melSpectrogram;
+    this->dct = dct;
 }
 
-bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, float* featureSlice)
+bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, int8_t* featureSlice)
 {
     /*****************************************************************/
     /*************************** WINDOW ******************************/
     /*****************************************************************/
 
-    float windowedFrame[WINDOW_SIZE];
-
-    for(size_t i = 0; i < WINDOW_SIZE; i++)
-    {
-        windowedFrame[i] = audioFrame[i] * window->data[i] / 32768;
-        printf("WINDOWED %d - %f\n", i, windowedFrame[i]);
-    }
-
+    float audioWindow[WINDOW_SIZE];
+    window->apply(audioFrame, audioWindow);
+    
     /*****************************************************************/
     /*************************** FFT *********************************/
     /*****************************************************************/
 
     float spectrogram[NUMBER_OF_SPECTROGRAM_BINS];
-    fft->compute(windowedFrame, spectrogram);
+    fft->compute(audioWindow, spectrogram);
 
-    
-    for(int i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
-    {
-        printf("FFT %d -> %f\n", i, spectrogram[i]);
-    }
-    
+    //for(int i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
+    ////{
+    ////    printf("FFT[%d] = %f\n", i, spectrogram[i]);
+    //}
 
     /*****************************************************************/
     /*********************** MEL SPECTRO *****************************/
     /*****************************************************************/
 
     float melSpectro[NUMBER_OF_MEL_BINS] = {0.0};
-    this->melSpectrogram->generate(spectrogram, melSpectro);
+    melSpectrogram->generate(spectrogram, melSpectro);
 
-    for(size_t i = 0; i < NUMBER_OF_MEL_BINS; i++)
-    {
-        printf("%d -> %f\n", i, melSpectro[i]);
-    }
-    
-    /*****************************************************************/
-    /********************* LOG MEL SPECTRO ***************************/
-    /*****************************************************************/
-
+    //for(size_t i = 0; i < NUMBER_OF_MEL_BINS; i++)
+    //{
+    //    printf("MEL[%d] = %f\n", i, melSpectro[i]);
+    //}
 
     /*****************************************************************/
     /*************************** DCT *********************************/
     /*****************************************************************/
+
+    float mfccs[13];
+    dct->compute(melSpectro, mfccs);
+    
+    //for(size_t i = 0; i < 13; i++)
+    //{
+    //    printf("MFCC[%d] = %f\n", i, mfccs[i]);
+    //}
 
     return true;
 }

@@ -4,11 +4,12 @@
 #include "stdint.h"
 #include "Configuration.hpp"
 
+template <typename T>
 class Window
 {
     public:
     
-        int16_t data[WINDOW_SIZE];
+        T data[WINDOW_SIZE];
         Window();
 };
 

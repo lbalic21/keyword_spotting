@@ -8,18 +8,27 @@
 #include "stdbool.h"
 #include "Window.hpp"
 #include "FFT.hpp"
-#include "MelSpectrogram.hpp"
+#include "MelFilterbank.hpp"
 
+template <typename T, typename K>
 class FeatureGenerator
 {
     public:
-        FeatureGenerator(Window* window, FFT* fft, MelSpectrogram* melSpectrogram);
+        FeatureGenerator();
         bool generateFeatures(int16_t* audioFrame, int8_t* featureSlice);
 
     private:
-        Window* window;
-        FFT* fft;
-        MelSpectrogram* melSpectrogram;
+
+        Window<T> window;
+        FFT<T> fft;
+        Melfiltebank<T> melFilterbank;
+        DCT<K> dct;
+
+        T windowedSignal[WINDOW_SIZE];
+        T spectrogram[NUMBER_OF_SPECTROGRAM_BINS];
+        T melSpectrogram[NUMBER_OF_MEL_BINS];
 };
+
+
 
 #endif

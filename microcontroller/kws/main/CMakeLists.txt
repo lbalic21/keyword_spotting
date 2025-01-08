@@ -3,10 +3,11 @@ set(COMPONENT_SRCS
 "Application/Application.cpp"
 "Application/AudioRecorder/AudioRecorder.cpp"
 
-"Application/FeatureGenerator/FeatureGenerator.cpp"
-"Application/FeatureGenerator/Window.cpp"
-"Application/FeatureGenerator/FFT.cpp"
-"Application/FeatureGenerator/MelSpectrogram.cpp"
+#"Application/FeatureGenerator/FeatureGenerator.cpp"
+#"Application/FeatureGenerator/Window.cpp"
+#"Application/FeatureGenerator/FFT.cpp"
+#"Application/FeatureGenerator/MelSpectrogram.cpp"
+"Application/FeatureGeneratorFloat/DCT.cpp"
 
 "Application/FeatureGeneratorFloat/FeatureGeneratorFloat.cpp"
 "Application/FeatureGeneratorFloat/WindowFloat.cpp"

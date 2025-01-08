@@ -1,5 +1,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_timer.h"
 #include "esp_log.h"
 #include <string.h>
 #include "audio_pipeline.h"
@@ -18,6 +19,7 @@
 #include "FeatureGeneratorFloat/WindowFloat.hpp"
 #include "FeatureGeneratorFloat/FFTFloat.hpp"
 #include "FeatureGeneratorFloat/MelSpectrogramFloat.hpp"
+#include "FeatureGeneratorFloat/DCT.hpp"
 #else
 #include "FeatureGenerator/FeatureGenerator.hpp"
 #include "FeatureGenerator/Window.hpp"
@@ -104,7 +106,8 @@ static AudioRecorder audioRecorder(SAMPLE_RATE);
 static WindowFloat hannWindow;
 static FFTFloat fft;
 static MelSpectrogramFloat melSpectrogram;
-static FeatureGeneratorFloat featureGenerator(&hannWindow, &fft, &melSpectrogram);
+static DCT dct;
+static FeatureGeneratorFloat featureGenerator(&hannWindow, &fft, &melSpectrogram, &dct);
 #else
 static Window hannWindow;
 static FFT fft;
@@ -124,6 +127,7 @@ static NeuralNetwork network;
 void Application(void)
 {
     ESP_LOGI(TAG, "Application started");
+
     ESP_LOGI(TAG, "Time slices in a second: %d", NUMBER_OF_TIME_SLICES);
     ESP_LOGI(TAG, "Number of MFCCs in one time slice: %d", NUMBER_OF_MFCCS);
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
@@ -135,13 +139,8 @@ void Application(void)
     int16_t newSamples[STEP_SIZE];
     int16_t audioFrame[WINDOW_SIZE] = {0}; 
 
-    #if USE_FLOAT == 1
-    float featureSlice[NUMBER_OF_MFCCS];
-    float featureImage[NUMBER_OF_FEATURES] = {0};
-    #else
     int8_t featureSlice[NUMBER_OF_MFCCS];
     int8_t featureImage[NUMBER_OF_FEATURES] = {0};
-    #endif
 
 
     /******************************************************************************/
@@ -150,7 +149,6 @@ void Application(void)
 
     audioRecorder.set();
     audioRecorder.start();
-
 
     /******************************************************************************/
     /****************************** MAIN SYSTEM LOOP ******************************/
@@ -163,7 +161,8 @@ void Application(void)
 
     while(1)
     {
-        ESP_LOGI(TAG, "LOOP");
+        //ESP_LOGI(TAG, "LOOP");
+        int64_t start = esp_timer_get_time();
 
         /**********************************************************************/
         /*********************** ACQUIRING NEW SAMPLES ************************/
@@ -203,13 +202,22 @@ void Application(void)
         /**********************************************************************/
         /************************ GENERATING FEATURES *************************/
         /**********************************************************************/
+    
+        int64_t start1 = esp_timer_get_time();
+        bool success = featureGenerator.generateFeatures(testSamples, featureSlice); 
+        int64_t end1 = esp_timer_get_time();
+        //printf("Time taken for feature generation: %lld us\n", (end1 - start1));
 
-        bool success = featureGenerator.generateFeatures(audioFrame, featureSlice);
         if(!success)
         {
             ESP_LOGE(TAG, "Generating feature failed");
             continue;
         }
+
+        //while(1)
+        //{
+        //    vTaskDelay(100);
+        //}
 
         /**
          * The same process, as was shown earlier with raw audio samples, occurs
@@ -255,7 +263,8 @@ void Application(void)
         /**********************************************************************/
         
 
-
+        int64_t end = esp_timer_get_time();
+        printf("Time taken for loop: %lld us\n", (end - start));
         vTaskDelay(1);
     }
 }

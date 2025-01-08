@@ -9,17 +9,19 @@
 #include "WindowFloat.hpp"
 #include "FFTFloat.hpp"
 #include "MelSpectrogramFloat.hpp"
+#include "DCT.hpp"
 
 class FeatureGeneratorFloat
 {
     public:
-        FeatureGeneratorFloat(WindowFloat* window, FFTFloat* fft, MelSpectrogramFloat* melSpectrogram);
-        bool generateFeatures(int16_t* audioFrame, float* featureSlice);
+        FeatureGeneratorFloat(WindowFloat* window, FFTFloat* fft, MelSpectrogramFloat* melSpectrogram, DCT* dct);
+        bool generateFeatures(int16_t* audioFrame, int8_t* featureSlice);
 
     private:
         WindowFloat* window;
         FFTFloat* fft;
         MelSpectrogramFloat* melSpectrogram;
+        DCT* dct;
 };
 
 #endif
