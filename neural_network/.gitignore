@@ -1,8 +1,2 @@
 dataset-speech
 commands
-.venv
-saved
-download
-tensorflow
-train
-logs
