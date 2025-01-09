@@ -14,7 +14,7 @@ FeatureGeneratorFloat::FeatureGeneratorFloat(WindowFloat* window, FFTFloat* fft,
     this->dct = dct;
 }
 
-bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, int8_t* featureSlice)
+bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, float* featureSlice)
 {
     /*****************************************************************/
     /*************************** WINDOW ******************************/
@@ -57,7 +57,7 @@ bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, int8_t* featur
     for(size_t i = 0; i < 13; i++)
     {
         //printf("MFCC[%d] = %f ", i, mfccs[i]);
-        printf("%f ", mfccs[i]);
+        //printf("%f ", mfccs[i]);
         featureSlice[i] = mfccs[i];
     }
     printf("\n");

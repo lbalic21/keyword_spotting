@@ -86,9 +86,9 @@ def save_mfcc_to_file(mfcc_matrix, output_file):
 
 
 # Example usage
-wav_file_path = "yes.wav"  # Replace with your file path
+wav_file_path = "yes_esp.wav"  # Replace with your file path
 mfcc_features = process_wav_to_mfcc(wav_file_path)
-save_mfcc_to_file(mfcc_features, "python_mfcc_yes")
+save_mfcc_to_file(mfcc_features, "python_mfcc_yes_esp")
 
 # Inspect or save the MFCC features
 print("MFCC Shape:", mfcc_features.shape)

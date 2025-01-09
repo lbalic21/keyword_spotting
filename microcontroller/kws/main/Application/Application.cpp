@@ -30,6 +30,7 @@
 #include "testFrame.h"
 #include "yes.h"
 #include "no.h"
+#include "yes_esp.h"
 
 
 static const char *TAG = "MAIN";
@@ -77,11 +78,12 @@ void Application(void)
     int16_t newSamples[STEP_SIZE];
     int16_t audioFrame[WINDOW_SIZE] = {0}; 
 
-    int8_t featureSlice[NUMBER_OF_MFCCS];
-    int8_t featureImage[NUMBER_OF_FEATURES] = {0};
+    float featureSlice[NUMBER_OF_MFCCS];
+    float featureImage[NUMBER_OF_FEATURES] = {0};
 
     uint32_t pointerInTestData = 0;
     uint32_t loopTracker = 0;
+    uint32_t pointer = 0;
 
 
     /******************************************************************************/
@@ -102,38 +104,44 @@ void Application(void)
 
     while(1)
     {
+        
         while(1){
 
             if(loopTracker == 0)
             {
-                memcpy(audioFrame, yes, WINDOW_SIZE * 2);
+                memcpy(audioFrame, yes_esp, WINDOW_SIZE * 2);
                 pointerInTestData += WINDOW_SIZE;
             }
             else
             {
                 memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
-                memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, yes + pointerInTestData , STEP_SIZE * 2);
+                memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, yes_esp + pointerInTestData , STEP_SIZE * 2);
                 pointerInTestData += STEP_SIZE;
             }
 
             featureGenerator.generateFeatures(audioFrame, featureSlice); 
 
-            memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, NUMBER_OF_FEATURES - NUMBER_OF_MFCCS);
-            memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, NUMBER_OF_MFCCS);
+            for(int i = 0; i < 13; i++)
+            {
+                featureImage[pointer++] = featureSlice[i];
+            }
 
             loopTracker++;
 
             //printf("Loop tracker %ld\n", loopTracker);
-            //printf("Pointer %ld", pointerInTestData);
+            //printf("Pointer %ld", pointer);
 
             if(loopTracker == NUMBER_OF_TIME_SLICES)
             {
                 network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
-                bool success = network.invoke(featureImage);
+                bool success = network.invoke();
                 if(!success)
                 {
                     ESP_LOGE(TAG, "Model invoking failed");
                     continue;
+                }
+                else{
+                    ESP_LOGI(TAG, "Invoke worked!");
                 }
                 network.printOutput();
 
@@ -144,6 +152,7 @@ void Application(void)
             }
 
         }
+        
 
         //ESP_LOGI(TAG, "LOOP");
         int64_t start = esp_timer_get_time();
@@ -187,9 +196,9 @@ void Application(void)
         /************************ GENERATING FEATURES *************************/
         /**********************************************************************/
     
-        int64_t start1 = esp_timer_get_time();
-        bool success = featureGenerator.generateFeatures(testFrame, featureSlice); 
-        int64_t end1 = esp_timer_get_time();
+        //int64_t start1 = esp_timer_get_time();
+        bool success = featureGenerator.generateFeatures(audioFrame, featureSlice); 
+        //int64_t end1 = esp_timer_get_time();
         //printf("Time taken for feature generation: %lld us\n", (end1 - start1));
 
         if(!success)
@@ -198,10 +207,6 @@ void Application(void)
             continue;
         }
 
-        while(1)
-        {
-            vTaskDelay(100);
-        }
 
         /**
          * The same process, as was shown earlier with raw audio samples, occurs
@@ -211,8 +216,8 @@ void Application(void)
          * neural network.
          */
 
-        memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, NUMBER_OF_FEATURES - NUMBER_OF_MFCCS);
-        memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, NUMBER_OF_MFCCS);
+        memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, 4*(NUMBER_OF_FEATURES - NUMBER_OF_MFCCS));
+        memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, 4*NUMBER_OF_MFCCS);
 
         numberOfNewSlices++;
 
@@ -225,7 +230,7 @@ void Application(void)
         {
             ESP_LOGI(TAG, "Invoking NN!");
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
-            success = network.invoke(featureImage);
+            success = network.invoke();
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");
@@ -248,8 +253,8 @@ void Application(void)
         /**********************************************************************/
         
 
-        int64_t end = esp_timer_get_time();
-        printf("Time taken for loop: %lld us\n", (end - start));
+        //int64_t end = esp_timer_get_time();
+        //printf("Time taken for loop: %lld us\n", (end - start));
         vTaskDelay(1);
     }
 }
