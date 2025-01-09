@@ -1,6 +1,7 @@
-#include "samples512.h"
+#include "testFrame.h"
 
-const int16_t testSamples[512] = {
+int testFrameSize = 512;
+int16_t testFrame[512] = {
     -6927, -6556, -6013, -5513, -4946, -4403, -3912, -3422,
     -2936, -2364, -1688, -875,  102,   1214,  2310,  3328,
     4240,  4946,  5400,  5736,  6083,  6518,  7011,  7794,

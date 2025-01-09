@@ -54,10 +54,13 @@ bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, int8_t* featur
     float mfccs[13];
     dct->compute(melSpectro, mfccs);
     
-    //for(size_t i = 0; i < 13; i++)
-    //{
-    //    printf("MFCC[%d] = %f\n", i, mfccs[i]);
-    //}
+    for(size_t i = 0; i < 13; i++)
+    {
+        //printf("MFCC[%d] = %f ", i, mfccs[i]);
+        printf("%f ", mfccs[i]);
+        featureSlice[i] = mfccs[i];
+    }
+    printf("\n");
 
     return true;
 }

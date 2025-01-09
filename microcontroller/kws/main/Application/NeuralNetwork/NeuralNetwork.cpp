@@ -12,7 +12,7 @@ NeuralNetwork::NeuralNetwork()
     return;
   } 
 
-  if (resolver.AddDepthwiseConv2D() != kTfLiteOk) {
+  if (resolver.AddConv2D() != kTfLiteOk) {
     return;
   }
   if (resolver.AddFullyConnected() != kTfLiteOk) {
@@ -22,6 +22,9 @@ NeuralNetwork::NeuralNetwork()
     return;
   }
   if (resolver.AddReshape() != kTfLiteOk) {
+    return;
+  }
+  if (resolver.AddMaxPool2D() != kTfLiteOk) {
     return;
   }
 
@@ -42,7 +45,7 @@ NeuralNetwork::NeuralNetwork()
 
   if((model_input->dims->size != 2) || 
      (model_input->dims->data[0] != 1) ||
-     (model_input->dims->data[1] != 1960) ||
+     (model_input->dims->data[1] != NUMBER_OF_FEATURES) ||
      (model_input->type != kTfLiteInt8)) 
   {
     ESP_LOGE(TAG, "Bad input tensor parameters in model");
@@ -75,4 +78,27 @@ bool NeuralNetwork::invoke(int8_t* featureImage)
     return false;
   }
   return true;
+}
+
+void NeuralNetwork::printOutput()
+{
+  TfLiteTensor* output = interpreter->output(0);
+  int8_t* output_data = tflite::GetTensorData<int8_t>(output);
+  size_t output_size = output->dims->data[1]; // Size of the output
+
+  // Process the output data
+  for (size_t i = 0; i < output_size; i++)
+  {
+    ESP_LOGI(TAG, "Output[%d]: %d", i, output_data[i]);
+  }
+
+  int max_index = 0;
+int8_t max_value = output_data[0];
+for (size_t i = 1; i < output_size; i++) {
+    if (output_data[i] > max_value) {
+        max_value = output_data[i];
+        max_index = i;
+    }
+}
+ESP_LOGI(TAG, "Predicted class index: %d", max_index);
 }

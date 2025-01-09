@@ -2,6 +2,9 @@ set(COMPONENT_SRCS
 "main.c"
 "Application/Application.cpp"
 "Application/AudioRecorder/AudioRecorder.cpp"
+"Application/testFrame.cpp"
+"Application/yes.cpp"
+"Application/no.cpp"
 
 #"Application/FeatureGenerator/FeatureGenerator.cpp"
 #"Application/FeatureGenerator/Window.cpp"

@@ -23,13 +23,14 @@ class NeuralNetwork
         TfLiteTensor* model_input = nullptr;
 
         uint8_t tensor_arena[TENSOR_ARENA_SIZE];
-        tflite::MicroMutableOpResolver<4> resolver;
+        tflite::MicroMutableOpResolver<5> resolver;
         int8_t* model_input_buffer = nullptr;
 
     public:
         NeuralNetwork();
         void giveFeaturesToModel(int8_t* features, size_t numberOfFeatures);
         bool invoke(int8_t* featureImage);
+        void printOutput();
 };
 
 #endif /* _NEURAL_NETWORK_H_ */
