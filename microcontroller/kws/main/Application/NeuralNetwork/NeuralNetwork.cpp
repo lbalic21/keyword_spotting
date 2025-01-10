@@ -33,6 +33,14 @@ NeuralNetwork::NeuralNetwork()
     while(1);
     return;
   }
+  if (resolver.AddQuantize() != kTfLiteOk) {
+    while(1);
+    return;
+  }
+  if (resolver.AddDequantize() != kTfLiteOk) {
+    while(1);
+    return;
+  }
 
   // Build an interpreter to run the model with.
   static tflite::MicroInterpreter static_interpreter(
@@ -106,11 +114,48 @@ void NeuralNetwork::printOutput()
 
   int max_index = 0;
   float max_value = output_data[0];
-  for (size_t i = 1; i < output_size; i++) {
+  for (size_t i = 1; i < output_size; i++) 
+  {
     if (output_data[i] > max_value) {
         max_value = output_data[i];
         max_index = i;
     }
-}
-//ESP_LOGI(TAG, "Predicted class index: %d", max_index);
+  }
+  if(max_index == 5 && max_value > 0.8)
+  {
+    printf("YES %f\n", max_value);
+    for (size_t i = 0; i < output_size; i++)
+    {
+      //printf("Output[%d]: %f\n", i, output_data[i]);
+    }
+  }
+
+  if(max_index == 4 && max_value > 0.8)
+  {
+    printf("UP %f\n", max_value);
+    for (size_t i = 0; i < output_size; i++)
+    {
+      //printf("Output[%d]: %f\n", i, output_data[i]);
+    }
+  }
+
+  if(max_index == 1 && max_value > 0.8)
+  {
+    printf("DOWN %f\n", max_value);
+    for (size_t i = 0; i < output_size; i++)
+    {
+      //printf("Output[%d]: %f\n", i, output_data[i]);
+    }
+  }
+
+  if(max_index == 2 && max_value > 0.8)
+  {
+    printf("NO %f\n", max_value);
+    for (size_t i = 0; i < output_size; i++)
+    {
+      //printf("Output[%d]: %f\n", i, output_data[i]);
+    }
+  }
+    
+
 }

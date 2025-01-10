@@ -23,7 +23,7 @@ class NeuralNetwork
         TfLiteTensor* model_input = nullptr;
 
         uint8_t tensor_arena[TENSOR_ARENA_SIZE];
-        tflite::MicroMutableOpResolver<5> resolver;
+        tflite::MicroMutableOpResolver<7> resolver;
         float* model_input_buffer = nullptr;
 
     public:

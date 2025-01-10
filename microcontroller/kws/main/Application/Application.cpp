@@ -108,7 +108,7 @@ void Application(void)
     while(1)
     {   
         /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(yes_esp);
+        //testingFacility(no);
 
         //ESP_LOGI(TAG, "LOOP");
         int64_t start = esp_timer_get_time();
@@ -186,7 +186,7 @@ void Application(void)
         {
             //ESP_LOGI(TAG, "Invoking NN!");
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
-            //success = network.invoke();
+            success = network.invoke();
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");
@@ -210,7 +210,7 @@ void Application(void)
         
 
         int64_t end = esp_timer_get_time();
-        printf("Time taken for loop: %lld us\n", (end - start));
+        //printf("Time taken for loop: %lld us\n", (end - start));
         vTaskDelay(1);
     }
 }
