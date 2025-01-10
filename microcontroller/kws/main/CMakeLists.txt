@@ -5,6 +5,7 @@ set(COMPONENT_SRCS
 "Application/testFrame.cpp"
 "Application/yes.cpp"
 "Application/no.cpp"
+"Application/yes_esp.cpp"
 
 #"Application/FeatureGenerator/FeatureGenerator.cpp"
 #"Application/FeatureGenerator/Window.cpp"

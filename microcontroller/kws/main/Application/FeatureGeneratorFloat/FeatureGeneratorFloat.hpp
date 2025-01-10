@@ -15,7 +15,7 @@ class FeatureGeneratorFloat
 {
     public:
         FeatureGeneratorFloat(WindowFloat* window, FFTFloat* fft, MelSpectrogramFloat* melSpectrogram, DCT* dct);
-        bool generateFeatures(int16_t* audioFrame, int8_t* featureSlice);
+        bool generateFeatures(int16_t* audioFrame, float* featureSlice);
 
     private:
         WindowFloat* window;

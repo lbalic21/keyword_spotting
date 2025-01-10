@@ -13,7 +13,7 @@
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#define TENSOR_ARENA_SIZE   30*1024
+#define TENSOR_ARENA_SIZE   60*1024
 
 class NeuralNetwork
 {
@@ -24,12 +24,12 @@ class NeuralNetwork
 
         uint8_t tensor_arena[TENSOR_ARENA_SIZE];
         tflite::MicroMutableOpResolver<5> resolver;
-        int8_t* model_input_buffer = nullptr;
+        float* model_input_buffer = nullptr;
 
     public:
         NeuralNetwork();
-        void giveFeaturesToModel(int8_t* features, size_t numberOfFeatures);
-        bool invoke(int8_t* featureImage);
+        void giveFeaturesToModel(float* features, size_t numberOfFeatures);
+        bool invoke(void);
         void printOutput();
 };
 
