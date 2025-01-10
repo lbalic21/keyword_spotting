@@ -27,13 +27,22 @@
 #include "FeatureGenerator/MelSpectrogram.hpp"
 #endif
 
-#include "testFrame.h"
-#include "yes.h"
-#include "no.h"
-#include "yes_esp.h"
+#include "TestSamples/testFrame.h"
+#include "TestSamples/yes.h"
+#include "TestSamples/no.h"
+#include "TestSamples/yes_esp.h"
+#include "TestSamples/up.h"
+#include "TestSamples/down.h"
+#include "TestSamples/happy.h"
 
 
 static const char *TAG = "MAIN";
+
+/**
+ * @brief Function that tests 1 second of audio data and classifies it.
+ * 
+ */
+void testingFacility(int16_t* audioData);
 
 /******************************************************************************/
 /********************** STATIC OBJECTS INITIALIZATION *************************/
@@ -58,6 +67,14 @@ static NeuralNetwork network;
 //static CommandRecognizer recognizer;
 //static CommandResponder responder;
 
+/******************************************************************************/
+/************************** BUFFERS INITIALIZATION ****************************/
+/******************************************************************************/
+int16_t newSamples[STEP_SIZE];
+int16_t audioFrame[WINDOW_SIZE] = {0}; 
+float featureSlice[NUMBER_OF_MFCCS];
+float featureImage[NUMBER_OF_FEATURES] = {0};
+
 
 /******************************************************************************/
 /****************************** MAIN APPLICATION ******************************/
@@ -70,20 +87,6 @@ void Application(void)
     ESP_LOGI(TAG, "Time slices in a second: %d", NUMBER_OF_TIME_SLICES);
     ESP_LOGI(TAG, "Number of MFCCs in one time slice: %d", NUMBER_OF_MFCCS);
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
-
-    /******************************************************************************/
-    /************************** BUFFERS INITIALIZATION ****************************/
-    /******************************************************************************/
-
-    int16_t newSamples[STEP_SIZE];
-    int16_t audioFrame[WINDOW_SIZE] = {0}; 
-
-    float featureSlice[NUMBER_OF_MFCCS];
-    float featureImage[NUMBER_OF_FEATURES] = {0};
-
-    uint32_t pointerInTestData = 0;
-    uint32_t loopTracker = 0;
-    uint32_t pointer = 0;
 
 
     /******************************************************************************/
@@ -103,56 +106,9 @@ void Application(void)
     ESP_LOGI(TAG, "Starting the main system loop");
 
     while(1)
-    {
-        
-        while(1){
-
-            if(loopTracker == 0)
-            {
-                memcpy(audioFrame, yes_esp, WINDOW_SIZE * 2);
-                pointerInTestData += WINDOW_SIZE;
-            }
-            else
-            {
-                memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
-                memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, yes_esp + pointerInTestData , STEP_SIZE * 2);
-                pointerInTestData += STEP_SIZE;
-            }
-
-            featureGenerator.generateFeatures(audioFrame, featureSlice); 
-
-            for(int i = 0; i < 13; i++)
-            {
-                featureImage[pointer++] = featureSlice[i];
-            }
-
-            loopTracker++;
-
-            //printf("Loop tracker %ld\n", loopTracker);
-            //printf("Pointer %ld", pointer);
-
-            if(loopTracker == NUMBER_OF_TIME_SLICES)
-            {
-                network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
-                bool success = network.invoke();
-                if(!success)
-                {
-                    ESP_LOGE(TAG, "Model invoking failed");
-                    continue;
-                }
-                else{
-                    ESP_LOGI(TAG, "Invoke worked!");
-                }
-                network.printOutput();
-
-                while(1)
-                {
-                    vTaskDelay(100);
-                }
-            }
-
-        }
-        
+    {   
+        /* static images testing, uncomment this if you want to test static audio data */
+        //testingFacility(yes_esp);
 
         //ESP_LOGI(TAG, "LOOP");
         int64_t start = esp_timer_get_time();
@@ -228,9 +184,9 @@ void Application(void)
 
         if(numberOfNewSlices == NUMBER_OF_NEW_SLICES_BEFORE_INVOKING)
         {
-            ESP_LOGI(TAG, "Invoking NN!");
+            //ESP_LOGI(TAG, "Invoking NN!");
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
-            success = network.invoke();
+            //success = network.invoke();
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");
@@ -253,8 +209,56 @@ void Application(void)
         /**********************************************************************/
         
 
-        //int64_t end = esp_timer_get_time();
-        //printf("Time taken for loop: %lld us\n", (end - start));
+        int64_t end = esp_timer_get_time();
+        printf("Time taken for loop: %lld us\n", (end - start));
         vTaskDelay(1);
+    }
+}
+
+void testingFacility(int16_t* audioData)
+{
+    uint32_t pointerInTestData = 0;
+    uint32_t loopTracker = 0;
+    uint32_t pointer = 0;
+
+    while(1)
+    {
+        if(loopTracker == 0)
+        {
+            memcpy(audioFrame, audioData, WINDOW_SIZE * 2);
+            pointerInTestData += WINDOW_SIZE;
+        }
+        else
+        {
+            memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
+            memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, audioData + pointerInTestData , STEP_SIZE * 2);
+            pointerInTestData += STEP_SIZE;
+        }
+        featureGenerator.generateFeatures(audioFrame, featureSlice); 
+        for(int i = 0; i < NUMBER_OF_MFCCS; i++)
+        {
+            featureImage[pointer++] = featureSlice[i];
+        }
+        loopTracker++;
+        //printf("Loop tracker %ld\n", loopTracker);
+        //printf("Pointer %ld", pointer);
+        if(loopTracker == NUMBER_OF_TIME_SLICES)
+        {
+            network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
+            bool success = network.invoke();
+            if(!success)
+            {
+                ESP_LOGE(TAG, "Model invoking failed");
+                continue;
+            }
+            else{
+                ESP_LOGI(TAG, "Invoke worked!");
+            }
+            network.printOutput();
+            while(1)
+            {
+                vTaskDelay(100);
+            }
+        }
     }
 }

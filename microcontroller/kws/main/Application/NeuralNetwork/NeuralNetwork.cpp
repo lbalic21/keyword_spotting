@@ -99,10 +99,10 @@ void NeuralNetwork::printOutput()
   size_t output_size = output->dims->data[1]; // Size of the output
 
   // Process the output data
-  for (size_t i = 0; i < output_size; i++)
-  {
-    ESP_LOGI(TAG, "Output[%d]: %f", i, output_data[i]);
-  }
+  //for (size_t i = 0; i < output_size; i++)
+  //{
+  //  ESP_LOGI(TAG, "Output[%d]: %f", i, output_data[i]);
+  //}
 
   int max_index = 0;
   float max_value = output_data[0];
@@ -112,5 +112,5 @@ void NeuralNetwork::printOutput()
         max_index = i;
     }
 }
-ESP_LOGI(TAG, "Predicted class index: %d", max_index);
+//ESP_LOGI(TAG, "Predicted class index: %d", max_index);
 }

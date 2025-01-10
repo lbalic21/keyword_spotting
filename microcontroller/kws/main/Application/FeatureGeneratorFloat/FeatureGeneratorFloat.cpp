@@ -60,7 +60,7 @@ bool FeatureGeneratorFloat::generateFeatures(int16_t* audioFrame, float* feature
         //printf("%f ", mfccs[i]);
         featureSlice[i] = mfccs[i];
     }
-    printf("\n");
+    //printf("\n");
 
     return true;
 }

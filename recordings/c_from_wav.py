@@ -2,8 +2,8 @@ import wave
 import numpy as np
 
 # Load the WAV file
-input_file = "yes_esp.wav"  # Replace with your WAV file name
-output_c_file = "audio_data.h"  # Output C header file
+input_file = "happy.wav"  # Replace with your WAV file name
+output_c_file = "happy.h"  # Output C header file
 
 # Open the WAV file and read audio properties
 with wave.open(input_file, "rb") as wav_file:
@@ -30,10 +30,8 @@ audio_samples = audio_samples[:16000]
 
 # Generate the C header file
 with open(output_c_file, "w") as header_file:
-    header_file.write("#ifndef AUDIO_DATA_H\n")
-    header_file.write("#define AUDIO_DATA_H\n\n")
-    header_file.write("#define AUDIO_SAMPLE_RATE 16000\n")
-    header_file.write("#define AUDIO_NUM_SAMPLES 16000\n\n")
+    header_file.write("#ifndef HAPPY_H\n")
+    header_file.write("#define HAPPY_H\n\n")
     header_file.write("const int16_t audio_samples[16000] = {\n")
 
     # Write the audio samples in C array format
@@ -42,6 +40,6 @@ with open(output_c_file, "w") as header_file:
             header_file.write("\n    ")
         header_file.write(f"{sample}, ")
     header_file.write("\n};\n\n")
-    header_file.write("#endif // AUDIO_DATA_H\n")
+    header_file.write("#endif // HAPPY_H\n")
 
 print(f"C header file '{output_c_file}' generated successfully!")
