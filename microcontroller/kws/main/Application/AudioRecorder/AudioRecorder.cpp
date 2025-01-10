@@ -83,7 +83,7 @@ void AudioRecorder::captureAudioTask(void* pvParameters)
         if(bytesRead < wantedNumOfBytes)
         {
             ESP_LOGE(TAG, "Wanted %d bytes - retrieved %dbytes", wantedNumOfBytes, bytesRead);
-            while(1);
+            //while(1);
         }
 
         // Send data to the ring buffer
@@ -105,7 +105,7 @@ uint32_t AudioRecorder::getSamples(int16_t* samples, size_t numOfSamples)
         //ESP_LOGW(TAG, "Not enough data in the ring buffer, only %d bytes", bytesInTheBuffer);
         return 0;
     }
-    //ESP_LOGI(TAG, "In the buffer: %d bytes", bytesInTheBuffer);
+    printf("In the buffer: %d bytes\n", bytesInTheBuffer);
 
     // Retrieve the data from the ring buffer
     size_t bytesRetrieved;
