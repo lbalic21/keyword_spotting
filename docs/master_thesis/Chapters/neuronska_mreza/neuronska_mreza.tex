@@ -1,28 +1,118 @@
 \chapter{Neuronska mreža}
 \label{pog:neuronska_mreza}
 
+\section{Općenito}
+
 Okosnica cjelokupnog sustava za prepoznavanje izgovorenih naredbi je neuronska mreža.
 Neuronska mreža ili preciznije umjetna neuronska mreža je računalni model inspiriran
-biološkom strukturom neurona u mozgu čovjeka. Sastoji se od čvorova (neurona) i jednosmjernih
+biološkom strukturom neurona u mozgu čovjeka. Predstavlja jedan od najkorištenijih modela 
+u dubokom učenju. Sastoji se od čvorova (neurona) i jednosmjernih
 veza između njih (sinapsa) koji na taj način tvore usmjereni graf. Čvorovi su grupirani u slojeve,
 a svaki od njih je povezan s čvorovima iz susjednog sloja na određeni način. Način na koji su
 određeni slojevi međusobno povezani određuje vrstu sloja. 
 
 Jednostavan primjer strukture neuronske mreže je potpuno povezani sloj (engl. fully connected layer
-ili dense layer) koji se često koristi kao osnovni građevni blok u umjetnim neuronskim mrežama.
-U potpuno povezanom sloju, svaki čvor jednog sloja povezan je sa svakim čvorom susjednog sloja.
+ili dense layer) koji se često koristi kao osnovni građevni blok u umjetnim neuronskim mrežama \cite{dense}.
+U potpuno povezanom sloju svaki čvor jednog sloja povezan je sa svakim čvorom susjednog sloja.
 Ovakva struktura omogućava mreži fleksibilno učenje složenih odnosa između ulaznih i izlaznih podataka.
 
 \begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.38\linewidth]{dense_layer.png} 
-    \caption{Potpuno povezani sloj}
-    \label{slk:dense_layer}
+  \centering
+  \includegraphics[width=0.5\linewidth]{Chapters/neuronska_mreza/dense_layer.png} 
+  \caption{Potpuno povezani slojevi \cite{dense}}
+  \label{pic:dense_layer}
 \end{figure}
 
-  \begin{equation}
-    \label{jed:prvajednadzba}
-    \int_{-\infty}^{+\infty}f(t)\,dt=F(\omega)
-  \end{equation}
+Na slici \ref{pic:dense_layer} prikazana je struktura neuronske mreže koja se sastoji od ulaznog sloja,
+dva potpuno povezana sloja te izlaznog sloja. Srednji slojevi (svi osim ulaznog i izlaznog)
+se još nazivaju i skriveni slojevi jer kad koristimo model neuronske mreže, gledamo
+na njega kao na crnu kutiju koja na ulazu prima vrijednosti te na izlazu daje vrijednosti
+izračunate kroz sve skrivene slojeve \cite{fully_connected}.
+
+Svaka veza između pojedinih čvorova ima određenu vrijednost koju nazivamo težina, a svaki čvor
+zapravo predstavlja funkciju koja može aktivirati svoj izlaz i vezu sa sljedećim čvorom.
+
+\begin{equation}
+  \label{eq:neuron_activation}
+  a = f\left(\sum_{i=1}^n w_i x_i + b\right)
+\end{equation}
+
+Jednadžba \eqref{eq:neuron_activation} modelira ponašanje pojedinog čvora u mreži. Aktivacijska
+funkcija \( f \) je vrlo bitna u odvajanju bitnih od nebitnih utjecaja pojedinih čvorova na sljedeći
+čvor. Također, ona nam omogućava modeliranje složenijih nelinearnih odnosa \cite{activation_fcn}.
+Kada bi čvor bio modeliran
+bez aktivacijske funkcije svako preslikavanje koje bi činio bi bilo linearno, a zbog toga što nam
+svaka kompozicija linernih funkcija daje opet linearnu funkciju, cjelokupna mreža ne bi bila sposobna
+modelirati kompleksnije stvari. Sastavnice modela čvora su sljedeće:
+
+\begin{itemize}
+  \item \( a \): izlazna vrijednost čvora (aktivacija)
+  \item \( f \): aktivacijska funkcija
+  \item \( w_i \): težina i-tog ulaznog čvora (čvor u prijašnjem sloju)
+  \item \( x_i \): vrijednost i-tog ulaznog čvora (njegova aktivacija)
+  \item \( b \): pomak
+  \item \( n \): broj čvorova u prijašnjem sloju koji imaju vezu s modeliranim čvorom
+\end{itemize}
+
+Povezivanjem više ovako definiranih čvorova gradimo neuronske mreže. Ulaz u neuronsku mrežu 
+je informacija na temelju koje će na izlazu iz mreže biti vrijednost izračunata pomoću svih
+slojeva u mreži. Kako bi vrijednosti na izlazu iz mreže imale smisla, tj. davale korisnu
+informaciju, potrebno je trenirati mrežu. Treniranje mreže, u općem slučaju nadziranog strojnog
+učenja, podrazumijeva korištenje označenog skupa podataka koji je istog oblika kao i podaci
+koji će biti na ulazu u mrežu tijekom korištenja same mreže. Arhitektura mreže (vrsta, veličina
+i broj slojeva) određena je prije samog treniranja, dok se težine, pomaci te samim time i 
+razine aktivacija uče, tj. treniraju. Treniranje je proces u kojem se neuronska mreža "hrani" 
+označenim skupom podataka (označeni skup prestavlja podatke za koje znamo što bi mreža trebala
+dati na izlazu) te provjerava koliko izlazi odstupaju od prave oznake. Na početku su sve težine
+uglavnom inicijalizirane na nulu. Podatak se predaje ulaznom sloju, prolazi kroz sve skrivene
+slojeve te na izlazu mreža izbaci određenu vrijednost koja se s očekivanom uspoređuje pomoću
+funckije gubitka. Takva funkcija predstavlja koliko izlazi iz mreže odstupaju od očekivanih.
+
+%Na slici \ref{pic:feedforward} prikazana je jednostavna neuronska mreža čiji izlaz daje određenu
+%vrijednost funkciji gubitka.
+%\begin{figure}[htb]
+%  \centering
+%  \includegraphics[width=0.5\linewidth]{Chapters/neuronska_mreza/feed_forward.png} 
+%  \caption{Dense}
+%  \label{pic:feedforward}
+%\end{figure}
 
 
+Cilj svakog treniranja jest smanjiti vrijednost funkcije gubitka. Stoga se sve težine u mreži
+ažuriraju na način da njihove promjene pomaknu trenutno stanje mreže u smjeru negativne derivacije
+funckije gubitka (gradijentni spust). Takvim pristupom, mreža kroz iteracije s novim podacima smanjuje funkciju gubitka
+(efektivno daje sve točnije predikcije). Težine se ažuriraju od izlaznog sloja prema ulaznom 
+(eng. backpropagation) jer na izlaz pojedinog sloja utječu njegovi ulazi, tj. izlazi prijašnjeg
+sloja (izlaz svakog sloja je funkcija izlaza prijašenjeg sloja, a kad izračunamo derivaciju
+funkcije, pomjenom njenih ulaza znamo u kojem smjeru će se mijenjati vrijednost same funkcije).
+
+
+%Na slici \ref{pic:backprop} prikazana je mreža i način ažuriranja težina "unazad".
+%\begin{figure}[htb]
+%  \centering
+%  \includegraphics[width=0.5\linewidth]{Chapters/neuronska_mreza/backprop.png} 
+%  \caption{Dense}
+%  \label{pic:backprop}
+%\end{figure}
+
+Bez smanjenja općenitosti, funkcija gubitka prikazana je na trodimenzionalnom grafu
+na slici \ref{pic:descent}. Složene arhitekture mreža će imati više dimenzija zbog većeg broja
+težina \( w_i \). Cilj svakog treniranja mreže je doći što bliže minimumu ovakve funckije.
+Svakom iteracijom pomičemo se sve bliže minimumu, taakva vrsta optimizacije naziva se
+gradijentni spust.
+
+\begin{figure}[htb]
+  \centering
+  \includegraphics[width=0.5\linewidth]{Chapters/neuronska_mreza/descent.png} 
+  \caption{Funkcija gubitka \cite{desc}}
+  \label{pic:descent}
+\end{figure}
+
+
+%ostala poglavlja
+\input{Chapters/neuronska_mreza/CNN/CNN}
+\input{Chapters/neuronska_mreza/dataset/dataset}
+\input{Chapters/neuronska_mreza/struktura/struktura}
+\input{Chapters/neuronska_mreza/trening/trening}
+\input{Chapters/neuronska_mreza/vrednovanje/vrednovanje}
+\input{Chapters/neuronska_mreza/convert/convert}
