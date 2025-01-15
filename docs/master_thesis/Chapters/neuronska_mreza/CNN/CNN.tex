@@ -67,8 +67,8 @@ formulom konvolucije, mreža nosi takav naziv \ref{gracan2020}. Na slici
 \ref{pic:convolution} prikazan je proces koji se događa tijekom prolaska 
 ulaznog podatka kroz konvolucijski sloj. Ulaz (eng. input) se konvolucijski množi
 s jezgrom kako bismo dobili izlaznu matricu značajki \cite{cnn_how}. U slučaju prikazanom na slici,
-ulazna slika je veličine 4x4, dok je jezgra veličine 3x3. Prvo se podmatrica ulaznog
-podatka veličine jednake veličini jezgre (3x3) skalarno množi s jezgrom. Izlaz je 
+ulazna slika je veličine \(4 \times 4\), dok je jezgra veličine \(3 \times 3\). Prvo se podmatrica ulaznog
+podatka veličine jednake veličini jezgre (\(3 \times 3\)) skalarno množi s jezgrom. Izlaz je 
 skalarni umnožak na koji se može dodati konstantna vrijednost (eng. bias). Nakon
 toga se jezgra pomiče po ulaznoj matrici, tj. sljedeći element izlazne matrice je
 skalarni umnožak jezgre i sljedeće podmatrice ulaznog podatka. Koliko će se jezgra
@@ -112,8 +112,9 @@ Gdje:
 \end{itemize}
 
 Kako bismo bolje dočarali razliku u broju parametara između ovakog sloja i potpuno povezanog sloja,
-uzmimo za primjer sliku \ref{pic:convolution}. Ulazna slika je veličine 4x4, jezgra 3x3, a izlaz 
-2x2. Neka je slika jednokanalna, a broj jezgri jedan (sve kao na slici). Konvolucijski sloj
+uzmimo za primjer sliku \ref{pic:convolution}. Ulazna slika je veličine \(4 \times 4\),
+jezgra \(3 \times 3\), a izlaz 
+\(2 \times 2\). Neka je slika jednokanalna, a broj jezgri jedan (sve kao na slici). Konvolucijski sloj
 će imati 10 parametara, dok će potpuno povezani sloj (16 ulaznih vrijednosti, 4 izlazne te
 4 konstante za svaki neuron) imati 68 parametara! Formula za broj parametara u tom slučaju
 je sljedeća:
@@ -214,14 +215,67 @@ prvom ovakvom sloju sloj za poravnavanje, nemamo problem sa spajanje ovog sloja 
 objašnjenu strukturu. Uloga ovog sloja (ili više ovakvih slojeva) je, najjednostavnije
 rečeno, klasifikacija. Značajke naučene tijekom konvolucije se ovdje predaju gustoj mreži
 neurona koja je sposobna odraditi posao do kraja, tj. naučiti kako različite značajke
-pridonose određenoj izlaznoj klasi. 
+pridonose određenoj izlaznoj klasi.
 
 \subsection{Izlazni sloj}
 \label{sub:output}
 Izlazni (eng. Output Layer) je posljednji sloj potpuno povezanog sloja (a ujedno i cijele
 neuronske mreže). Ima onoliko neurona koliko želimo imati klasa, pojedina vrijednost
-neurona predstavlja vjerojatnost pripadnosti klasi. 
+neurona predstavlja vjerojatnost pripadnosti klasi. Da bi to stvarno funkcioniralo na takav
+način, potrebno je odrediti prikladnu aktivacijsku funkciju. Funkcija koja radi baš to 
+naziva se funkcija softmax. 
+Formalno, \( \text{softmax} : \mathbb{R}^n \to \mathbb{R}^n \),
+gdje je \( k \)-ta komponenta izlaznog vektora definirana kao:
+\begin{equation}
+\text{softmax}_k(x_1, \dots, x_n) = \frac{\exp(x_k)}{\sum_{j} \exp(x_j)}
+\end{equation}
+
+Funkcija softmax radi dvije ključne stvari:
+\begin{itemize}
+    \item Normalizira sve vrijednosti tako da njihov zbroj bude \( 1 \), tj. izlazni vektor 
+        predstavlja distribuciju vjerojatnosti.
+    \item Pojačava veće vrijednosti (čini ih dominantnijima) i smanjuje manje vrijednosti.
+\end{itemize}
+
+Funkcija nosi naziv \textit{softmax} jer odgovara funkciji \( \max \), ali je "meka" u smislu
+da je neprekidna i diferencijabilna, za razliku od klasične \( \max \) funkcije 
+\cite{snajder2023logreg}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Chapters/neuronska_mreza/CNN/softmax.png} 
+    \caption{Softmax \cite{snajder2023logreg}}
+    \label{pic:softmax}
+\end{figure}
 
 
-\subsection{Popular Convolutional Neural Network Architectures}
-\cite{indian}
+\subsection{Poznate arhitekture konvolucijskih mreža}
+Arhitektura konvolucijske mreže je ključni faktor koji određuje njene performanse i
+učinkovitost. Broj konvolucijskih slojeva, izgled istih (broj filtara, njihova veličina,
+pomak), vrsta slojeva za poduzorkovanje te broj i veličina potpuno povezanih slojeva znatno
+utječu na brzinu izvođenja i preciznost klasifikacije. Naravno, ne postoji jedan recept koji
+najbolje radi na svim vrstama ulaznih podataka, nego različite arhitekture daju bolje rezultate
+u određenim situacijama. Određene arhitekture su kroz povijest ostale zapamćene zbog
+toga kako su utjecale na duboko učenje\cite{indian}:
+
+\begin{itemize}
+    \item \textbf{LeNet-5 (1998):} 
+    CNN sa 7 slojeva dizajnirana za klasifikaciju rukom pisanih brojeva na slikama 
+    veličine \(32 \times 32\) piksela u sivim tonovima. Koristila se u bankama za čitanje čekova 
+    i bila je prvi značajan korak u korištenju CNN-a u stvarnom svijetu.
+
+    \item \textbf{AlexNet (2012):} 
+    Proširena verzija LeNet-a s dubljom arhitekturom (5 konvolucijskih i 3 potpuno povezana 
+    sloja). Prva mreža koja je koristila ReLU aktivaciju za brže treniranje. Značajno smanjila
+    stopu pogreške na ILSVRC natjecanju i popularizirala duboko učenje.
+
+    \item \textbf{GoogleNet (Inception V1) (2014):} 
+    22-slojna mreža s inovativnim \emph{inception module}, koji koristi male konvolucije za 
+    smanjenje broja parametara (sa 60 milijuna na samo 4 milijuna). Pobjednik ILSVRC 2014 s 
+    top-5 pogreškom manjom od 7\%. Performanse su usporedive s ljudskim prepoznavanjem slika.
+
+    \item \textbf{VGGNet (2014):} 
+    Mreža sa 16 konvolucijskih slojeva koja koristi samo \(3 \times 3\) konvolucije s povećanim
+    brojem filtara. Iako je jednostavna u dizajnu, ima 138 milijuna parametara, što je čini 
+    računalno zahtjevnom za treniranje i implementaciju.
+\end{itemize}
