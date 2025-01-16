@@ -6,7 +6,7 @@
 #define USE_FLOAT                               (1)
 #define SAMPLE_RATE                             (16000)
 #define WINDOW_SIZE                             (512)
-#define STEP_SIZE                               (256)
+#define STEP_SIZE                               (384)
 #define WINDOW_BITS                             (12)
 #define NUMBER_OF_TIME_SLICES                   ((int)((SAMPLE_RATE - WINDOW_SIZE) / STEP_SIZE) + 1)
 #define NUMBER_OF_SPECTROGRAM_BINS              ((WINDOW_SIZE / 2) + 1)
@@ -17,6 +17,8 @@
 #define MEL_HIGH_FREQUENCY_Q                    (1127.0)
 #define NUMBER_OF_MFCCS                         (13)
 #define NUMBER_OF_FEATURES                      (NUMBER_OF_TIME_SLICES * NUMBER_OF_MFCCS)
-#define NUMBER_OF_NEW_SLICES_BEFORE_INVOKING    (8)
+#define NUMBER_OF_NEW_SLICES_BEFORE_INVOKING    (7)
+#define ACTIVATION_THRESHOLD                    (0.8)
+#define COOL_OF_PERIOD_MS                       (2000)
 
 #endif /* _CONFIGURATION_H_ */

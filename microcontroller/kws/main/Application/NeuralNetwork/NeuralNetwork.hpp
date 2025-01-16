@@ -31,6 +31,9 @@ class NeuralNetwork
         void giveFeaturesToModel(float* features, size_t numberOfFeatures);
         bool invoke(void);
         void printOutput();
+        int numberOfClasses;
+        float* outputData;
+        
 };
 
 #endif /* _NEURAL_NETWORK_H_ */

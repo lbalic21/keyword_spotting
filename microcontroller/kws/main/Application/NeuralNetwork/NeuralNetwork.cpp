@@ -4,7 +4,7 @@ static const char *TAG = "NeuralNetwork";
 
 NeuralNetwork::NeuralNetwork()
 {
-  ESP_LOGI(TAG, "NN initialization");
+  printf("NN initialization");
   this->model = tflite::GetModel(g_model);
   if (model->version() != TFLITE_SCHEMA_VERSION)
   {
@@ -59,7 +59,7 @@ NeuralNetwork::NeuralNetwork()
 
   if((model_input->dims->size != 4) || 
      (model_input->dims->data[0] != 1) ||
-     (model_input->dims->data[1] != 61) ||
+     (model_input->dims->data[1] != NUMBER_OF_TIME_SLICES) ||
      (model_input->type != 1)) 
   {
     ESP_LOGE(TAG, "Bad input tensor parameters in model");
@@ -73,6 +73,10 @@ NeuralNetwork::NeuralNetwork()
   model_input_buffer = tflite::GetTensorData<float>(model_input);
   ESP_LOGW(TAG, "PROCESS");
 
+  TfLiteTensor* output = interpreter->output(0);
+  this->numberOfClasses = output->dims->data[1]; 
+  ESP_LOGI(TAG, "Number of classes: %d", numberOfClasses);
+  this->outputData = (float*)malloc(sizeof(float) * numberOfClasses);
 
   ESP_LOGI(TAG, "Model input shape: [%d, %d, %d, %d]",
          model_input->dims->data[0],
@@ -94,68 +98,10 @@ bool NeuralNetwork::invoke(void)
 {
   TfLiteStatus invoke_status = interpreter->Invoke();
   if(invoke_status != kTfLiteOk) {
-    ESP_LOGE(TAG, "Invoke failed");
+    printf("Invoke failed");
     return false;
   }
-  return true;
-}
-
-void NeuralNetwork::printOutput()
-{
   TfLiteTensor* output = interpreter->output(0);
-  float* output_data = tflite::GetTensorData<float>(output);
-  size_t output_size = output->dims->data[1]; // Size of the output
-
-  // Process the output data
-  //for (size_t i = 0; i < output_size; i++)
-  //{
-  //  ESP_LOGI(TAG, "Output[%d]: %f", i, output_data[i]);
-  //}
-
-  int max_index = 0;
-  float max_value = output_data[0];
-  for (size_t i = 1; i < output_size; i++) 
-  {
-    if (output_data[i] > max_value) {
-        max_value = output_data[i];
-        max_index = i;
-    }
-  }
-  if(max_index == 5 && max_value > 0.8)
-  {
-    printf("YES %f\n", max_value);
-    for (size_t i = 0; i < output_size; i++)
-    {
-      //printf("Output[%d]: %f\n", i, output_data[i]);
-    }
-  }
-
-  if(max_index == 4 && max_value > 0.8)
-  {
-    printf("UP %f\n", max_value);
-    for (size_t i = 0; i < output_size; i++)
-    {
-      //printf("Output[%d]: %f\n", i, output_data[i]);
-    }
-  }
-
-  if(max_index == 1 && max_value > 0.8)
-  {
-    printf("DOWN %f\n", max_value);
-    for (size_t i = 0; i < output_size; i++)
-    {
-      //printf("Output[%d]: %f\n", i, output_data[i]);
-    }
-  }
-
-  if(max_index == 2 && max_value > 0.8)
-  {
-    printf("NO %f\n", max_value);
-    for (size_t i = 0; i < output_size; i++)
-    {
-      //printf("Output[%d]: %f\n", i, output_data[i]);
-    }
-  }
-    
-
+  outputData = tflite::GetTensorData<float>(output);
+  return true;
 }

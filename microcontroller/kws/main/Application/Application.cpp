@@ -64,8 +64,8 @@ static FeatureGenerator featureGenerator(&hannWindow, &fft, &melSpectrogram);
 #endif
 
 static NeuralNetwork network;
-//static CommandRecognizer recognizer;
-//static CommandResponder responder;
+static CommandRecognizer recognizer;
+static CommandResponder responder;
 
 /******************************************************************************/
 /************************** BUFFERS INITIALIZATION ****************************/
@@ -105,13 +105,16 @@ void Application(void)
 
     ESP_LOGI(TAG, "Starting the main system loop");
 
+    int64_t start, end, startLoop, endLoop;
+
     while(1)
     {   
+        startLoop = esp_timer_get_time();
         /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(no);
+        //testingFacility(happy);
 
         //ESP_LOGI(TAG, "LOOP");
-        int64_t start = esp_timer_get_time();
+        
 
         /**********************************************************************/
         /*********************** ACQUIRING NEW SAMPLES ************************/
@@ -121,7 +124,7 @@ void Application(void)
         //ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
         if((bytesRead / 2) < STEP_SIZE)
         {
-            ESP_LOGE(TAG, "Did not get enough samples");
+            //ESP_LOGE(TAG, "Did not get enough samples");
             continue;
         }
 
@@ -152,10 +155,10 @@ void Application(void)
         /************************ GENERATING FEATURES *************************/
         /**********************************************************************/
     
-        //int64_t start1 = esp_timer_get_time();
+        start = esp_timer_get_time();
         bool success = featureGenerator.generateFeatures(audioFrame, featureSlice); 
-        //int64_t end1 = esp_timer_get_time();
-        //printf("Time taken for feature generation: %lld us\n", (end1 - start1));
+        end = esp_timer_get_time();
+        //printf("Time taken for feature generation: %lld us\n", (end - start));
 
         if(!success)
         {
@@ -185,14 +188,16 @@ void Application(void)
         if(numberOfNewSlices == NUMBER_OF_NEW_SLICES_BEFORE_INVOKING)
         {
             //ESP_LOGI(TAG, "Invoking NN!");
+            start = esp_timer_get_time();
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
             success = network.invoke();
+            end = esp_timer_get_time();
+            //printf("Time taken for invoking: %lld us\n", (end - start));
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");
                 continue;
             }
-            network.printOutput();
             numberOfNewSlices = 0;
         }
 
@@ -201,16 +206,22 @@ void Application(void)
         /*********************** RECOGNIZING COMMANDS *************************/
         /**********************************************************************/
         
-
+        bool rec = recognizer.recognize(network.numberOfClasses, network.outputData);
 
 
         /**********************************************************************/
         /********************** RESPONDING TO A COMMAND ***********************/
         /**********************************************************************/
         
+        if(rec)
+        {
+            responder.respond(recognizer.recognizedCommand, recognizer.probability);
+        }
 
-        int64_t end = esp_timer_get_time();
-        //printf("Time taken for loop: %lld us\n", (end - start));
+
+    
+        endLoop = esp_timer_get_time();
+        //printf("Time taken for loop: %lld us\n", (endLoop - startLoop));
         vTaskDelay(1);
     }
 }
