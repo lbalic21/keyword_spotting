@@ -105,7 +105,7 @@ uint32_t AudioRecorder::getSamples(int16_t* samples, size_t numOfSamples)
         //ESP_LOGW(TAG, "Not enough data in the ring buffer, only %d bytes", bytesInTheBuffer);
         return 0;
     }
-    printf("In the buffer: %d bytes\n", bytesInTheBuffer);
+    //printf("In the buffer: %d bytes\n", bytesInTheBuffer);
 
     // Retrieve the data from the ring buffer
     size_t bytesRetrieved;
