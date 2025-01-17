@@ -11,12 +11,35 @@ bool CommandRecognizer::recognize(int numberOfClasses, float* outputData)
     {
         if(outputData[i] > ACTIVATION_THRESHOLD)
         {
-            recognizedCommand = i;
-            probability = outputData[i];
+            invokeCommand(i, outputData[i]);
             lastRecognizeTime = esp_timer_get_time();
             return true;
         }
     }
     return false;
+}
+
+bool CommandRecognizer::addCommand(Command* command)
+{
+    if(commandCount < MAX_COMMANDS)
+    {
+        commands[commandCount++] = command;
+        printf("Added %s to recognizer\n", command->getName());
+        return true;
+    }
+    return false;
+}
+
+void CommandRecognizer::invokeCommand(uint32_t commandIndex, float probability)
+{
+    if(commandIndex < commandCount)
+    {
+        commands[commandIndex]->execute(probability);
+    }
+}
+
+void CommandRecognizer::getNumOfCommands()
+{
+    printf("Number of commands: %d\n", commandCount);
 }
 

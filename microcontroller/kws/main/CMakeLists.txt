@@ -24,7 +24,8 @@ set(COMPONENT_SRCS
 "Application/NeuralNetwork/model.cc"
 "Application/NeuralNetwork/NeuralNetwork.cpp"
 "Application/CommandRecognizer/CommandRecognizer.cpp"
-"Application/CommandResponder/CommandResponder.cpp"
+"Application/CommandRecognizer/PrintCommand.cpp"
+"Application/CommandRecognizer/NoCommand.cpp"
 
 )
 set(COMPONENT_ADD_INCLUDEDIRS 

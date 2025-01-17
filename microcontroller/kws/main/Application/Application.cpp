@@ -12,7 +12,9 @@
 #include "AudioRecorder/AudioRecorder.hpp"
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "CommandRecognizer/CommandRecognizer.hpp"
-#include "CommandResponder/CommandResponder.hpp"
+#include "CommandRecognizer/PrintCommand.hpp"
+#include "CommandRecognizer/NoCommand.hpp"
+#include "CommandRecognizer/Command.hpp"
 
 #if USE_FLOAT == 1
 #include "FeatureGeneratorFloat/FeatureGeneratorFloat.hpp"
@@ -65,7 +67,6 @@ static FeatureGenerator featureGenerator(&hannWindow, &fft, &melSpectrogram);
 
 static NeuralNetwork network;
 static CommandRecognizer recognizer;
-static CommandResponder responder;
 
 /******************************************************************************/
 /************************** BUFFERS INITIALIZATION ****************************/
@@ -88,6 +89,22 @@ void Application(void)
     ESP_LOGI(TAG, "Number of MFCCs in one time slice: %d", NUMBER_OF_MFCCS);
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
 
+    // Create and add commands
+    NoCommand cmd1("BACKGROUND");
+    PrintCommand cmd2("LEFT");
+    PrintCommand cmd3("NO");
+    PrintCommand cmd4("RIGHT");
+    NoCommand cmd5("UNKNOWN");
+    PrintCommand cmd6("YES");
+
+    recognizer.addCommand(&cmd1);
+    recognizer.addCommand(&cmd2);
+    recognizer.addCommand(&cmd3);
+    recognizer.addCommand(&cmd4);
+    recognizer.addCommand(&cmd5);
+    recognizer.addCommand(&cmd6);
+
+    recognizer.getNumOfCommands();
 
     /******************************************************************************/
     /************************** STARTING AUDIO RECORDER ***************************/
@@ -206,18 +223,12 @@ void Application(void)
         /*********************** RECOGNIZING COMMANDS *************************/
         /**********************************************************************/
         
-        bool rec = recognizer.recognize(network.numberOfClasses, network.outputData);
+        recognizer.recognize(network.numberOfClasses, network.outputData);
 
 
         /**********************************************************************/
         /********************** RESPONDING TO A COMMAND ***********************/
         /**********************************************************************/
-        
-        if(rec)
-        {
-            responder.respond(recognizer.recognizedCommand, recognizer.probability);
-        }
-
 
     
         endLoop = esp_timer_get_time();
