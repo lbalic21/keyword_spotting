@@ -91,16 +91,16 @@ void Application(void)
 
     // Create and add commands
     NoCommand cmd1("BACKGROUND");
-    PrintCommand cmd2("LEFT");
+    //rintCommand cmd2("LEFT");
     PrintCommand cmd3("NO");
-    PrintCommand cmd4("RIGHT");
+    //PrintCommand cmd4("RIGHT");
     NoCommand cmd5("UNKNOWN");
     PrintCommand cmd6("YES");
 
     recognizer.addCommand(&cmd1);
-    recognizer.addCommand(&cmd2);
+   // recognizer.addCommand(&cmd2);
     recognizer.addCommand(&cmd3);
-    recognizer.addCommand(&cmd4);
+   // recognizer.addCommand(&cmd4);
     recognizer.addCommand(&cmd5);
     recognizer.addCommand(&cmd6);
 
@@ -128,7 +128,7 @@ void Application(void)
     {   
         startLoop = esp_timer_get_time();
         /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(happy);
+        //testingFacility(yes_esp);
 
         //ESP_LOGI(TAG, "LOOP");
         
@@ -141,7 +141,7 @@ void Application(void)
         //ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
         if((bytesRead / 2) < STEP_SIZE)
         {
-            //ESP_LOGE(TAG, "Did not get enough samples");
+            ESP_LOGE(TAG, "Did not get enough samples");
             continue;
         }
 
@@ -209,13 +209,14 @@ void Application(void)
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
             success = network.invoke();
             end = esp_timer_get_time();
-            //printf("Time taken for invoking: %lld us\n", (end - start));
+            printf("Time taken for invoking: %lld us\n", (end - start));
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");
                 continue;
             }
             numberOfNewSlices = 0;
+            recognizer.recognize(network.numberOfClasses, network.outputData);
         }
 
 
@@ -223,7 +224,6 @@ void Application(void)
         /*********************** RECOGNIZING COMMANDS *************************/
         /**********************************************************************/
         
-        recognizer.recognize(network.numberOfClasses, network.outputData);
 
 
         /**********************************************************************/
@@ -276,7 +276,11 @@ void testingFacility(int16_t* audioData)
             else{
                 ESP_LOGI(TAG, "Invoke worked!");
             }
-            network.printOutput();
+            for(int c = 0; c < network.numberOfClasses; c++)
+            {
+                printf("%d %f\n", c, network.outputData[c]);
+            }
+            
             while(1)
             {
                 vTaskDelay(100);

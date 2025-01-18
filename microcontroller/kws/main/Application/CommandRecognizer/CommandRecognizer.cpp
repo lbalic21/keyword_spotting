@@ -5,7 +5,7 @@ bool CommandRecognizer::recognize(int numberOfClasses, float* outputData)
     if(((esp_timer_get_time() - lastRecognizeTime) / 1000) < COOL_OF_PERIOD_MS)
     {
         //printf("COOL-OFF PERIOD\n");
-        return false;;
+        //return false;;
     }
     for(uint32_t i = 0; i < numberOfClasses; i++)
     {

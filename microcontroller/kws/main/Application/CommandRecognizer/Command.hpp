@@ -7,6 +7,8 @@ class Command
 {
     protected:
         const char* name;
+        int numberOfNetworkInvokings = 0;
+        int numberOfRecognitions = 0;
 
     public:
         Command(const char* commandName) : name(commandName) {}

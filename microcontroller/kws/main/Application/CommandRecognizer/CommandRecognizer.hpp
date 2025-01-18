@@ -16,6 +16,14 @@ class CommandRecognizer
         Command* commands[MAX_COMMANDS];
         uint8_t commandCount = 0;
 
+        struct Result 
+        {
+            int64_t time;
+            float scores[MAX_COMMANDS];
+        };
+
+        
+
     public:
         bool recognize(int numberOfClasses, float* outputData);
         bool addCommand(Command* command);
