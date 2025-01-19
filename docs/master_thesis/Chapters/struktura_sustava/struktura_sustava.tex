@@ -1,2 +1,32 @@
 \chapter{Struktura sustava}
 \label{pog:struktura_sustava}
+
+Svrha cjelokupnog sustava je okidanje određenog procesa, tj. signalizacija
+za početak obavljanja nekog posla. Također, sustav mora biti sposoban pokrenuti
+proces u bilo kojem trenutku, a odaziv bi trebao biti trenutan što
+znači da cijeli proces prikupljanja, obrade te izvršavanja mora raditi
+u stvarnom vremenu. Shodno tome, sustav je izdrađen od pet modularnih
+podsustava:
+
+\begin{itemize}
+    \item Akvizicija zvuka
+    \item Generiranje značajki
+    \item Aktivacija neuronske mreže
+    \item Prepoznavanje naredbi
+    \item Aktivacija zadatka 
+\end{itemize}
+
+Ideja u pozadini navede podjele je lakša prilagodba cjelokupnog
+sustava na različite mikrokontrolerske platfome, drugačiju obradu
+akviziranog zvuka, korištenje drugačije neuronske mreže ili samo 
+kreiranje specifičnog zadatka koji će se aktivirati odrešenom naredbom.
+Na slici \ref{pic:struktura_sustava} grafički je prikazan opisani sustav.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.6\linewidth]{Chapters/struktura_sustava/struktura_sustava.png} 
+    \caption{Struktura sustava \cite{flowchart}}
+    \label{pic:struktura_sustava}
+\end{figure}
+
+\input{Chapters/struktura_sustava/akvizicija/akvizicija}
