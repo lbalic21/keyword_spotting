@@ -9,26 +9,26 @@
 #include "Configuration.hpp"
 #include "Command.hpp"
 
+#define N      7
+
 class CommandRecognizer
 {
     private:
-        int64_t lastRecognizeTime = 0;
         Command* commands[MAX_COMMANDS];
         uint8_t commandCount = 0;
 
-        struct Result 
-        {
-            int64_t time;
-            float scores[MAX_COMMANDS];
-        };
+        int64_t lastRecognizeTime = 0;
 
-        
+        float lastResults[N][MAX_COMMANDS] = {0};
+        int savingCounter = 0;
 
     public:
-        bool recognize(int numberOfClasses, float* outputData);
+        bool recognize(float* outputData);
+        void incrementCounter(void);
+
         bool addCommand(Command* command);
         void invokeCommand(uint32_t commandIndex, float probability);
-        void getNumOfCommands();
+        void getNumOfCommands(void);
 };
 
 #endif /* _COMMAND_RECOGNIZER_H_ */

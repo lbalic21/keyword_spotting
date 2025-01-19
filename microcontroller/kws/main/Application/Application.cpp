@@ -216,7 +216,7 @@ void Application(void)
                 continue;
             }
             numberOfNewSlices = 0;
-            recognizer.recognize(network.numberOfClasses, network.outputData);
+            recognizer.recognize(network.outputData);
         }
 
 
