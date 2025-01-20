@@ -141,7 +141,7 @@ void Application(void)
         //ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
         if((bytesRead / 2) < STEP_SIZE)
         {
-            ESP_LOGE(TAG, "Did not get enough samples");
+            //ESP_LOGE(TAG, "Did not get enough samples");
             continue;
         }
 
@@ -209,7 +209,7 @@ void Application(void)
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
             success = network.invoke();
             end = esp_timer_get_time();
-            printf("Time taken for invoking: %lld us\n", (end - start));
+            //printf("Time taken for invoking: %lld us\n", (end - start));
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");

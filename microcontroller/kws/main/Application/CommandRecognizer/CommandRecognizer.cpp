@@ -2,50 +2,49 @@
 
 bool CommandRecognizer::recognize(float* outputData)
 {
+    //printf("Saving counter: %d\n", savingCounter);
     // saving newest result
     for(int i = 0; i < commandCount; i++)
     {
         lastResults[savingCounter][i] = outputData[i];
+        printf("OutputData[%d]=%f\n", i, outputData[i]);
     }
 
     // increment saving counter
     incrementCounter();
 
     // calculating average scores
-    float averageScores[commandCount];
+    float averageScores[commandCount] = {0};
+
     for(int i = 0; i < commandCount; i++)
     {
-        for(int j = 0; j < N; j++)
+        for(int j = 0; j < WWW; j++)
         {
             averageScores[i] += lastResults[j][i];
         }
+        averageScores[i] /= WWW;
+        printf("Avg[%d]=%f\n", i, averageScores[i]);
     }
+    printf("\n");
 
     // see if any command score is higher than the threshold
     for(uint32_t i = 0; i < commandCount; i++)
     {
-        if(averageScores[i] > ACTIVATION_THRESHOLD)
+        if((averageScores[i] > ACTIVATION_THRESHOLD) && (((esp_timer_get_time() - lastCommandInvoke[i]) / 1000) >= COOL_OF_PERIOD_MS))
         {
-            invokeCommand(i, outputData[i]);
-            lastRecognizeTime = esp_timer_get_time();
+            invokeCommand(i, averageScores[i]);
+            lastCommandInvoke[i] = esp_timer_get_time();
             return true;
         }
     }
 
-    // COOL_OFF period, not shure if needed
-    /*
-    if(((esp_timer_get_time() - lastRecognizeTime) / 1000) < COOL_OF_PERIOD_MS)
-    {
-        //printf("COOL-OFF PERIOD\n");
-        //return false;;
-    }
-    */
     return false;
 }
 
 void CommandRecognizer::incrementCounter(void)
 {
-    savingCounter = ++savingCounter % N;
+    savingCounter++;
+    savingCounter = savingCounter % WWW;
 }
 
 bool CommandRecognizer::addCommand(Command* command)

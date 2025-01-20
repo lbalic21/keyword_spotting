@@ -9,7 +9,7 @@
 #include "Configuration.hpp"
 #include "Command.hpp"
 
-#define N      7
+#define WWW      5
 
 class CommandRecognizer
 {
@@ -17,10 +17,10 @@ class CommandRecognizer
         Command* commands[MAX_COMMANDS];
         uint8_t commandCount = 0;
 
-        int64_t lastRecognizeTime = 0;
-
-        float lastResults[N][MAX_COMMANDS] = {0};
+        float lastResults[WWW][MAX_COMMANDS] = {0};
         int savingCounter = 0;
+
+        int64_t lastCommandInvoke[MAX_COMMANDS] = {0};
 
     public:
         bool recognize(float* outputData);
