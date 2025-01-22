@@ -7,7 +7,7 @@ bool CommandRecognizer::recognize(float* outputData)
     for(int i = 0; i < commandCount; i++)
     {
         lastResults[savingCounter][i] = outputData[i];
-        printf("OutputData[%d]=%f\n", i, outputData[i]);
+        //printf("OutputData[%d]=%f\n", i, outputData[i]);
     }
 
     // increment saving counter
@@ -23,16 +23,16 @@ bool CommandRecognizer::recognize(float* outputData)
             averageScores[i] += lastResults[j][i];
         }
         averageScores[i] /= WWW;
-        printf("Avg[%d]=%f\n", i, averageScores[i]);
+        //printf("Avg[%d]=%f\n", i, averageScores[i]);
     }
-    printf("\n");
+    //printf("\n");
 
     // see if any command score is higher than the threshold
     for(uint32_t i = 0; i < commandCount; i++)
     {
-        if((averageScores[i] > ACTIVATION_THRESHOLD) && (((esp_timer_get_time() - lastCommandInvoke[i]) / 1000) >= COOL_OF_PERIOD_MS))
+        if((outputData[i] > ACTIVATION_THRESHOLD))// && (((esp_timer_get_time() - lastCommandInvoke[i]) / 1000) >= COOL_OF_PERIOD_MS))
         {
-            invokeCommand(i, averageScores[i]);
+            invokeCommand(i, outputData[i]);
             lastCommandInvoke[i] = esp_timer_get_time();
             return true;
         }
