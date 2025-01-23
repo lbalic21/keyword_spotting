@@ -1,0 +1,41 @@
+\section{Generiranje značajki}
+
+Generiranje značajki je drugi podsustav spomenut u uvodnom dijelu, također
+prikazan na slici \ref{pic:struktura_sustava}. Nakon što je omogućena akvizicija
+zvučnih uzoraka, potrebno ih je obraditi kako bi se mogli predati neuronskoj mreži 
+na klasifikaciju. Naime, modeli strojnog učenja (kao što je neuronska mreža) rade
+s različitim primjerima podataka. Razlikovanje primjera temelji se na odredivanju
+različitih značajki ulaznih podataka. Klasičan primjer koji se koristi kako bi se 
+približio pojam značajki jest model predikcije cijene nekakve
+nekretnine. U tom slučaju značajke koje bi model mogao koristiti su lokacija,
+godina izgradnje, površina, razina energetske učinkovitosti i slično. Medutim, što
+bi bile značajke našeg ulaznog toka signala? Možemo, ispostavit će se naivno, uzeti
+amplitudu svake vrijednosti. U slučaju da promatramo period od jedne sekunde
+signala s već spomenutim otipkavanjem od 16 kHz, broj značajki koje bi naš model
+morao ”progutati” jest 16000. Obraditi toliku količinu podataka u jako kratkom
+vremenu (sustav mora raditi bez konstantno i bez mrtvog vremena) na resursno
+ograničenom sustavu kao što je mikrokontroler ne zvuči obećavajuće. Nekako sve 
+upućuje na to da je potrebno na neki način prilagoditi ulazni signal, tj. izvući
+iz signala bitne informacije i tako smanjiti veličinu podataka. 
+
+\subsection{Model govora}
+
+Kako bismo identificirali kojim značajkama bi bilo korisno opisati ljudski govor,
+potrebno je na neki način modelirati nastanak glasa. 
+
+
+
+\subsection{MFCC}
+\label{MFCCconstruction}
+
+
+
+
+
+\subsubsection{Window}
+\subsubsection{FFT}
+\subsubsection{Mel Filterbank}
+\subsubsection{DCT}
+
+\subsection{Konstrukcija feature mape}
+

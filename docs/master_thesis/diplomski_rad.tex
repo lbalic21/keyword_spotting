@@ -2,6 +2,40 @@
 % Dodaj opciju upload za generiranje konačne verzije koja se učitava na FERWeb
 % Add the option upload to generate the final version which is uploaded to FERWeb
 
+% postavke za programski kod pomoću:
+%\begin{lstlisting}[language=..., caption=...] 
+%\end{lstlisting}
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Kod}
+\usepackage{inconsolata}
+
+% Definiranje boja
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+
+\lstdefinestyle{mystyle}{
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize\ttfamily,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    numbers=left,
+    frame=single, % Single frame around the code
+    frameround=tttt, % Frame corners are rounded
+    framesep=20pt, % Frame separation
+    rulecolor=\color{black} % Frame color
+}
+\lstset{style=mystyle}
 
 %--- PODACI O RADU / THESIS INFORMATION ----------------------------------------
 

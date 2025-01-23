@@ -12,14 +12,14 @@ void AudioRecorder::set(void)
     i2s_config_t i2s = {
         .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
         .sample_rate = (uint32_t)this->sampleRate,
-        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // change to 16 bits per sample
-        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT, // Although the microphone is mono, the I2S data is 2-channel
+        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
         .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1, // Default interrupt priority
+        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
         .dma_buf_count = 3,
-        .dma_buf_len = 300,
+        .dma_buf_len = 256 * sizeof(int16_t),
         .use_apll = false,
-        .tx_desc_auto_clear = false, // Auto clear tx descriptor on underflow
+        .tx_desc_auto_clear = false, 
     };
      
     audio_element_handle_t i2s_stream_reader;
