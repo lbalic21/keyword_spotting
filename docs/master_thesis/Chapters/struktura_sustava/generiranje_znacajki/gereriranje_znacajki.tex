@@ -61,8 +61,8 @@ kvazi-periodičnim impulsima bilo slučajnim šumom (engl. random noise signal).
 Opisani sustav može se prikazati jednadžbom \ref{eq:govor}
 
 \begin{equation}
-    \label{eq:govor}
     X(f) = E(f) \cdot H(f)
+    \label{eq:govor}
 \end{equation}
 
 gdje je:
@@ -76,8 +76,8 @@ U vremenskoj domeni isti sustav može se prikazati jednadžbom \ref{eq:govor_vre
 Množenju u frekvencijskoj domeni istovjetna je konvolucija u vremenskoj (i obratno!).
 
 \begin{equation}
-    \label{eq:govor_vremenska}
     x(t) = e(t) \ast h(t)
+    \label{eq:govor_vremenska}
 \end{equation}
 
 Cilj ovakvog modeliranja je pronaći bitne informacije u govornom signalu. Pretpostavka na
@@ -154,7 +154,7 @@ polje koje zaduženo za spremanje trenutnog prozora podataka. Alokacija polja i 
 pomicanja starih podataka u polju koje sprema trenutni prozor prikazani su u isječku programskog
 koda \ref{code:sliding}.
 
-\begin{lstlisting}[language=C, caption=Sliding Window with Overlap]
+\begin{lstlisting}[language=C, caption=Sliding Window with Overlap, label=code:sliding]
     int16_t newSamples[STEP_SIZE];
     int16_t audioFrame[WINDOW_SIZE] = {0};
     
@@ -180,7 +180,6 @@ koda \ref{code:sliding}.
     memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
     memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE * 2);
 \end{lstlisting}
-\label{code:sliding}
 
 WINDOW\_SIZE predstavlja konfigurabilnu veličinu prozora, dok STEP\_SIZE predstavlja 
 konfigurabilni broj novih uzoraka koji će biti dohvaćeni (veličina koraka prozora).
@@ -214,8 +213,8 @@ Opisani postupak množenja originalnog signala Hannovim prozorom prikazan je
 matematičkim izrazom \ref{eq:window}.
 
 \begin{equation}
-    \label{eq:window}
     x_w[n] = x[n] \cdot w[n]
+    \label{eq:window}
 \end{equation}
 
 gdje je:
@@ -230,8 +229,12 @@ gdje je:
     gdje je \( N \) ukupni broj uzoraka u prozoru.
 \end{itemize}
 
-Dobiveni signal veličine WINDOW\_SIZE je nakon opisane obrade spreman za spektralnu analizu
-koja podrazumijeva korištenje diskretne Fourierove transformacije.
+Budući da su uzorci tipa \texttt{int16\_t} (16-bitni broj), raspon vrijednosti signala 
+prije množenja s funkcijom prozora je [$-2^{15}$, $2^{15} - 1$], tj. [-32768, 32767]. Uz množenje
+signala funkcijom prozora, cijelokupni signal skalirat ćemo na raspon [-1, 1] dijeljenjem svakog
+uzorka s 32768. Dobiveni signal veličine WINDOW\_SIZE i tipa \texttt{float} (realni broj) je nakon
+opisane obrade spreman za spektralnu analizu koja podrazumijeva korištenje diskretne Fourierove
+transformacije.
 
 \subsubsection{Diskretna Fourierova transformacija}
 \label{sec:fft}
@@ -242,8 +245,9 @@ DFT diskretnog signala \( x[n] \) s \( N \) uzoraka definirana je izrazom \ref{e
 
 \begin{equation}
     X[k] = \sum_{n=0}^{N-1} x[n] e^{-j 2 \pi k n / N}, \quad k = 0, 1, \dots, N-1
+    \label{eq:dft}
 \end{equation}
-\label{eq:dft}
+
 gdje je:
 \begin{itemize}
     \item \( X[k] \): spektralni koeficijent na \( k \)-toj frekvenciji,
@@ -264,17 +268,18 @@ upotrebu FFT-a te metodu \texttt{void FFT::compute(float* frame, float* spectrog
 razreda FFT koja izračunava koeficijente koji predstavljaju kvadratnu vrijednost
 amplitude svake frekvencijske komponente (spektar snage signala) kojih ima 
 WINDOW\_SIZE / 2 + 1 (još definirano kao NUMBER\_OF\_SPECTROGRAM\_BINS). 
+Funkcija prima pokazivač na prozor (\texttt{float* frame}) te pokazivač na polje
+u koje će biti spremljen rezultat FFT-a (\texttt{float* spectrogram}). Izlazna
+varijabla je imena \texttt{spectrogram} jer spektralnom analizom signala dobijemo
+nešto što se zove spektrogram. Preciznije, spektrogram bi će biti dvodimenzionalno
+polje koje sadrži više ovakvih jednodimenzionalnih vektora koje dobijemo nakon
+Fourierove transformacije jednog prozora. 
 
-
-\begin{lstlisting}[language=C++, caption=FFT]
-
+\begin{lstlisting}[language=C++, caption=FFT, label=code:fft]
     // initialization 
     dsps_fft2r_init_fc32(NULL, WINDOW_SIZE);
-
-    void FFT::compute(float* frame, float* spectrogram)
-    {
-        for(size_t i = 0; i < WINDOW_SIZE; i++)
-        {
+    void FFT::compute(float* frame, float* spectrogram) {
+        for(size_t i = 0; i < WINDOW_SIZE; i++) {
             data[2 * i] = frame[i];  // Real part
             data[2 * i + 1] = 0;     // Imaginary part
         }
@@ -283,19 +288,45 @@ WINDOW\_SIZE / 2 + 1 (još definirano kao NUMBER\_OF\_SPECTROGRAM\_BINS).
         // Bit reversal
         dsps_bit_rev_fc32_ansi(data, WINDOW_SIZE);
         // Magnitude (power) of each frequency bin
-        for(size_t i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
-        {
+        for(size_t i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++) {
             float real = data[2 * i];
             float imag = data[2 * i + 1];
             spectrogram[i] = sqrt(real * real + imag * imag);
         }
     }
 \end{lstlisting}
-\label{code:fft}
-
-\subsubsection{Mel Filterbank}
 
 
+\subsubsection{Melovo skaliranje}
+Izlaz iz modula koji se bavi Fourierovom transformacijom je frekvencijski spektar signala.
+Preciznije svaki element tog vektora je amplituda snage određene frekvencije sadržane u signalu.
+Te frekvencije su raspoređene linearno. Međutim, čovjek ne percipira jednako male promjene 
+na višim frekvencijama isto kao na nižim. Zbog toga je potrebno na neki način skalirati
+razmake između frekvencija kako bi bolje odgovarali ljudskoj percepciji. Za potrebe toga
+osmišljena je Melova skala (engl. Mel scale). Preslikavanje na takvu skalu opisano je formulom
+\ref{eq:mel}.
+
+\begin{equation}
+    m(f) = 2595 \cdot \log_{10}\left(1 + \frac{f}{700}\right)
+    \label{eq:mel}
+\end{equation}
+
+gdje je:
+\begin{itemize}
+    \item \(m(f)\) frekvencija u mel skali,
+    \item \(f\) frekvencija u Hertzima.
+\end{itemize}
+
+Takvo preslikavanje je otprilike linearno za frekvencije niže od 1000 Hz, a logaritamsko
+za frekvencije više od 1000 Hz, a prikazano je na slici \ref{pic:mel}.
+
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/mel.png} 
+    \caption{Melova skala \cite{mel}}
+    \label{pic:mel}
+\end{figure}
 
 
 
