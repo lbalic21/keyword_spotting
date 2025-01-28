@@ -298,6 +298,7 @@ Fourierove transformacije jednog prozora.
 
 
 \subsubsection{Melovo skaliranje}
+\label{sec:mel}
 Izlaz iz modula koji se bavi Fourierovom transformacijom je frekvencijski spektar signala.
 Preciznije svaki element tog vektora je amplituda snage određene frekvencije sadržane u signalu.
 Te frekvencije su raspoređene linearno. Međutim, čovjek ne percipira jednako male promjene 
@@ -313,13 +314,14 @@ osmišljena je Melova skala (engl. Mel scale). Preslikavanje na takvu skalu opis
 
 gdje je:
 \begin{itemize}
-    \item \(m(f)\) frekvencija u mel skali,
+    \item \(m(f)\) frekvencija u Mel skali,
     \item \(f\) frekvencija u Hertzima.
 \end{itemize}
 
-Takvo preslikavanje je otprilike linearno za frekvencije niže od 1000 Hz, a logaritamsko
-za frekvencije više od 1000 Hz, a prikazano je na slici \ref{pic:mel}.
-
+Na slici \ref{pic:mel} prikazano je preslikavanje iz Hz ljestvice u Melovu. Vidljivo je da
+jednake promjene frekvencije u Hertzima na višim frekvencijama odgovaraju manjoj promjeni 
+na Mel skali nego na nižim frekvencijama (logaritamsko preslikavanje), a to izravno
+odgovara ljudskoj percepciji koja je osjetljivija na promjene u nižim dijelovima spektra.
 
 \begin{figure}[htb]
     \centering
@@ -328,9 +330,165 @@ za frekvencije više od 1000 Hz, a prikazano je na slici \ref{pic:mel}.
     \label{pic:mel}
 \end{figure}
 
+Budući da je naš sustav diskretan, postoji prirodni broj frekvencijskih komponenti koje 
+dobijemo na izlazu iz Fourierove transformacije (NUMBER\_OF\_SPECTROGRAM\_BINS) koji
+izravno ovisi o broju točaka nad kojima se vrši FFT. Sljedeći korak koji je potreban je
+napraviti preslikavanje iz Hz ljestvice u Melovu. Prije početka preslikavanja, potrebno
+je odrediti rezoluciju preslikavanja, tj. koliko spektralnih komponenti želimo na 
+novoj (Melovoj) ljestvici. Taj parametar također je određen u konfiguracijskoj datoteci
+\texttt{Configuration.hpp}, a zove se NUMBER\_OF\_MEL\_BINS (u prijevodu broj Melovih
+kanti). Samo preslikavanje se odrađuje pomoću trokutaskih filtara prikazanih na slici 
+\ref{pic:melfilter}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.8\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/melfiltar.png} 
+    \caption{Filtri za Melovu skalu}
+    \label{pic:melfilter}
+\end{figure}
+
+Za potrebe sustava za prepoznavanje glasa, određuju se donja i gornja granica preslikavanja 
+(LOWER\_BAND\_LIMIT i UPPER\_BAND\_LIMIT) koje su tijekom cijelog razvoja sustava "zacementirane"
+na 80 Hz i 7600 Hz (takve granice su se pokazale prikladne za ovu svrhu). Od donje do gornje
+granice, linearno (na Mel skali) se raspoređuju sredine filtara čija je širina na svaku stranu 
+točno do sredine susjednog filtra. Izvan tog intervala vrijednost filtra je nula, dok je u središtu
+pojedinog filtra vrijednost istoga točno jedan. Nadalje, vrijednosti svake Melove frekvencijeske
+komponente doprinosi vrijednost frekvencijske komponente s Hz ljestvice onoliko koliko iznosi
+njena vrijednost pomnožena s vrijednosti filtra na tom mjestu. Za svaki filtar (koji odgovara
+jednoj Mel frekvencijskoj komponenti) potrebno je provjeriti koliko svaka frekvencijska komponenta 
+s Hz ljestvice doprinosi toj Mel komponenti, tj. koliko energije iz početnog signala
+odgovara toj komponenti na Melovoj ljestvici. Programski kod koji se bavi opisanim prikazan je u 
+\ref{code:mel}. Na kraju cjelokupnog procesa, potrebno je svaku vrijednost Melovih frekvencijskih
+komponenti logaritmirati jer je to potrebno za sljedeći korak, a to je generiranje MFC koeficijenata.
+
+\begin{lstlisting}[language=C++, caption=FFT, label=code:mel]
+void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram){
+    for (int melBin = 0; melBin < NUMBER_OF_MEL_BINS; melBin++) {
+        melSpectrogram[melBin] = 0.0;
+        for (int fftBin = 0; fftBin < NUMBER_OF_SPECTROGRAM_BINS; fftBin++){
+            float freq = fftBin * hzPerBin;
+            float weight = 0.0;
+
+            if (freq >= melPoints[melBin] && freq < melPoints[melBin + 1]){
+                weight = (freq - melPoints[melBin]) / (melPoints[melBin + 1] - melPoints[melBin]);
+            } else if (freq >= melPoints[melBin + 1] && freq < melPoints[melBin + 2]){
+                weight = (melPoints[melBin + 2] - freq) / (melPoints[melBin + 2] - melPoints[melBin + 1]);
+            }
+
+            melSpectrogram[melBin] += spectrogram[fftBin] * weight;
+        }
+        // Apply log scaling with a safeguard against log(0)
+        melSpectrogram[melBin] = logf(fmaxf(melSpectrogram[melBin], 1e-6));
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Diskretna kosinusna transformacija}
+
+Posljednji korak u procesu generiranja Mel kepstralnih koeficijenata (MFCC) je primjena diskretne
+kosinusne transformacije (engl. Discrete Cosine Transform ili DCT) na vektor Melovih spektralnih
+koeficijenata. Ona pretvara signal iz vremenske ili frekvencijske domene u 
+domenu kosinusnih komponenti. Rezultat DCT-a je niz koeficijenata koji predstavljaju energiju 
+signala u različitim frekvencijskim opsezima. 
+Postoje različiti tipovi DCT-a, ali za MFCC se najčešćee koristi DCT-II koja je prikazana
+formulom \ref{eq:dct}.
+
+\begin{equation}
+    \label{eq:dct}
+    C(k) = \sqrt{\frac{2}{N}} \sum_{n=0}^{N-1} X(n) \cdot \cos\left[ \frac{\pi}{N} \left(n + \frac{1}{2}\right) k \right], \quad k = 0, 1, \dots, N-1
+\end{equation}
+Gdje su:
+\begin{itemize}
+\item $C(k)$: koeficijenti DCT-a (u našem slučaju MFCC)
+\item $X(n)$: ulazni Mel-frekvencijski spektar,
+\item $N$: broj uzoraka u ulaznom spektru,
+\item $k$: indeks koeficijenta (MFCC-a).
+\end{itemize}
+
+U kontekstu generiranja MFCC-a, ulaz u DCT dolazi iz Mel-frekvencijskog spektra, koji je već 
+logaritamski skaliran kako bi pratio ljudsku percepciju glasnoće. Primjenom DCT-a na ovaj spektar 
+postiže se:
+
+\begin{enumerate}
+\item \textbf{Dekorelacija podataka}: Komponente Mel-frekvencijskog spektra obično su jako 
+korelirane. DCT uklanja ovu korelaciju, što omogućuje jednostavniju analizu i smanjuje
+redundantnost.
+
+\item \textbf{Redukcija dimenzionalnosti}: DCT generira niz koeficijenata, ali samo prvih
+nekoliko (obično 12-13) sadrže značajne informacije potrebne za prepoznavanja govora ili zvukova. 
+Ostatak koeficijenata se odbacuje jer sadrže manje bitne informacije ili šum.
+
+\item \textbf{Efikasnija obrada}: Kompresijom podataka DCT smanjuje zahtjeve za memorijom i 
+procesorskom snagom (sva informacija prozora podataka sadržana je u ovih 12 ili 13 koeficijenata).
+\end{enumerate}
+
+Implementacija  diskretne kosinusne transformacije prikazana je u odječku koda \ref{code:dct}.
+U konstruktoru razreda DCT inicijaliziraju se koeficijenti potrebni za izračun pojedinog MFCC-a,
+dok metoda compute računa MFCC-e za konkretni ulzni Mel-frekvencijski spektar. Na taj način
+razdvojen je izračun na dva dijela: konstanti dio koji ne ovisi o ulaznom spektru (računa
+se pri konstrukciji objekta zaduženog za DCT) i dio koji
+ovisi o ulaznom spektru te ga je zbog toga potrebno računati u svakoj iteraciji.\newline{}
 
 
+\begin{lstlisting}[language=C++, caption=FFT, label=code:dct]
+DCT::DCT()
+{
+    const float pi = 3.14159265358979323846f;
+    for (int i = 0; i < NUMBER_OF_MFCCS; ++i) {
+        for (int j = 0; j < NUMBER_OF_MEL_BINS; ++j) {
+            coefficients[i * NUMBER_OF_MEL_BINS + j] = cos(pi * i * (j + 0.5f) / NUMBER_OF_MEL_BINS);
+        }
+    }
+}
 
-\subsubsection{DCT}
-\subsection{Konstrukcija feature mape}
+void DCT::compute(const float *input, float *output) {
+    for (int i = 0; i < NUMBER_OF_MFCCS; i++) {
+        output[i] = 0.0;
+        for (int j = 0; j < NUMBER_OF_MEL_BINS; j++) {
+            output[i] += input[j] * coefficients[i * NUMBER_OF_MEL_BINS + j];
+        }
+        output[i] *= sqrt(2.0 / NUMBER_OF_MEL_BINS);
+    }
+}
+\end{lstlisting}
 
+Konačni rezultat cijelog procesa generiranja značajki je NUMBER\_OF\_MFCCS Mel kepstralnih
+koeficijenata. Zašto se tako zovu? Melovi su jer su bazirani na Melovoj frekvencijskoj
+skali koja je ubjašnjena u \ref{sec:mel}. Međutim zašto su kepstralni možda nije intuitivno.
+Dolazi od toga što smo tokom njihovih generiranja morali posegnuti za dvama transformacijama.
+Prva je bila FFT. Ona je signal iz vremenske domene prebacila u frekvencijsku (spektar
+signala). Druga transformacija je bila upravo DCT. Ona je još jednom računala spektar, međutim
+ovog putaje je to bio spektar spektra. Zbog toga su koeficijenti it ove domene dobili ime
+kepstralni (keps je anagram od spek). Ovo sve se može povezati s modelom govora opisanog
+u \ref{sec:speech}. Spektar spektra nam omogućuje razdvajanje energija u pojedinim 
+frekvencijskim spektrima te jako dobro razdvaja odziv vokalnog trakta od kvazi-periodičnog
+impulsa. Također, informaciju zvučnog prozora duljine WINDOW\_SIZE komprimirali smo
+u svega NUMBER\_OF\_MFCCS Mel kepstralnih koeficijenata. Te veličine mogu varirati, a
+karakteristični iznosi u sustavima ovakvog tipa su redom 512 te 13. To je svega oko 2.5\% 
+broja početnih značajki (5\% ako se promatra memorijsko zauzeće jer float tip varijable
+zauzima 4 bajta, dok int16\_t zauzima 2 bajta). Blok dijagram cjelokupnog procesa prikazan
+je na slici \ref{pic:generation}.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/generation.png} 
+    \caption{Proces generiranja MFCC-a \cite{flowchart}}
+    \label{pic:generation}
+\end{figure}
+
+\subsection{Konstrukcija matrice značajki}
+
+U poglavlju \ref{MFCCconstruction} opisana je konstrukcija MFC koeficijenata iz jednog
+okvira zvučnog zapisa tipične duljine od oko 20 do 30 ms. Na način koji je opisan u
+\ref{sec:win} u sljedećoj iteraciji dohvatit će se određeni broj novih uzoraka te je onda
+potrebno generirati nove Mel kepstralne koeficijente koji odgovaraju tom prozoru na način
+identičan opisanom. Proces dohvaćanja novih uzoraka te generiranje novih MFCC-a kontinuirano
+se ponavlja kroz cijeli vijek rada uređaja. 
+
+\begin{lstlisting}[language=C++, caption=Matrica značajki, label=code:featureImage]
+    float featureSlice[NUMBER_OF_MFCCS] = {0};
+    float featureImage[NUMBER_OF_FEATURES] = {0};
+
+    memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, sizeof(float) * (NUMBER_OF_FEATURES - NUMBER_OF_MFCCS));
+    memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, sizeof(float) * NUMBER_OF_MFCCS);
+\end{lstlisting}

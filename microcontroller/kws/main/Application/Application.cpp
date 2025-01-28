@@ -191,8 +191,8 @@ void Application(void)
          * neural network.
          */
 
-        memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, 4*(NUMBER_OF_FEATURES - NUMBER_OF_MFCCS));
-        memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, 4*NUMBER_OF_MFCCS);
+        memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, sizeof(float) * (NUMBER_OF_FEATURES - NUMBER_OF_MFCCS));
+        memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, sizeof(float) * NUMBER_OF_MFCCS);
 
         numberOfNewSlices++;
 
