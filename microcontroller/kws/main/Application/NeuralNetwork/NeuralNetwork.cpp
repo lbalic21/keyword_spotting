@@ -14,32 +14,32 @@ NeuralNetwork::NeuralNetwork()
 
   if (resolver.AddConv2D() != kTfLiteOk) {
     while(1);
-    return;
+    
   }
   if (resolver.AddFullyConnected() != kTfLiteOk) {
     while(1);
-    return;
+    
   }
   if (resolver.AddSoftmax() != kTfLiteOk) {
     while(1);
-    return;
+    
   }
   if(resolver.AddReshape() != kTfLiteOk)
   {
     while(1);
-    return;
+    
   }
   if (resolver.AddMaxPool2D() != kTfLiteOk) {
     while(1);
-    return;
+    
   }
   if (resolver.AddQuantize() != kTfLiteOk) {
     while(1);
-    return;
+    
   }
   if (resolver.AddDequantize() != kTfLiteOk) {
     while(1);
-    return;
+   
   }
 
   // Build an interpreter to run the model with.

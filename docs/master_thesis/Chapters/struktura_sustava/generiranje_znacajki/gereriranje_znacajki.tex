@@ -477,18 +477,65 @@ je na slici \ref{pic:generation}.
 \end{figure}
 
 \subsection{Konstrukcija matrice značajki}
-
+\label{sec:featureImage}
 U poglavlju \ref{MFCCconstruction} opisana je konstrukcija MFC koeficijenata iz jednog
-okvira zvučnog zapisa tipične duljine od oko 20 do 30 ms. Na način koji je opisan u
-\ref{sec:win} u sljedećoj iteraciji dohvatit će se određeni broj novih uzoraka te je onda
+okvira zvučnog zapisa tipične duljine od oko 20 do 30 ms \cite{wardentinyml}. 
+Na način koji je opisan u
+\ref{sec:win} u sljedećoj iteraciji dohvatit će se određeni broj novih uzoraka koji će
+sudjelovati u stvaranju novog okvira nad kojim je 
 potrebno generirati nove Mel kepstralne koeficijente koji odgovaraju tom prozoru na način
 identičan opisanom. Proces dohvaćanja novih uzoraka te generiranje novih MFCC-a kontinuirano
-se ponavlja kroz cijeli vijek rada uređaja. 
+se ponavlja kroz cijeli vijek rada uređaja. Rezultat generiranja značajki je 
+jednodimenzionalni vektor koji sadrži NUMBER\_OF\_MFCCS koeficijenata. Tako generirane značajke
+je potrebno predati podsustavu koji je zadužen za aktivaciju neuronske mreže. Konkretno,
+sustav za prepoznavanje koristi konvolucijsku neuronsku mrežu čija je stuktura te 
+područje primjene podrobnije opisano u \ref{sec:cnn}. One dobro funkcioniraju u klasifikaciji
+višedimenzionalnih matrica. Ideja je primijeniti takvu strukturu na značajke koje su prethodno
+generirane. Uzastopni vektori MFC koeficijenata slagani su u dvodimenzionalnu matricu koja
+onda može biti predana neuronskoj mreži. Možemo reći da je takvim slaganjem dobivena slika
+zvučnog zapisa proizvoljne dujine! Što će odrediti koliko će prozora podataka biti u jednom 
+trenutku predano na klasifikaciju? Pa upravo duljina podataka nad kojima je mreža i trenirana!
+Detaljniji opis skupa podataka za treniranje mreže nalazi se u \ref{sec:dataset}, najbitnije
+za reći ovje je da se radi o skupu zvučnih zapisa u trajanju od jedne sekunde. Zbog toga
+je potrebno napraviti matricu od onoliko prozora koliko je potrebno da pokriju
+vrijeme od 1 sekunde. Broj takvih prozora NUMBER\_OF\_TIME\_SLICES će ovisiti
+o veličini prozora WINDOW\_SIZE,
+broju novih uzoraka u svakoj iteraciji STEP\_SIZE te frekvenciji otipkavanja
+SAMPLE\_RATE. Funkcija \ref{eq:timeslices} opisuje opisanu ovisnost.
 
-\begin{lstlisting}[language=C++, caption=Matrica značajki, label=code:featureImage]
+\begin{equation}
+    \label{eq:timeslices}
+    \text{NUMBER\_OF\_TIME\_SLICES} = \left\lfloor \frac{\text{SAMPLE\_RATE} - \text{WINDOW\_SIZE}}{\text{STEP\_SIZE}} \right\rfloor + 1
+\end{equation}
+
+Budući da se konstantno akviziraju novi podaci te generiraju njihove značajke, a veličina
+dvodimenzionalne matrice koja se predaje neuronskoj mreži ostaje stalna, potrebno je 
+dolaskom značajki novog vremenskog prozora, odbaciti najstariji, ostale pomaknuti prema početku
+te na kraj matrice dodati najnovije značajke. Algoritam je vrlo sličan onom koji novoakvizirane
+uzorke dodaje na kraj vremenskog prozora prije generiranja značajki, a prikazan je u odsječku
+programskog koda \ref{code:featureImage}. U polje \texttt{featureSlice} se spremaju novonastale
+značajke, a polje \texttt{featureImage} sadrži trenutno dvodimenzionalno polje značajki (ovdje je
+je definirano kao jedodimenzionalno, međutim memorijski otisak je identičan i, ono najbitnije,
+takva struktura odgovara ulazu neuronske mreže). Veličina tog polja NUMBER\_OF\_FEATURES je samo
+umnožak broja značajki pojedinog prozora NUMBER\_OF\_MFCCS i broja prozora potrebnog za 
+izgradnju matrice NUMBER\_OF\_TIME\_SLICES.
+
+\begin{lstlisting}[language=C++, caption=Generiranje matrice značajki, label=code:featureImage]
     float featureSlice[NUMBER_OF_MFCCS] = {0};
     float featureImage[NUMBER_OF_FEATURES] = {0};
 
     memcpy(featureImage, featureImage + NUMBER_OF_MFCCS, sizeof(float) * (NUMBER_OF_FEATURES - NUMBER_OF_MFCCS));
     memcpy(featureImage + NUMBER_OF_FEATURES - NUMBER_OF_MFCCS, featureSlice, sizeof(float) * NUMBER_OF_MFCCS);
 \end{lstlisting}
+
+Algoritam osvježavanja postojeće matrice značajki prikazan je slikom \ref{pic:featureImage}. 
+Pokazna matrica se sastoji od sedam vremenskih odsječaka i šest MFC koeficijenata. Crveni 
+vremenski prozor značajki se dodaje je na kraj matrice, dok se istovremeno ostali pomiču prema
+naprijed te istiskuju najstariji prozor koji je u ovom slučaju obojan plavom bojom.
+
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/featureImage.png} 
+    \caption{Matrica značajki \cite{flowchart}}
+    \label{pic:featureImage}
+\end{figure}

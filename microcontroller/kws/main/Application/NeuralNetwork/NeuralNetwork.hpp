@@ -21,7 +21,6 @@ class NeuralNetwork
         const tflite::Model* model = nullptr;
         tflite::MicroInterpreter* interpreter = nullptr;
         TfLiteTensor* model_input = nullptr;
-
         uint8_t tensor_arena[TENSOR_ARENA_SIZE];
         tflite::MicroMutableOpResolver<7> resolver;
         float* model_input_buffer = nullptr;
@@ -30,10 +29,8 @@ class NeuralNetwork
         NeuralNetwork();
         void giveFeaturesToModel(float* features, size_t numberOfFeatures);
         bool invoke(void);
-        void printOutput();
         int numberOfClasses;
-        float* outputData;
-        
+        float* outputData;  
 };
 
 #endif /* _NEURAL_NETWORK_H_ */
