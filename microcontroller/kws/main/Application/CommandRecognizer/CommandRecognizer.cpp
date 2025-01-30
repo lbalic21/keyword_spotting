@@ -66,8 +66,9 @@ void CommandRecognizer::invokeCommand(uint32_t commandIndex, float probability)
     }
 }
 
-void CommandRecognizer::getNumOfCommands(void)
+uint8_t CommandRecognizer::getNumOfCommands(void)
 {
     printf("Number of commands: %d\n", commandCount);
+    return commandCount;
 }
 

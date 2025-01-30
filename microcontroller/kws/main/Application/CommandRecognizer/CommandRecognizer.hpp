@@ -16,19 +16,16 @@ class CommandRecognizer
     private:
         Command* commands[MAX_COMMANDS];
         uint8_t commandCount = 0;
-
         float lastResults[WWW][MAX_COMMANDS] = {0};
         int savingCounter = 0;
-
         int64_t lastCommandInvoke[MAX_COMMANDS] = {0};
 
     public:
-        bool recognize(float* outputData);
-        void incrementCounter(void);
-
         bool addCommand(Command* command);
+        bool recognize(float* outputData);
         void invokeCommand(uint32_t commandIndex, float probability);
-        void getNumOfCommands(void);
+        void incrementCounter(void);
+        uint8_t getNumOfCommands(void);
 };
 
 #endif /* _COMMAND_RECOGNIZER_H_ */
