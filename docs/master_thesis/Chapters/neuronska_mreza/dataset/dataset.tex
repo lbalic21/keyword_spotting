@@ -4,7 +4,8 @@
 Prvi korak u izgradnji sustava koji koristi bilo kakav tip modela strojnog učenja
 je odabir i priprema prikladnog skupa podataka na kojem će se taj model trenirati.
 Budući da je cilj sustava prepoznavanje govornih naredbi (eng. keyword spotting),
-savršen otvoreni skup podataka je \cite{speechcommandsv2}. Riječ je o skupu koji
+savršen otvoreni skup podataka je skup za treniranje prepoznavanja ograničenog
+skupa naredbi \cite{speechcommandsv2}. Riječ je o skupu koji
 se sastoji od oko 105000 zvučnih isječaka duljine oko jedne sekunde (frekvencija
 zapisa je 16 kHz) u kojima ljudi
 izgovaraju jednu od 35 različitih riječi. Također, skup ima nekoliko vrsta 
@@ -37,7 +38,7 @@ dok se ružičasti šum također sastoji od svih frekvencija, ali veći intenzit
 imaju niže frekvencijske komponente \cite{noise}. Međutim, zbog toga što skup
 podataka zadrži
 svega nekoliko minuta takvih zvučnih zapisa, potrebno je na neki način dopuniti
-taj podskup podataka. Naime mreža koju treniramo će preferirati klasu neku od klasa
+taj podskup podataka. Naime mreža koju treniramo će preferirati neku od klasa
 ako takvih primjera ima mnogo više od primjera ostalih klasa. Drugim riječima,
 skup podataka za treniranje mora biti balansiran (primjera iz svake klase treba
 biti otprilike jednak broj) \cite{balance}. Uz to, za rad u stvarnom svijetu, nije loše u skup
@@ -49,10 +50,10 @@ riječi u skupu podataka duljine od otprilike jedne sekunde, pozadinske zvukove
 je potrebno izrezati na identičnu duljinu kako bi mreža mogla primati vrlo 
 precizno definiranu vrstu ulaznih podataka. O broju riječi iz klasa koje su odabrane 
 kao naredbe ovisit će koliko trebamo imati isječaka koji će predstavljati
-klasu pozadinskih zvukova. Metoda kojoj lako možemo "umnožiti" broj pozadinskih 
+klasu pozadinskih zvukova. Metoda kojom lako možemo "umnožiti" broj pozadinskih 
 zvukova zove se augmentacija.
 
-AUGMENTACIJA...
+
 
 Druga kategorija mora biti sastavljena od kombinacije različitih riječi za koje
 ne želimo klasifikaciju, tj. nisu odabrane u podskup naredbi. Ostatak
