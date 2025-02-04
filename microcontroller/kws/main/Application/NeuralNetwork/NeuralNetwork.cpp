@@ -17,10 +17,12 @@ NeuralNetwork::NeuralNetwork()
     
   }
   if (resolver.AddFullyConnected() != kTfLiteOk) {
+
     while(1);
     
   }
-  if (resolver.AddSoftmax() != kTfLiteOk) {
+  if (resolver.AddSoftmax() != kTfLiteOk) 
+  {
     while(1);
     
   }
@@ -29,15 +31,18 @@ NeuralNetwork::NeuralNetwork()
     while(1);
     
   }
-  if (resolver.AddMaxPool2D() != kTfLiteOk) {
+  if (resolver.AddMaxPool2D() != kTfLiteOk)
+   {
     while(1);
     
   }
-  if (resolver.AddQuantize() != kTfLiteOk) {
+  if (resolver.AddQuantize() != kTfLiteOk) 
+  {
     while(1);
     
   }
-  if (resolver.AddDequantize() != kTfLiteOk) {
+  if (resolver.AddDequantize() != kTfLiteOk) 
+  {
     while(1);
    
   }
