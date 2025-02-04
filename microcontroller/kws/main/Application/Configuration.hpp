@@ -15,10 +15,10 @@
 #define UPPER_BAND_LIMIT                        (7600.0)
 #define MEL_BREAK_FREQUENCY_HERTZ               (700.0)
 #define MEL_HIGH_FREQUENCY_Q                    (1127.0)
-#define NUMBER_OF_MFCCS                         (13)
+#define NUMBER_OF_MFCCS                         (12)
 #define NUMBER_OF_FEATURES                      (NUMBER_OF_TIME_SLICES * NUMBER_OF_MFCCS)
 #define NUMBER_OF_NEW_SLICES_BEFORE_INVOKING    (6)
-#define ACTIVATION_THRESHOLD                    (0.70)
+#define ACTIVATION_THRESHOLD                    (0.80)
 #define COOL_OF_PERIOD_MS                       (1500)
 #define MAX_COMMANDS                            (10)
 

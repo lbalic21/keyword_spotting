@@ -15,7 +15,7 @@ public:
 
 private:
 
-    float coefficients[NUMBER_OF_MEL_BINS * NUMBER_OF_MFCCS];
+    float coefficients[NUMBER_OF_MEL_BINS * (NUMBER_OF_MFCCS+1)];
 };
 
 #endif // DCT_HPP
