@@ -13,7 +13,8 @@
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 
-#define TENSOR_ARENA_SIZE   60*1024
+#define TENSOR_ARENA_SIZE       (60 * 1024)
+#define NUMBER_OF_OPERATORS     (7)
 
 class NeuralNetwork
 {
@@ -22,7 +23,7 @@ class NeuralNetwork
         tflite::MicroInterpreter* interpreter = nullptr;
         TfLiteTensor* model_input = nullptr;
         uint8_t tensor_arena[TENSOR_ARENA_SIZE];
-        tflite::MicroMutableOpResolver<7> resolver;
+        tflite::MicroMutableOpResolver<NUMBER_OF_OPERATORS> resolver;
         float* model_input_buffer = nullptr;
 
     public:

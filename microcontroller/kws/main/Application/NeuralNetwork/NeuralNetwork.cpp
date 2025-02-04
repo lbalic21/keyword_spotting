@@ -4,57 +4,57 @@ static const char *TAG = "NeuralNetwork";
 
 NeuralNetwork::NeuralNetwork()
 {
-  printf("NN initialization");
+  ESP_LOGI(TAG, "NN initialization");
   this->model = tflite::GetModel(g_model);
-  if (model->version() != TFLITE_SCHEMA_VERSION)
+  if(model->version() != TFLITE_SCHEMA_VERSION)
   {
     ESP_LOGE(TAG, "Model provided is schema version %ld not equal to supported version %d.", model->version(), TFLITE_SCHEMA_VERSION);
-    return;
+    while(1);
   } 
 
-  if (resolver.AddConv2D() != kTfLiteOk) {
-    while(1);
-    
-  }
-  if (resolver.AddFullyConnected() != kTfLiteOk) {
-
-    while(1);
-    
-  }
-  if (resolver.AddSoftmax() != kTfLiteOk) 
+  if(resolver.AddConv2D() != kTfLiteOk)
   {
     while(1);
-    
   }
+
+  if(resolver.AddFullyConnected() != kTfLiteOk)
+  {
+    while(1);
+  }
+
+  if(resolver.AddSoftmax() != kTfLiteOk) 
+  {
+    while(1);
+  }
+
   if(resolver.AddReshape() != kTfLiteOk)
   {
     while(1);
-    
   }
-  if (resolver.AddMaxPool2D() != kTfLiteOk)
-   {
-    while(1);
-    
-  }
-  if (resolver.AddQuantize() != kTfLiteOk) 
+
+  if(resolver.AddMaxPool2D() != kTfLiteOk)
   {
     while(1);
-    
   }
-  if (resolver.AddDequantize() != kTfLiteOk) 
+
+  if(resolver.AddQuantize() != kTfLiteOk) 
   {
     while(1);
-   
+  }
+
+  if(resolver.AddDequantize() != kTfLiteOk) 
+  {
+    while(1);
   }
 
   // Build an interpreter to run the model with.
-  static tflite::MicroInterpreter static_interpreter(
-      model, resolver, tensor_arena, TENSOR_ARENA_SIZE);
+  static tflite::MicroInterpreter static_interpreter(model, resolver, tensor_arena, TENSOR_ARENA_SIZE);
   interpreter = &static_interpreter;
 
   // Allocate memory from the tensor_arena for the model's tensors.
   TfLiteStatus allocate_status = interpreter->AllocateTensors();
-  if (allocate_status != kTfLiteOk) {
+  if(allocate_status != kTfLiteOk)
+  {
     ESP_LOGE(TAG, "Allocating Tensors failed: %d", allocate_status);
     while(1);
   }
@@ -75,8 +75,8 @@ NeuralNetwork::NeuralNetwork()
 
     while(1);
   }
+
   model_input_buffer = tflite::GetTensorData<float>(model_input);
-  ESP_LOGW(TAG, "PROCESS");
 
   TfLiteTensor* output = interpreter->output(0);
   this->numberOfClasses = output->dims->data[1]; 
@@ -88,7 +88,6 @@ NeuralNetwork::NeuralNetwork()
          model_input->dims->data[1],
          model_input->dims->data[2],
          model_input->dims->data[3]);
-
 }
 
 void NeuralNetwork::giveFeaturesToModel(float* features, size_t numberOfFeatures)
