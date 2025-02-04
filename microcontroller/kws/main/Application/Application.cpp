@@ -90,18 +90,25 @@ void Application(void)
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
 
     // Create and add commands
-    NoCommand cmd1("BACKGROUND");
-    PrintCommand cmd3("NO");
-    NoCommand cmd5("UNKNOWN");
-    PrintCommand cmd6("YES");
-    PrintCommand cmd4("ZERO");
-    
+    NoCommand back("BACKGROUND");
+    PrintCommand no("NO");
+    NoCommand unknown("UNKNOWN");
+    PrintCommand yes("YES");
+    PrintCommand left("LEFT");
+    PrintCommand right("RIGHT");
 
-    recognizer.addCommand(&cmd1);
-    recognizer.addCommand(&cmd3);
-    recognizer.addCommand(&cmd5);
-    recognizer.addCommand(&cmd6);
-    recognizer.addCommand(&cmd4);
+    PrintCommand down("DOWN");
+    PrintCommand up("UP");
+    PrintCommand on("ON");
+    PrintCommand off("OFF");
+
+    recognizer.addCommand(&back);
+    recognizer.addCommand(&left);
+    recognizer.addCommand(&no);
+    recognizer.addCommand(&right);
+    recognizer.addCommand(&unknown);
+    recognizer.addCommand(&yes);
+
 
     recognizer.getNumOfCommands();
 
@@ -127,7 +134,7 @@ void Application(void)
     {   
         startLoop = esp_timer_get_time();
         /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(yes_esp);
+        //testingFacility(no);
 
         //ESP_LOGI(TAG, "LOOP");
         
