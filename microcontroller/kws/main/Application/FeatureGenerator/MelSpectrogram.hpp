@@ -1,13 +1,13 @@
-#ifndef _MEL_SPECTROGRAM_FLOAT_H_
-#define _MEL_SPECTROGRAM_FLOAT_H_
+#ifndef _MEL_SPECTROGRAM_H_
+#define _MEL_SPECTROGRAM_H_
 
 #include "stdint.h"
 #include "Configuration.hpp"
 
-class MelSpectrogramFloat
+class MelSpectrogram
 {
     public:
-        MelSpectrogramFloat();
+        MelSpectrogram();
         void generate(float* spectrogram, float* melSpectrogram);
 
     private:
@@ -19,4 +19,4 @@ class MelSpectrogramFloat
 
 };
 
-#endif /* _MEL_SPECTROGRAM_FLOAT_H_ */
+#endif /* _MEL_SPECTROGRAM_H_ */

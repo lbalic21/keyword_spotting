@@ -5,52 +5,44 @@
 
 static const char *TAG = "Feature Generator";
 
-template <typename T>
-FeatureGenerator<T>::FeatureGenerator(Window* window, FFT* fft, MelSpectrogram* melSpectrogram)
-{
-    ESP_LOGI(TAG, "Creating Feature Generator");
-    this->window = window;
-    this->fft = fft;
-    this->melSpectrogram = melSpectrogram;
-}
-
-template <typename T>
-bool FeatureGenerator<T>::generateFeatures(int16_t* audioFrame, T* featureSlice)
+bool FeatureGenerator::generateFeatures(int16_t* audioFrame, float* featureSlice)
 {
     /*****************************************************************/
     /*************************** WINDOW ******************************/
     /*****************************************************************/
 
-    for(size_t i = 0; i < WINDOW_SIZE; i++)
-    {
-        int32_t value = audioFrame[i] * window->data[i];
-        windowedSignal[i] = value >> WINDOW_BITS;
-    }
-
+    float audioWindow[WINDOW_SIZE];
+    window.apply(audioFrame, audioWindow);
+    
     /*****************************************************************/
     /*************************** FFT *********************************/
     /*****************************************************************/
 
-    fft->compute(windowedSignal, spectrogram);
+    float spectrogram[NUMBER_OF_SPECTROGRAM_BINS];
+    fft.compute(audioWindow, spectrogram);
+
+    //for(int i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
+    ////{
+    ////    printf("FFT[%d] = %f\n", i, spectrogram[i]);
+    //}
 
     /*****************************************************************/
     /*********************** MEL SPECTRO *****************************/
     /*****************************************************************/
 
-    this->melSpectrogram->generate(spectrogram, melEnergies);
+    float melSpectro[NUMBER_OF_MEL_BINS] = {0.0};
+    melSpectrogram.generate(spectrogram, melSpectro);
+
+    //for(size_t i = 0; i < NUMBER_OF_MEL_BINS; i++)
+    //{
+    //    printf("MEL[%d] = %f\n", i, melSpectro[i]);
+    //}
 
     /*****************************************************************/
     /*************************** DCT *********************************/
     /*****************************************************************/
 
-    for(size_t i = 0; i < NUMBER_OF_MFCCS; i++)
-    {
-        featureSlice[i] = static_cast<T>(melEnergies[i]); // Cast mel energies to T (int8_t or float)
-    }
+    dct.compute(melSpectro, featureSlice);
 
     return true;
 }
-
-// Explicit template instantiation
-template class FeatureGenerator<int8_t>;
-template class FeatureGenerator<float>;

@@ -10,24 +10,12 @@
 #include "Application.hpp"
 #include "Configuration.hpp"
 #include "AudioRecorder/AudioRecorder.hpp"
+#include "FeatureGenerator/FeatureGenerator.hpp"
 #include "NeuralNetwork/NeuralNetwork.hpp"
 #include "CommandRecognizer/CommandRecognizer.hpp"
-#include "CommandRecognizer/PrintCommand.hpp"
-#include "CommandRecognizer/NoCommand.hpp"
-#include "CommandRecognizer/Command.hpp"
-
-#if USE_FLOAT == 1
-#include "FeatureGeneratorFloat/FeatureGeneratorFloat.hpp"
-#include "FeatureGeneratorFloat/WindowFloat.hpp"
-#include "FeatureGeneratorFloat/FFTFloat.hpp"
-#include "FeatureGeneratorFloat/MelSpectrogramFloat.hpp"
-#include "FeatureGeneratorFloat/DCT.hpp"
-#else
-#include "FeatureGenerator/FeatureGenerator.hpp"
-#include "FeatureGenerator/Window.hpp"
-#include "FeatureGenerator/FFT.hpp"
-#include "FeatureGenerator/MelSpectrogram.hpp"
-#endif
+#include "Commands/PrintCommand.hpp"
+#include "Commands/BlankCommand.hpp"
+#include "Commands/Command.hpp"
 
 #include "TestSamples/testFrame.h"
 #include "TestSamples/yes.h"
@@ -51,26 +39,14 @@ void testingFacility(int16_t* audioData);
 /******************************************************************************/
 
 static AudioRecorder audioRecorder(SAMPLE_RATE);
-
-#if USE_FLOAT == 1
-static WindowFloat hannWindow;
-static FFTFloat fft;
-static MelSpectrogramFloat melSpectrogram;
-static DCT dct;
-static FeatureGeneratorFloat featureGenerator(&hannWindow, &fft, &melSpectrogram, &dct);
-#else
-static Window hannWindow;
-static FFT fft;
-static MelSpectrogram melSpectrogram;
-static FeatureGenerator featureGenerator(&hannWindow, &fft, &melSpectrogram);
-#endif
-
+static FeatureGenerator featureGenerator;
 static NeuralNetwork network;
 static CommandRecognizer recognizer;
 
 /******************************************************************************/
 /************************** BUFFERS INITIALIZATION ****************************/
 /******************************************************************************/
+
 int16_t newSamples[STEP_SIZE];
 int16_t audioFrame[WINDOW_SIZE] = {0}; 
 float featureSlice[NUMBER_OF_MFCCS];
@@ -90,13 +66,12 @@ void Application(void)
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
 
     // Create and add commands
-    NoCommand back("BACKGROUND");
+    BlankCommand back("BACKGROUND");
     PrintCommand no("NO");
-    NoCommand unknown("UNKNOWN");
+    BlankCommand unknown("UNKNOWN");
     PrintCommand yes("YES");
     PrintCommand left("LEFT");
     PrintCommand right("RIGHT");
-
     PrintCommand down("DOWN");
     PrintCommand up("UP");
     PrintCommand on("ON");
@@ -108,7 +83,6 @@ void Application(void)
     recognizer.addCommand(&right);
     recognizer.addCommand(&unknown);
     recognizer.addCommand(&yes);
-
 
     recognizer.getNumOfCommands();
 
@@ -170,8 +144,8 @@ void Application(void)
         * |<---- WINDOW_SIZE - STEP_SIZE ---->|<----- STEP_SIZE ----->|
         * -------------------------------------------------------------
         */
-        memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
-        memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE * 2);
+        memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * sizeof(int16_t));
+        memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE * sizeof(int16_t));
 
 
         /**********************************************************************/
@@ -222,20 +196,13 @@ void Application(void)
                 continue;
             }
             numberOfNewSlices = 0;
+
+            /*******************************************************************/
+            /*********************** RECOGNIZING COMMANDS **********************/
+            /*******************************************************************/
+
             recognizer.recognize(network.outputData);
         }
-
-
-        /**********************************************************************/
-        /*********************** RECOGNIZING COMMANDS *************************/
-        /**********************************************************************/
-        
-
-
-        /**********************************************************************/
-        /********************** RESPONDING TO A COMMAND ***********************/
-        /**********************************************************************/
-
     
         endLoop = esp_timer_get_time();
         //printf("Time taken for loop: %lld us\n", (endLoop - startLoop));

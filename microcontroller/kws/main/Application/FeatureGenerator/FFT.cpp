@@ -1,16 +1,17 @@
 #include "FFT.hpp"
-#include "kiss_fft.h"
+#include <math.h>
 
 FFT::FFT()
 {
-    if(dsps_fft2r_init_sc16(NULL, WINDOW_SIZE) != ESP_OK)
+    esp_err_t ret = dsps_fft2r_init_fc32(NULL, WINDOW_SIZE);
+    if(ret != ESP_OK)
     {
-        //ESP_LOGE("FFT", "FFT could not initialize!");
+        //ESP_LOGE("FFT", "Not possible to initialize FFT. Error = %i", ret);
         while(1);
     }
 }
 
-void FFT::compute(int16_t* frame, uint32_t* spectrogram)
+void FFT::compute(float* frame, float* spectrogram)
 {
     for(size_t i = 0; i < WINDOW_SIZE; i++)
     {
@@ -19,20 +20,17 @@ void FFT::compute(int16_t* frame, uint32_t* spectrogram)
     }
 
     // Perform FFT
-    dsps_fft2r_sc16_ae32(data, WINDOW_SIZE);
+    dsps_fft2r_fc32_ae32(data, WINDOW_SIZE);
 
     // Bit reversal
-    dsps_bit_rev_sc16_ansi(data, WINDOW_SIZE);
+    dsps_bit_rev_fc32_ansi(data, WINDOW_SIZE);
 
     // Magnitude (power) of each frequency bin
     for(size_t i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
     {
-        int32_t real = data[2 * i];
-        int32_t imag = data[2 * i + 1];
+        float real = data[2 * i];
+        float imag = data[2 * i + 1];
 
-        int64_t real_squared = (int64_t)real * real;
-        int64_t imag_squared = (int64_t)imag * imag;
-
-        spectrogram[i] = (uint32_t)(real_squared + imag_squared);
+        spectrogram[i] = sqrt(real * real + imag * imag);
     }
 }

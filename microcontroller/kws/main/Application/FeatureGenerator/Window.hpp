@@ -4,13 +4,15 @@
 #include "stdint.h"
 #include "Configuration.hpp"
 
-template <typename T>
 class Window
 {
     public:
     
-        T data[WINDOW_SIZE];
         Window();
+        void apply(int16_t* input, float* output);
+        
+    private:
+        float data[WINDOW_SIZE];
 };
 
 #endif /* _WINDOW_H_ */

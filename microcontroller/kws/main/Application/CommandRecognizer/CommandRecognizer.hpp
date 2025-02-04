@@ -7,7 +7,7 @@
 #include "freertos/task.h"
 #include "esp_timer.h"
 #include "Configuration.hpp"
-#include "Command.hpp"
+#include "Commands/Command.hpp"
 
 #define WWW      5
 

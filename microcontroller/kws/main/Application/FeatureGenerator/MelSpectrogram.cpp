@@ -1,8 +1,8 @@
-#include "MelSpectrogramFloat.hpp"
+#include "MelSpectrogram.hpp"
 #include <math.h>
 #include <cstdio>
 
-MelSpectrogramFloat::MelSpectrogramFloat()
+MelSpectrogram::MelSpectrogram()
 {
     this->lowerMel = 2595.0 * log10(1.0 + LOWER_BAND_LIMIT / 700.0);  // Lower frequency in Mel scale
     this->upperMel = 2595.0 * log10(1.0 + UPPER_BAND_LIMIT / 700.0);  // Upper frequency in Mel scale
@@ -13,7 +13,7 @@ MelSpectrogramFloat::MelSpectrogramFloat()
     }
 }
 
-void MelSpectrogramFloat::generate(float *spectrogram, float *melSpectrogram) {
+void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram) {
 
     for (int melBin = 0; melBin < NUMBER_OF_MEL_BINS; melBin++) {
         melSpectrogram[melBin] = 0.0;

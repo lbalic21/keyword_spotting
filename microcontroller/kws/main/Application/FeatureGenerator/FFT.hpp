@@ -7,11 +7,11 @@
 class FFT
 {
     private:
-        int16_t data[WINDOW_SIZE * 2];
+        float data[WINDOW_SIZE * 2];
         
     public:
         FFT();
-        void compute(int16_t* frame, uint32_t* spectrogram);
+        void compute(float* frame, float* spectrogram);
 };
 
-#endif /* _FFT_H_*/
+#endif /* _FFT_H_ */
