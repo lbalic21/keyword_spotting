@@ -7,12 +7,27 @@ Command Recognizer is a lightweight and efficient keyword spotting (KWS) system 
 
 ## ✨ Features
 - 🚀 **Efficient Audio Command Recognition**: Detects and executes commands based on neural network inference.
-- 🎧 **Customizable Command Set**: Easily add and manage multiple commands.
+- 🎛 **Customizable Command Set**: Easily add and manage multiple commands.
 - ⏳ **Cool-Down Mechanism**: Prevents rapid re-triggering of commands.
 - ⚡ **Optimized for ESP32-S3**: Lightweight and performant for embedded systems.
 - 📡 **Low-Latency Execution**: Immediate response upon detecting a valid command.
 
-## 🛠️ Installation & Setup
+## 🏗 Repository Structure
+```
+/
+ ├── neural_network/       # Training and evaluation of the CNN model
+ │   ├── train.py          # Training script
+ │   ├── dataset/          # Training dataset
+ │   ├── model/            # Saved models and weights
+ │
+ ├── microcontroller/      # ESP32-S3 implementation
+ │   ├── src/              # Source code for command recognition
+ │   ├── models/           # Deployed models for inference
+ │
+ ├── README.md             # Main project documentation
+```
+
+## 🛠 Installation & Setup
 
 ### 1️⃣ Clone the Repository
 ```sh
@@ -20,94 +35,79 @@ git clone https://github.com/your-username/your-repo.git
 cd your-repo
 ```
 
-### 2️⃣ Install ESP-IDF (if not installed)
-Follow the official [ESP-IDF installation guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html).
+### 2️⃣ Install Dependencies
+- **Neural Network**: Install Python dependencies in `neural_network/`
+  ```sh
+  cd neural_network
+  pip install -r requirements.txt
+  ```
+- **Microcontroller**: Follow the ESP-IDF installation guide for ESP32-S3 [here](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html).
 
 ### 3️⃣ Build & Flash to ESP32-S3
+```sh
+cd microcontroller
+idf.py set-target esp32s3
+idf.py build flash monitor
+```
+
+## 🚀 Neural Network Training
+
+### 📌 Overview
+The neural network processes spectrograms of recorded audio and learns to classify them into predefined commands.
+
+### 🛠 Dataset Preparation
+Place your dataset in `dataset/`. Ensure it is structured correctly with labeled audio files.
+
+### 🔧 Training the Model
+Run the following command to train the model:
+```sh
+python train.py --epochs 10 --batch_size 32
+```
+
+### 📤 Model Export
+After training, the model will be saved in `model/`. Convert it for ESP32 deployment using:
+```sh
+python export_model.py --model model/best_model.h5 --output model/tflite_model.tflite
+```
+
+## 🚀 Microcontroller Implementation
+
+### 📌 Overview
+The microcontroller captures audio, extracts MFCC features, and runs inference using the trained CNN model.
+
+### 🛠 Setup & Installation
+
+#### 1️⃣ Set Up ESP-IDF
+Follow the [ESP-IDF installation guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/get-started/index.html) to install the development environment.
+
+#### 2️⃣ Build & Flash Firmware
+Navigate to the `microcontroller/` directory and run:
 ```sh
 idf.py set-target esp32s3
 idf.py build flash monitor
 ```
 
-## 🚀 Usage
+#### 3️⃣ Deploy the Model
+Copy the converted TFLite model (`tflite_model.tflite`) into `models/` before flashing.
 
-### ✅ Adding Commands
-To add a new command, subclass `Command` and implement the `execute()` method. Then, register it using `CommandRecognizer::addCommand()`.
+### 🚀 Running Inference
+The recognizer processes audio and detects commands in real-time. If a command's probability exceeds `ACTIVATION_THRESHOLD`, it triggers an action.
 
-```cpp
-class CustomCommand : public Command {
-public:
-    void execute(float probability) override {
-        printf("Custom Command Triggered with probability: %f\n", probability);
-    }
-};
-
-// Usage
-CommandRecognizer recognizer;
-recognizer.addCommand(new CustomCommand());
-```
-
-### ✅ Recognizing Commands
-- The system continuously processes audio and runs inference using a neural network.
-- If a class's probability exceeds the `ACTIVATION_THRESHOLD`, the corresponding command is executed.
-- A **cool-down period** ensures commands are not repeatedly triggered.
-
-```cpp
-bool CommandRecognizer::recognize(int numberOfClasses, float* outputData) {
-    if (((esp_timer_get_time() - lastRecognizeTime) / 1000) < COOL_OF_PERIOD_MS) {
-        return false;
-    }
-    for (uint32_t i = 0; i < numberOfClasses; i++) {
-        if (outputData[i] > ACTIVATION_THRESHOLD) {
-            invokeCommand(i, outputData[i]);
-            lastRecognizeTime = esp_timer_get_time();
-            return true;
-        }
-    }
-    return false;
-}
-```
-
-### ✅ Invoking Commands
-```cpp
-void CommandRecognizer::invokeCommand(uint32_t commandIndex, float probability) {
-    if (commandIndex < commandCount) {
-        commands[commandIndex]->execute(probability);
-    }
-}
-```
-
-### ✅ Getting the Number of Commands
-```cpp
-void CommandRecognizer::getNumOfCommands() {
-    printf("Number of commands: %d\n", commandCount);
-}
-```
-
-## 🛠️ Code Structure
-```
-/src
- ├── CommandRecognizer.cpp  # Core logic for recognizing commands
- ├── CommandRecognizer.hpp  # Header file defining the recognizer class
- ├── main.cpp               # Entry point for the application
- ├── models/                # Neural network models for KWS
- ├── audio/                 # Raw audio processing utilities
-```
-
-## 📜 TODOs & Improvements
-- [ ] Improve memory efficiency for command storage
-- [ ] Implement dynamic command registration
-- [ ] Add support for additional neural network architectures
+## 📄 TODOs & Improvements
+- [ ] Improve dataset preprocessing
+- [ ] Optimize inference speed
+- [ ] Experiment with different CNN architectures
+- [ ] Implement a dynamic threshold for improved accuracy
 
 ## 🤝 Contributing
 Contributions are welcome! Feel free to:
 - Submit issues for bug reports and feature requests.
 - Fork the repo and submit pull requests with improvements.
 
-## 📝 License
+## 📜 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📩 Contact
+## 📬 Contact
 For questions or discussions, feel free to reach out via GitHub Issues or email.
 
 ---
