@@ -2,42 +2,14 @@
 
 static const char *TAG = "Audio Recorder";
 
-void AudioRecorder::set(void)
+
+AudioRecorder::AudioRecorder(uint32_t sampleRate)
 {
-    ESP_LOGI(TAG, "Starting codec chip");
-    audio_board_handle_t board_handle = audio_board_init();
-    audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_ENCODE, AUDIO_HAL_CTRL_START);
-    
-    ESP_LOGI(TAG, "Creating i2s stream to read audio data from codec chip");
-    i2s_config_t i2s = {
-        .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX),
-        .sample_rate = (uint32_t)this->sampleRate,
-        .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
-        .communication_format = I2S_COMM_FORMAT_STAND_I2S,
-        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
-        .dma_buf_count = 3,
-        .dma_buf_len = 256 * sizeof(int16_t),
-        .use_apll = false,
-        .tx_desc_auto_clear = false, 
-    };
-     
-    audio_element_handle_t i2s_stream_reader;
-    i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
-    i2s_cfg.type = AUDIO_STREAM_READER;
-    i2s_cfg.i2s_port = I2S_NUM_0;
-    i2s_cfg.i2s_config = i2s;
-    i2s_stream_reader = i2s_stream_init(&i2s_cfg);
+    this->sampleRate = sampleRate;
 }
 
 void AudioRecorder::start(void)
 {
-    ringBuffer = xRingbufferCreate(1024 * 16, RINGBUF_TYPE_BYTEBUF);
-    if (ringBuffer == NULL) {
-        ESP_LOGE(TAG, "Creating ring buffer failed");
-        while(1);
-    }
-
     BaseType_t result = xTaskCreate(
         captureAudioTask,            // Function pointer
         "CaptureAudioTask",          // Task name
@@ -53,45 +25,60 @@ void AudioRecorder::start(void)
     }
 }
 
-static uint32_t samplesSum = 0;
-
 void AudioRecorder::captureAudioTask(void* pvParameters)
 {
     ESP_LOGI(TAG, "Task is running on core: %d\n", xPortGetCoreID());
-    size_t wantedNumOfBytes = 512;
     AudioRecorder* recorder = static_cast<AudioRecorder*>(pvParameters); 
-    int16_t i2sReadBuffer[256];
-    size_t bytesRead;
-
-    while (1) {
-        //UBaseType_t stackHighWaterMark = uxTaskGetStackHighWaterMark(NULL);
-        //ESP_LOGI(TAG, "Stack high watermark: %d", stackHighWaterMark);
-
-        i2s_read(I2S_NUM_0, i2sReadBuffer, sizeof(i2sReadBuffer), &bytesRead, portMAX_DELAY);
-        //printf("Bytes read: %d\n", bytesRead);
-
-        // Print the raw audio samples in hexadecimal
-        /*
-        for (int i = 0; i < bytesRead / sizeof(int16_t); i++) {
-            printf("%d\n", i2sReadBuffer[i]);
-        }
-        */  
-
-        //samplesSum += bytesRead;
-        //ESP_LOGI(TAG, "SAMPLES: %ld", samplesSum);
-
-        if(bytesRead < wantedNumOfBytes)
-        {
-            ESP_LOGE(TAG, "Wanted %d bytes - retrieved %dbytes", wantedNumOfBytes, bytesRead);
-            //while(1);
-        }
-
-        // Send data to the ring buffer
-        if (xRingbufferSend(recorder->ringBuffer, (void*)i2sReadBuffer, bytesRead, portMAX_DELAY) != pdTRUE) {
-            ESP_LOGE(TAG, "Failed to send data to the ring buffer");
-            while(1);
-        }        
+    
+    audio_pipeline_handle_t pipeline;
+    audio_element_handle_t i2s_stream_reader;
+    
+    ESP_LOGI(TAG, "[1] Initializing ring buffer");
+    recorder->ringBuffer = xRingbufferCreate(1024 * 16, RINGBUF_TYPE_BYTEBUF);
+    if (recorder->ringBuffer == NULL)
+    {
+        ESP_LOGE(TAG, "Creating ring buffer failed");
+        while(1);
     }
+
+    ESP_LOGI(TAG, "[2] Creating audio pipeline");
+    audio_pipeline_cfg_t pipeline_cfg = DEFAULT_AUDIO_PIPELINE_CONFIG();
+    pipeline = audio_pipeline_init(&pipeline_cfg);
+    mem_assert(pipeline);
+
+    ESP_LOGI(TAG, "[3] Creating I2S stream to read audio data");
+    i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
+    i2s_cfg.type = AUDIO_STREAM_READER;
+    i2s_cfg.i2s_config.sample_rate = recorder->sampleRate;
+    i2s_cfg.i2s_config.channel_format = I2S_CHANNEL_FMT_ONLY_LEFT;
+    i2s_stream_reader = i2s_stream_init(&i2s_cfg);
+    
+    audio_pipeline_register(pipeline, i2s_stream_reader, "i2s");
+    audio_pipeline_run(pipeline);
+
+    ESP_LOGI(TAG, "[4] Storing data into the ring buffer indefinitely");
+    int16_t *buffer = (int16_t*)malloc(1024);
+    
+    while (1) {
+        int read_len = audio_element_input(i2s_stream_reader, (char *)buffer, 1024);
+        if (read_len > 0) {
+            xRingbufferSend(recorder->ringBuffer, buffer, read_len, portMAX_DELAY);
+        }
+    }
+
+    // Cleanup never reached, but kept for completeness
+    ESP_LOGI(TAG, "[5] Stopping audio pipeline");
+    audio_pipeline_stop(pipeline);
+    audio_pipeline_wait_for_stop(pipeline);
+    audio_pipeline_terminate(pipeline);
+    audio_pipeline_unregister(pipeline, i2s_stream_reader);
+    audio_pipeline_remove_listener(pipeline);
+    audio_pipeline_deinit(pipeline);
+    audio_element_deinit(i2s_stream_reader);
+    vRingbufferDelete(recorder->ringBuffer);
+    free(buffer);
+
+    ESP_LOGI(TAG, "[6] Recording finished");
 }
 
 uint32_t AudioRecorder::getSamples(int16_t* samples, size_t numOfSamples)

@@ -14,16 +14,15 @@ class AudioRecorder
 {
     private:
         uint32_t sampleRate;
-        RingbufHandle_t ringBuffer;
+        RingbufHandle_t ringBuffer = NULL;
         TaskHandle_t captureAudioHandle;
 
         static void captureAudioTask(void* pvParameters);
 
     public:
-        AudioRecorder(uint32_t sampleRate) : sampleRate(sampleRate), ringBuffer(NULL), captureAudioHandle(NULL) {}
-        ~AudioRecorder() = default;
-        void set(void);
+        AudioRecorder(uint32_t sampleRate);
         void start(void);
+        ~AudioRecorder() = default;
         uint32_t getSamples(int16_t* samples, size_t numOfSamples);
 };
 
