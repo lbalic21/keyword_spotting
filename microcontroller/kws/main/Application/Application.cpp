@@ -66,23 +66,23 @@ void Application(void)
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
 
     // Create and add commands
-    BlankCommand back("BACKGROUND");
-    PrintCommand no("NO");
-    BlankCommand unknown("UNKNOWN");
-    PrintCommand yes("YES");
-    PrintCommand left("LEFT");
-    PrintCommand right("RIGHT");
-    PrintCommand down("DOWN");
-    PrintCommand up("UP");
-    PrintCommand on("ON");
-    PrintCommand off("OFF");
+    BlankCommand command_back("BACKGROUND");
+    PrintCommand command_no("NO");
+    BlankCommand command_unknown("UNKNOWN");
+    PrintCommand command_yes("YES");
+    PrintCommand command_left("LEFT");
+    PrintCommand command_right("RIGHT");
+    PrintCommand command_down("DOWN");
+    PrintCommand command_up("UP");
+    PrintCommand command_on("ON");
+    PrintCommand command_off("OFF");
 
-    recognizer.addCommand(&back);
-    recognizer.addCommand(&left);
-    recognizer.addCommand(&no);
-    recognizer.addCommand(&right);
-    recognizer.addCommand(&unknown);
-    recognizer.addCommand(&yes);
+    recognizer.addCommand(&command_back);
+    recognizer.addCommand(&command_left);
+    recognizer.addCommand(&command_no);
+    recognizer.addCommand(&command_right);
+    recognizer.addCommand(&command_unknown);
+    recognizer.addCommand(&command_yes);
 
     recognizer.getNumOfCommands();
 
@@ -108,8 +108,7 @@ void Application(void)
     {   
         startLoop = esp_timer_get_time();
         /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(no);
-
+        //testingFacility(yes_esp);
         //ESP_LOGI(TAG, "LOOP");
         
 
