@@ -66,12 +66,12 @@ void Application(void)
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
 
     // Create and add commands
-    BlankCommand command_back("BACKGROUND");
-    PrintCommand command_left("LEFT");
-    PrintCommand command_no("NO");
-    PrintCommand command_right("RIGHT");
-    BlankCommand command_unknown("UNKNOWN");
-    PrintCommand command_yes("YES");
+    BlankCommand command_back("BACKGROUND", 1, 0.7);
+    PrintCommand command_left("LEFT", 4, 0.80);
+    PrintCommand command_no("NO", 2, 0.7);
+    PrintCommand command_right("RIGHT", 2, 0.7);
+    BlankCommand command_unknown("UNKNOWN", 1, 0.7);
+    PrintCommand command_yes("YES", 4, 0.85);
 
     PrintCommand command_down("DOWN", 1, 0.7);
     PrintCommand command_off("OFF", 1, 0.7);

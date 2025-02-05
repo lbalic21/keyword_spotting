@@ -6,7 +6,7 @@
 class PrintCommand : public Command
 {
     public:
-        PrintCommand(const char* commandName, int historySize = 1, float threshold = 0.7) : Command(commandName, historySize, threshold) {}
+        PrintCommand(const char* commandName, int historySize, float threshold) : Command(commandName, historySize, threshold) {}
         virtual void execute(void);
 };
 

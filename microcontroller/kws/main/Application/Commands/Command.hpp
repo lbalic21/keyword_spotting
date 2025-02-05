@@ -15,7 +15,7 @@ class Command
         float latestAverage = 0.0;
 
     public:
-        Command(const char* commandName, int historySize = 1, float threshold = 0.7);
+        Command(const char* commandName, int historySize, float threshold );
         const char* getName(void);
         void giveResult(float value);
         bool isRecognized(void);
