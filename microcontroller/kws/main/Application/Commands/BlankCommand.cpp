@@ -1,6 +1,6 @@
 #include "BlankCommand.hpp"
 
-void BlankCommand::execute(float probability)
+void BlankCommand::execute(void)
 {
     
 }

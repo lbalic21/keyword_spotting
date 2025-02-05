@@ -67,15 +67,16 @@ void Application(void)
 
     // Create and add commands
     BlankCommand command_back("BACKGROUND");
+    PrintCommand command_left("LEFT");
     PrintCommand command_no("NO");
+    PrintCommand command_right("RIGHT");
     BlankCommand command_unknown("UNKNOWN");
     PrintCommand command_yes("YES");
-    PrintCommand command_left("LEFT");
-    PrintCommand command_right("RIGHT");
-    PrintCommand command_down("DOWN");
-    PrintCommand command_up("UP");
-    PrintCommand command_on("ON");
-    PrintCommand command_off("OFF");
+
+    PrintCommand command_down("DOWN", 1, 0.7);
+    PrintCommand command_off("OFF", 1, 0.7);
+    PrintCommand command_on("ON", 1, 0.7);
+    PrintCommand command_up("UP", 1, 0.7);
 
     recognizer.addCommand(&command_back);
     recognizer.addCommand(&command_left);
@@ -108,7 +109,7 @@ void Application(void)
     {   
         startLoop = esp_timer_get_time();
         /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(yes_esp);
+        //testingFacility(no);
         //ESP_LOGI(TAG, "LOOP");
         
 

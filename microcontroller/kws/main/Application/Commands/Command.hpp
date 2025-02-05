@@ -1,22 +1,26 @@
 #ifndef _COMMAND_H_
 #define _COMMAND_H_
 
+#include "stdint.h"
 #include "stdio.h"
 
 class Command
 {
     protected:
-        const char* name;
+        const char* commandName;
+        int historySize;
+        float* history;
+        float threshold;
+        int savingCounter = 0;
+        float latestAverage = 0.0;
 
     public:
-        Command(const char* commandName) : name(commandName) {}
-        virtual ~Command() {}
-        
-        const char* getName(void)
-        {
-            return name;
-        }
-        virtual void execute(float probability) = 0;
+        Command(const char* commandName, int historySize = 1, float threshold = 0.7);
+        const char* getName(void);
+        void giveResult(float value);
+        bool isRecognized(void);
+        float getAverage(void);
+        virtual void execute(void) = 0;
 };
 
 

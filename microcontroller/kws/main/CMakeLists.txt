@@ -12,8 +12,9 @@ set(COMPONENT_SRCS
 "Application/NeuralNetwork/model.cc"
 "Application/NeuralNetwork/NeuralNetwork.cpp"
 "Application/CommandRecognizer/CommandRecognizer.cpp"
-"Application/Commands/PrintCommand.cpp"
+"Application/Commands/Command.cpp"
 "Application/Commands/BlankCommand.cpp"
+"Application/Commands/PrintCommand.cpp"
 
 "Application/TestSamples/testFrame.cpp"
 "Application/TestSamples/yes.cpp"

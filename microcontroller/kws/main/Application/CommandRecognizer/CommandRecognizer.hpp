@@ -9,23 +9,17 @@
 #include "Configuration.hpp"
 #include "Commands/Command.hpp"
 
-#define WWW      5
-
 class CommandRecognizer
 {
     private:
         Command* commands[MAX_COMMANDS];
         uint8_t commandCount = 0;
-        float lastResults[WWW][MAX_COMMANDS] = {0};
-        int savingCounter = 0;
         int64_t lastCommandInvoke[MAX_COMMANDS] = {0};
 
     public:
         bool addCommand(Command* command);
-        bool recognize(float* outputData);
-        void invokeCommand(uint32_t commandIndex, float probability);
-        void incrementCounter(void);
         uint8_t getNumOfCommands(void);
+        bool recognize(float* outputData);
 };
 
 #endif /* _COMMAND_RECOGNIZER_H_ */

@@ -1,6 +1,6 @@
 #include "PrintCommand.hpp"
 
-void PrintCommand::execute(float probability)
+void PrintCommand::execute(void)
 {
-    printf("Heard: %s (%f %%)\n", this->name, probability * 100);
+    printf("Heard: %s (%f %%)\n", getName(), getAverage());
 }
