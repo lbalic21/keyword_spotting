@@ -67,12 +67,12 @@ void Application(void)
 
     // Create and add commands
     BlankCommand command_back("BACKGROUND", 1, 0.7);
-    PrintCommand command_left("LEFT", 3, 0.8);
-    PrintCommand command_no("NO", 3, 0.85);
-    PrintCommand command_right("RIGHT", 4, 0.8);
+    PrintCommand command_left("LEFT", 5, 0.8);
+    PrintCommand command_no("NO", 3, 0.80);
+    PrintCommand command_right("RIGHT", 3, 0.85);
     BlankCommand command_unknown("UNKNOWN", 1, 0.7);
-    PrintCommand command_yes("YES", 4, 0.80);
-    PrintCommand command_zero("ZERO", 3, 0.8);
+    PrintCommand command_yes("YES", 5, 0.85);
+    PrintCommand command_zero("ZERO", 3, 0.85);
 
     recognizer.addCommand(&command_back);
     recognizer.addCommand(&command_left);
