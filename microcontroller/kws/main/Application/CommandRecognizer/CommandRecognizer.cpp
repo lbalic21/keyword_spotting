@@ -8,6 +8,7 @@ bool CommandRecognizer::recognize(float* outputData)
         if(commands[i]->isRecognized() && (((esp_timer_get_time() - lastCommandInvoke[i]) / 1000) >= COOL_OF_PERIOD_MS))
         {
             commands[i]->execute();
+            commands[i]->resetHistory();
             lastCommandInvoke[i] = esp_timer_get_time();
             return true;
         }

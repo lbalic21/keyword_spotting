@@ -67,16 +67,12 @@ void Application(void)
 
     // Create and add commands
     BlankCommand command_back("BACKGROUND", 1, 0.7);
-    PrintCommand command_left("LEFT", 4, 0.80);
-    PrintCommand command_no("NO", 2, 0.7);
-    PrintCommand command_right("RIGHT", 2, 0.7);
+    PrintCommand command_left("LEFT", 3, 0.8);
+    PrintCommand command_no("NO", 3, 0.85);
+    PrintCommand command_right("RIGHT", 4, 0.8);
     BlankCommand command_unknown("UNKNOWN", 1, 0.7);
-    PrintCommand command_yes("YES", 4, 0.85);
-
-    PrintCommand command_down("DOWN", 1, 0.7);
-    PrintCommand command_off("OFF", 1, 0.7);
-    PrintCommand command_on("ON", 1, 0.7);
-    PrintCommand command_up("UP", 1, 0.7);
+    PrintCommand command_yes("YES", 4, 0.80);
+    PrintCommand command_zero("ZERO", 3, 0.8);
 
     recognizer.addCommand(&command_back);
     recognizer.addCommand(&command_left);
@@ -84,6 +80,7 @@ void Application(void)
     recognizer.addCommand(&command_right);
     recognizer.addCommand(&command_unknown);
     recognizer.addCommand(&command_yes);
+    recognizer.addCommand(&command_zero);
 
     recognizer.getNumOfCommands();
 

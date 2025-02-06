@@ -20,6 +20,7 @@ class Command
         void giveResult(float value);
         bool isRecognized(void);
         float getAverage(void);
+        void resetHistory(void);
         virtual void execute(void) = 0;
 };
 
