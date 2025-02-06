@@ -28,6 +28,12 @@
 
 static const char *TAG = "MAIN";
 
+/**
+ * @brief Function that tests 1 second of audio data and classifies it
+ * 
+ */
+void testingFacility(int16_t* audioData);
+
 /******************************************************************************/
 /********************** STATIC OBJECTS INITIALIZATION *************************/
 /******************************************************************************/
