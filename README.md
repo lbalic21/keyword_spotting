@@ -1,5 +1,5 @@
 # Keyword spotting system 
-![ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-blue) ![C++](https://img.shields.io/badge/Language-C++-red) ![Python](https://img.shields.io/badge/NeuralNetworkTraining-Python-yellow) ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![ESP32-S3](https://img.shields.io/badge/Platform-ESP32--S3-blue) ![C++](https://img.shields.io/badge/Device-C++-red) ![Python](https://img.shields.io/badge/NeuralNetworkTraining-Python-yellow) ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 
 ## 📌 Overview
 Keyword spotting (KWS) system is a lightweight and efficient system designed for the ESP32-S3. It processes audio input, extracts MFCC features and runs inference on a neural network to detect commands and trigger predefined actions.
