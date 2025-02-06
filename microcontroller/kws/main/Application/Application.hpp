@@ -5,7 +5,17 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Main function
+ * 
+ */
 void Application(void);
+
+/**
+ * @brief Function that tests 1 second of audio data and classifies it
+ * 
+ */
+void testingFacility(int16_t* audioData);
 
 #ifdef __cplusplus
 }

@@ -21,8 +21,6 @@ class AudioRecorder
 
     public:
         AudioRecorder(uint32_t sampleRate);
-        void start(void);
-        ~AudioRecorder() = default;
         uint32_t getSamples(int16_t* samples, size_t numOfSamples);
 };
 

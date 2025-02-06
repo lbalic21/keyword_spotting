@@ -6,10 +6,7 @@ static const char *TAG = "Audio Recorder";
 AudioRecorder::AudioRecorder(uint32_t sampleRate)
 {
     this->sampleRate = sampleRate;
-}
 
-void AudioRecorder::start(void)
-{
     BaseType_t result = xTaskCreate(
         captureAudioTask,            // Function pointer
         "CaptureAudioTask",          // Task name
@@ -61,24 +58,14 @@ void AudioRecorder::captureAudioTask(void* pvParameters)
     
     while (1) {
         int read_len = audio_element_input(i2s_stream_reader, (char *)buffer, 1024);
+        for(int i = 0; i<read_len/2;i++)
+        {
+            printf("%d - %d\n", i, buffer[i]);
+        }
         if (read_len > 0) {
             xRingbufferSend(recorder->ringBuffer, buffer, read_len, portMAX_DELAY);
         }
     }
-
-    // Cleanup never reached, but kept for completeness
-    ESP_LOGI(TAG, "[5] Stopping audio pipeline");
-    audio_pipeline_stop(pipeline);
-    audio_pipeline_wait_for_stop(pipeline);
-    audio_pipeline_terminate(pipeline);
-    audio_pipeline_unregister(pipeline, i2s_stream_reader);
-    audio_pipeline_remove_listener(pipeline);
-    audio_pipeline_deinit(pipeline);
-    audio_element_deinit(i2s_stream_reader);
-    vRingbufferDelete(recorder->ringBuffer);
-    free(buffer);
-
-    ESP_LOGI(TAG, "[6] Recording finished");
 }
 
 uint32_t AudioRecorder::getSamples(int16_t* samples, size_t numOfSamples)
