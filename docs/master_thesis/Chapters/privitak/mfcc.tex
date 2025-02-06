@@ -1,0 +1,28 @@
+\chapter{Generiranje značajki}
+\label{add:mfcc}
+
+\begin{lstlisting}[language=Python, caption=Generiranje značajki korišteno u Jupyter bilježnici]
+def generate_mfccs(audio):
+    stft = tf.signal.stft(
+        audio,
+        frame_length=WINDOW_SIZE,
+        frame_step=STEP_SIZE,
+        fft_length=WINDOW_SIZE,
+        window_fn=tf.signal.hamming_window
+    )
+    spectrogram = tf.abs(stft)
+    numSpectrogramBins = stft.shape[-1]
+    linearToMel = tf.signal.linear_to_mel_weight_matrix(
+        num_mel_bins=NUMBER_OF_MEL_BINS,
+        num_spectrogram_bins=num_spectrogram_bins,
+        sample_rate=SAMPLE_RATE,
+        lower_edge_hertz=LOWER_BAND_LIMIT,
+        upper_edge_hertz=UPPER_BAND_LIMIT
+    )
+    melSpectrogram = tf.tensordot(spectrogram, linearToMel, axes=1)
+    melSpectrogram.set_shape(spectrogram.shape[:-1].concatenate([NUMBER_OF_MEL_BINS]))
+    logMelSpectrogram = tf.math.log(mel_spectrogram + 1e-6)
+    mfccs = tf.signal.mfccs_from_log_mel_spectrograms(logMelSpectrogram)
+    mfccs = mfccs[..., 1:NUMBER_OF_MFCCS] 
+    return mfccs[..., tf.newaxis]
+\end{lstlisting}

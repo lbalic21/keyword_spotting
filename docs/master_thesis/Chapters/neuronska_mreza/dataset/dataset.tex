@@ -5,7 +5,7 @@ Prvi korak u izgradnji sustava koji koristi bilo kakav tip modela strojnog učen
 je odabir i priprema prikladnog skupa podataka na kojem će se taj model trenirati.
 Budući da je cilj sustava prepoznavanje govornih naredbi (eng. keyword spotting),
 savršen otvoreni skup podataka je skup za treniranje prepoznavanja ograničenog
-skupa naredbi \cite{speechcommandsv2}. Riječ je o skupu koji
+skupa govornih naredbi \cite{speechcommandsv2}. Riječ je o skupu koji
 se sastoji od oko 105000 zvučnih isječaka duljine oko jedne sekunde (frekvencija
 zapisa je 16 kHz) u kojima ljudi
 izgovaraju jednu od 35 različitih riječi. Također, skup ima nekoliko vrsta 
@@ -22,26 +22,30 @@ Nakon odabira skupa na kojem će model biti treniran, potrebno je pripremiti
 podatke. Zbog ograničenih resursa na mikrokontrolerskom sustavu, nije moguće
 (a niti potrebno za konkretnu namjenu) izgraditi sustav koji će moći
 prepoznati sve riječi iz skupa. Potrebno je odabrati samo podskup
-za koji će sustav uspješno klasificirati izgovorenu riječ. Cjelokupni
+naredbi koje će sustav uspješno klasificirati. Cjelokupni
 proces pripreme podataka, treniranja i validacije modela popraćen je
 Jupyter bilježnicom koja se nalazi u GitHub repozitoriju
 \cite{balic_keyword_spotting}.
 
 Projektirani sustav mora moći prepoznati naredbe koje su izgovorene.
 Zbog toga, mora biti sposoban odbaciti sve ono što nije naredba koja se
-nalazi u odabranom skupu. Iz toga proizlazi da jedna od kategorija (klasa)
-na kojoj će model biti treniran jest pozadinska buka. Odabrani skup podataka
+nalazi u odabranom skupu. Budući da će sustav raditi u stvarnom svijetu,
+jedna od kategorija (klasa)
+na kojoj model mora biti treniran jest pozadinska buka. Ona je sveprisutna te 
+zbog toga sustav treba biti otporan takav tip zvukova. Odabrani skup podataka
 sadrži zvučne zapise kao što je zvuk perilice posuđa, zvuk vode koja teče
 iz slavine, bijeli šum te ružičasti šum. Bijeli šum (eng. white noise) je vrsta
 signala koji u sebi sadrži sve frekvencije i sve imaju isti intenzitet,
 dok se ružičasti šum također sastoji od svih frekvencija, ali veći intenzitet
-imaju niže frekvencijske komponente \cite{noise}. Međutim, zbog toga što skup
+imaju niže frekvencijske komponente \cite{noise}. Takvi zvukovi dobro predstavljaju
+tipičnu okolinu u kojoj bi se sustav mogao nalaziti. Međutim, zbog toga što skup
 podataka zadrži
 svega nekoliko minuta takvih zvučnih zapisa, potrebno je na neki način dopuniti
 taj podskup podataka. Naime mreža koju treniramo će preferirati neku od klasa
 ako takvih primjera ima mnogo više od primjera ostalih klasa. Drugim riječima,
 skup podataka za treniranje mora biti balansiran (primjera iz svake klase treba
-biti otprilike jednak broj) \cite{balance}. Uz to, za rad u stvarnom svijetu, nije loše u skup
+biti otprilike jednak broj) \cite{balance}. Uz to, za rad u stvarnom svijetu, nije 
+loše u skup
 dodati zvučni zapis snimljen upravo na sustavu koji će i akvizirati podatke iz okoline.
 Uz snimke pozadinskih zvukova iz skupa podataka, dodane su snimke snimljenje upravo
 na sustavu gdje će sve biti implementirano, a zadrže karakteristične pozadinske
@@ -65,41 +69,43 @@ za augmentaciju prikazana je u odsječku programskog koda \ref{code:augmentation
 
 \begin{lstlisting}[language=Python, caption=Augmentacija zvuka, label=code:augmentation]
 def augment_audio(audio: AudioSegment) -> AudioSegment:
-    #Start with the original audio
     augmented = audio
-    #Randomly apply speed adjustments (time stretching)
     if random.random() > 0.5:
         augmented = speedup(augmented, playback_speed=random.uniform(1.1, 1.5))
-    #Normalize volume to ensure consistent loudness
     augmented = normalize(augmented)
-    #Add random volume adjustments (increase or decrease volume)
     if random.random() > 0.5:
-        volume_change = random.uniform(-5, 5)  #Random volume change in dB
+        volume_change = random.uniform(-5, 5) 
         augmented = augmented + volume_change
-    #Add echo (simulated by overlapping the original with a delayed copy)
     if random.random() > 0.5:
-        delay_ms = random.randint(100, 500)  #Random delay in milliseconds
-        echo = augmented - random.uniform(5, 10)  #Lower volume for the echo
+        delay_ms = random.randint(100, 500) 
+        echo = augmented - random.uniform(5, 10) 
         augmented = augmented.overlay(echo, position=delay_ms)
-    #Optionally, you could reverse the audio for more variation
     if random.random() > 0.5:
         augmented = augmented.reverse()
-return augmented
+    return augmented
 \end{lstlisting}
 
 
 Druga kategorija mora biti sastavljena od kombinacije različitih riječi za koje
 ne želimo klasifikaciju, tj. nisu odabrane u podskup naredbi. Ime te kategorije
 će biti "nepoznato" (engl. unknown), a predstavljat će sve riječi koje nisu
-naredbe cjelokupnog sustava. Ostale kategorije bit će riječi odabrane kao naredbe
+naredbe cjelokupnog sustava. Ova kategorija je nužna za rad sustava jer 
+treniranjem modela na različitim riječima povećava otpornost sustava na riječi
+koje se ne nalaze u željenom skupu naredbi. Kada ova kategorija ne bi postojala,
+povećala bi se mogućnost slučajnog prepoznavanja neke riječi jer bi jedina kategorija
+koju sustav poznaje, a da ne predstavlja željene naredbe, bila pozadina koja
+u većini slučajeva nema veliku amplitudu pri akviziciji. 
+Ostale kategorije bit će riječi odabrane kao naredbe
 sustava što  znači da će ukupan broj klasifikacijskih kategorija biti za dva veći 
 od broja odabranih naredbi (broj naredbi + pozadinska buka + nepoznato).
 
 Odabir naredbi koje sustav može prepoznati je proizvoljan, a za primjer na kojem
-će daljnja obrada biti opisana odabrane su naredbe "yes" i "no". Zbog toga ukupni broj
-klasifikacijskih kategorija iznosi četiri. Uz ostale konfiguracijske parametre,
+će daljnja obrada biti opisana odabrane su naredbe "yes", "no", "left", "right" i 
+"zero". Zbog toga ukupni broj
+klasifikacijskih kategorija iznosi sedam. Uz ostale konfiguracijske parametre,
 odabir naredbi omogućen je na početku Jupyter bilježnice za treniranje neuronske mreže.
-Nakon toga formira se mapa s četiri datoteke koje prestavljaju 4 klasifikacijske kategorije.
+Nakon toga formira se mapa sa sedam datoteka koje prestavljaju sedam klasifikacijskih
+kategorija.
 Broj zapisa u svakoj od kategorija odgovarat će broju zapisa u najmalobrojnijoj 
 kategoriji upravo zbog spomenute potrebe za balansiranim skupom podataka za treniranje
 (višak naredbi u nekoj od kategorija koje predstavljaju naredbe se neće koristiti, broj
@@ -122,28 +128,22 @@ train_dataset, validation_dataset = tf.keras.utils.audio_dataset_from_directory(
 
 Učitavanjem smo dobili dva skupa podataka (engl. dataset): skup za treniranje i validacijski skup.
 Skup za treniranje koristi se, kao što mu ime kaže, za treniranje neuronske mreže,
-dok se validacijskim skupom nakon svake epohe (pojam epoha je objašnjena u poglavlju \ref{}) 
+dok se validacijskim skupom nakon svake epohe (pojam epoha je objašnjen u poglavlju \ref{}) 
 provjerava točnost modela, podešavaju
 hiperparamertri i sprječava prenaučenost (te podatke model nije "vidio" tijekom treniranja).
 Uz to, od validacijskog skupa se još odvoji jedan dio koji se zove testni skup. On služi
 za konačno testiranje točnosti neuronske mreže jer te podatke mreža nije vidjela niti
 u jednom trenutku tokom treniranja. Veličine tih skupova određuju parametri 
-TEST\_DATASET\_SIZE i VALIDATION\_DATASET\_SIZE koje je također moguće podesiti na početku
-bilježnice. 
+TEST\_DATASET\_SIZE i VALIDATION\_DATASET\_SIZE, a BATCH\_SIZE predstavlja
+broj primjera koji će se odjednom davati mreži na treniranje. Spomenute parametre
+također je moguće podesiti na početku bilježnice. 
 
 Nakon što su skupovi podataka učitani, potrebno je generirati značajke za svaki zvučni zapis.
-Detaljni opis generiranja značajki objašnjen je u \ref{sec:gen}. U dodatku \ref{} prikazano
+Detaljni opis generiranja značajki objašnjen je u \ref{sec:gen}. U dodatku \ref{add:mfcc} prikazano
 je generiranje značajki korišteno za ove podatke (razlika od onog objašnjenog u spomenutom poglavlju
 je što se ovo izvodi na osobnom računalu i napisano je u programskom jeziku Python).
-Na slici \ref{pic:mfccpython} prikazani su valni oblici nasumičnih zvučnih zapisa određenih 
+Na slici u dodatku \ref{add:mfccpython} prikazani su valni oblici nasumičnih zvučnih zapisa odabranih 
 kategorija te pripadna matrica značajki gerirana na spomenuti način.
 
-\begin{figure}[htb]
-    \centering
-    \includegraphics[width=1\linewidth]{Chapters/neuronska_mreza/dataset/mfcc.png} 
-    \caption{Zvučni signali i pripadna matrica MFC koeficijenata}
-    \label{pic:mfccpython}
-\end{figure}
-
-U ovom trenutku skupi podataka pripremljeni su za treniranje. Sljedeći korak je definicija 
+U ovom trenutku skupovi podataka pripremljeni su za treniranje. Sljedeći korak je definicija 
 strukture neuronske mreže.
