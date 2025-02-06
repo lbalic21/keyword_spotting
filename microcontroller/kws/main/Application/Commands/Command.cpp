@@ -6,6 +6,10 @@ Command::Command(const char* commandName, int historySize, float threshold)
     this->historySize = historySize;
     this->threshold = threshold;
     this->history = (float*) malloc(sizeof(float) * historySize);
+    for(int i = 0; i < historySize; i++)
+    {
+        this->history[i] = 0.0;
+    }
 }
 
 const char* Command::getName(void)

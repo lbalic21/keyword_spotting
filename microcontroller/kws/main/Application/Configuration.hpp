@@ -15,7 +15,7 @@
 #define NUMBER_OF_FEATURES                      (NUMBER_OF_TIME_SLICES * NUMBER_OF_MFCCS)
 #define NUMBER_OF_NEW_SLICES_BEFORE_INVOKING    (6)
 #define ACTIVATION_THRESHOLD                    (0.70)
-#define COOL_OF_PERIOD_MS                       (1500)
+#define COOL_OF_PERIOD_MS                       (0)
 #define MAX_COMMANDS                            (10)
 
 #endif /* _CONFIGURATION_H_ */
