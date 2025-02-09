@@ -1,16 +1,34 @@
 \section{Prilagodba za implementaciju na mikrokontroleru}
 \label{sec:convert}
 
-Veličina pojedinog sloja treniranog modela neuronske mreže prikazana je na slici \ref{pic:size}.
+Veličina pojedinog sloja treniranog modela neuronske mreže prikazana je u nastavku.
 Ukupni broj parametara koje mreža ima iznosi 9439 što u memoriji zauzima malo manje od 
 37 KB.
 
-\begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.65\linewidth]{Chapters/neuronska_mreza/convert/struktura.png} 
-    \caption{Veličina trenirane neuronske mreže}
-    \label{pic:size}
-\end{figure}
+{
+\scriptsize
+\begin{verbatim}
+                      Number of labels: 7            
+                      Model: "sequential"
+                      _________________________________________________________________
+                       Layer (type)                     Output Shape            Param #   
+                      =================================================================
+                       conv2d (Conv2D)                 (None, 41, 12, 32)        320                                                                       
+                       max_pooling2d (MaxPooling2D)    (None, 21, 6, 32)         0                                                                                                                                  
+                       conv2d_1 (Conv2D)               (None, 21, 6, 16)         4624                                                                      
+                       max_pooling2d_1 (MaxPooling2D)  (None, 11, 3, 16)         0                                                                                                                                    
+                       flatten (Flatten)               (None, 528)               0                                                                        
+                       dense (Dense)                   (None, 8)                 4232                                                                    
+                       dropout (Dropout)               (None, 8)                 0                                                                        
+                       dense_1 (Dense)                 (None, 16)                144                                                                      
+                       dropout_1 (Dropout)             (None, 16)                0                                                                        
+                       dense_2 (Dense)                 (None, 7)                 119                           
+                      =================================================================
+                      Total params: 9439 (36.87 KB)
+                      Trainable params: 9439 (36.87 KB)
+                      Non-trainable params: 0 (0.00 Byte)
+\end{verbatim}
+}
 
 Međutim, spremljeni model u memoriji osim vrijednosti parametara mora imqti i informaciju 
 o samoj strukturi mreže što znatno povećava sami memorijski otisak. Datoteka s nastavkom

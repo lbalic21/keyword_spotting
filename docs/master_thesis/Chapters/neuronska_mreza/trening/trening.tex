@@ -59,18 +59,31 @@ history = model.fit(
 )
 \end{lstlisting}
 
-Na slici \ref{pic:trening} prikazan je proces treniranja. Vidljivo je kako se funkcija
+U nastavku je prikazan proces treniranja. Vidljivo je kako se funkcija
 gubitka smanjuje s vremenom, a točnost modela raste. Model je kovergirao nakon 20-ak
 epoha te je uzeo stanje s kraja 18. epohe. U postavkama modela namješteno je da se
 treniranje ne zaustavi odmah nego da da modelu još određeni broj epoha koji je
 u našem slučaju 10 (patience=10).
 
-\begin{figure}[htb]
-    \centering
-    \includegraphics[width=0.7\linewidth]{Chapters/neuronska_mreza/trening/training.png} 
-    \caption{Proces treniranja}
-    \label{pic:trening}
-\end{figure}
+{
+\tiny
+%\scriptsize
+\begin{verbatim}
+Epoch 1/50
+662/662 [==============================] - 3s 5ms/step - loss: 1.3427 - accuracy: 0.4707 - val_loss: 0.8837 - val_accuracy: 0.6935
+Epoch 2/50
+662/662 [==============================] - 3s 5ms/step - loss: 0.9060 - accuracy: 0.6649 - val_loss: 0.6565 - val_accuracy: 0.7714
+Epoch 3/50
+662/662 [==============================] - 3s 5ms/step - loss: 0.7439 - accuracy: 0.7320 - val_loss: 0.5586 - val_accuracy: 0.8025
+Epoch 4/50
+662/662 [==============================] - 3s 5ms/step - loss: 0.6457 - accuracy: 0.7659 - val_loss: 0.4887 - val_accuracy: 0.8230
+...
+Epoch 28/50
+662/662 [==============================] - 3s 5ms/step - loss: 0.2817 - accuracy: 0.9040 - val_loss: 0.3869 - val_accuracy: 0.8823
+Restoring model weights from the end of the best epoch: 18.
+Epoch 28: early stopping
+\end{verbatim}
+}
 
 Na slici \ref{pic:accuracy} prikazana su dva grafa. Lijevi prikazuje funkciju gubitka
 na trenažnom i validacijskom skupu, dok desni prikazuje točnost modela na istim skupovima.
@@ -98,11 +111,11 @@ određene klase. Stupci matrice predstavljaju stvarne klase, a retci predviđene
 se izvan dijagonale se nalaze pogreške. Vidljivo je kako je model najviše griješio
 u klasifikaciji klase "unknown". To je slučaj zbog toga što se u toj klasi nalaze
 zvučni zapisi različitih riječi. Drugim riječima, ta klasa je najraznolikija i najteža
-za klasificirati te je zbog toga ovakav rezultat očekivan
+za klasificirati te je zbog toga ovakav rezultat očekivan.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.7\linewidth]{Chapters/neuronska_mreza/trening/conf.png} 
+    \includegraphics[width=0.7\linewidth]{Chapters/neuronska_mreza/trening/image.png} 
     \caption{Konfuzijska matrica}
     \label{pic:confmtrx}
 \end{figure}
