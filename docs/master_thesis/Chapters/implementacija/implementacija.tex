@@ -1,0 +1,72 @@
+\chapter{Implementacija i rezultati}
+\label{pog:implement}
+
+Informacije o strukturi i parametrima neuronske mreže spremljeni su u obliku polja
+programskog jezika C. Sustav polje učitava i koristi na način detaljno objašnjen 
+u poglavlju o aktivaciji neuronske mreže na mikrokontroleru \ref{sec:activation}.
+Kako bi cjelokupni sustav radio u skladu sa zahtjevima, potrebno je u aplikaciji
+na mikrokontroleru dodati identične naredbe koje su odabrane prilikom treniranja
+modela. Stvaranje naredbi te njihovo dodavanje objektu zaduženom za prepoznavanje
+naredbi prikazano je u isječku koda \ref{code:commands}. Kategorije "pozadina" i
+"nepoznato" su predstavljene objektima klase BlankCommand, dok su ostale naredbe 
+instance klase PrintCommand. Rezultat toga je ispis imena naredbe na konzolu u slučaju
+prepoznavanja govorne naredbe. Detalj koji je ključan za ispravan rad sustava je redoslijed
+dodavanja naredbi. On mora odgovarati redoslijedu koji je određen pri treniranju modela koji
+je pak određen redoslijedom učitavanja podataka za treniranje u Jupyter bilježnicu. Nakon
+preuzimanja podataka s interneta, mape s podacima su poredane abecedno tako da 
+će i krajnji redoslijed naredbi biti takav.
+
+\begin{lstlisting}[language=C++, caption=Stvaranje naredbi, label=code:commands]
+BlankCommand command_back("BACKGROUND", 1, 0.7);
+PrintCommand command_left("LEFT", 5, 0.8);
+PrintCommand command_no("NO", 3, 0.80);
+PrintCommand command_right("RIGHT", 3, 0.85);
+BlankCommand command_unknown("UNKNOWN", 1, 0.7);
+PrintCommand command_yes("YES", 5, 0.85);
+PrintCommand command_zero("ZERO", 3, 0.85);
+
+recognizer.addCommand(&command_back);
+recognizer.addCommand(&command_left);
+recognizer.addCommand(&command_no);
+recognizer.addCommand(&command_right);
+recognizer.addCommand(&command_unknown);
+recognizer.addCommand(&command_yes);
+recognizer.addCommand(&command_zero);
+\end{lstlisting}
+
+Zbog nesavršenosti skupa na kojem je treniran model i nejednakosti kvalitete
+zvučnih snimaka, neće svaka naredba biti prepoznata na isti način. Prvo, razlikovat će
+se pouzdanost vjerojatnosne intepretacije za različite klase. Drugo, uslijed izgovorene
+naredbe neke će klase imati najveću vjerojatnost različit broj iteracija rada sustava.
+To se događa zbog toga što sustav neprestano vrsti glavnu petlju opisanu u poglavlju
+o strukturi sustava \ref{pog:struktura_sustava} i trebao bi odraditi nekoliko iteracija tijekom izgovora
+jedne naredbe. Zbog svega navedenog potrebo je kalibrirati svaku naredbu zasebno.
+Kalibracija se radi promjenom parametara pri konstrukciji objekta također prikazanog 
+u isječku koda \ref{code:commands}. Značenje pojedinog parametra detaljno je opisano u 
+\ref{sec:prepoy}. 
+
+Još jedna stvar koju je potrebno eksperimentalno utvrditi jest sposobnost sustava da
+odradi sve potrebne zadatke na vrijeme. Ne smije se dogoditi propuštanje akviziranja
+novih podataka zbog kašnjenja bilo kojeg drugog dijela sustava jer se time narušava
+svrha rada cjelokupnog sustava. U tablici \ref{tab:rts} prikazana su prosječna
+vremena potrebna za odrađivanje poslova pojedinih dijelova sustava.
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{|l|r|}
+        \hline
+        \textbf{Dio sustava} & \textbf{Vrijeme(ms)} \\ \hline
+        Akvizicija & 173241\\ \hline
+        Generiranje značajki & 41644 \\ \hline
+        Aktivacija neuronske mreže & 15704 \\ \hline
+        Prepoznavanje naredbi i aktivacija posla & 15704 \\ \hline
+        \textbf{Ukupno} & \textbf{Vrijeme(ms)} \\ \hline
+    \end{tabular}
+    \caption{Vrijeme potrebno za određeni posao}
+    \label{tab:rts}
+\end{table}
+
+Svaka nova iteracija uzima STEP\_SIZE novih uzoraka na obradu. U ovom slučaju
+taj broj iznosi 384 što odgovara 24 ms novih zvučnih podataka. Podešavanje varijable
+NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING predstavlja krajnji korak kalibracije sustava.
+Potrebno ju je postaviti na najmanji mogući broj koji neće narušavati rad sustava.
