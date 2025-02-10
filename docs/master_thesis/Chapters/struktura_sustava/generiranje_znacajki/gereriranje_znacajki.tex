@@ -53,7 +53,7 @@ Geometrijom vokalnog trakta, koja se mijenja ovisno o položaju
 artikulatora kao što su jezik, usne, čeljust i resica, bit će određen ton (visina i
 spektralni sastav) formiranog signala (govora) \cite{petrinovic2002}. 
 
-Jednostavni model koji se koristi u području obrade prirodnog govora je da se on 
+Jednostavni model koji se koristi u području obrade prirodnog govora je da se govor 
 može prikazati kao izlaz iz linearnog, vremenski promjenjivog sustava čija se 
 svojstva sporo mijenjaju s vremenom. Međutim, ako se promatraju dovoljno kratki
 segmenti govornog signala, svaki se segment može učinkovito modelirati kao izlaz
@@ -84,7 +84,7 @@ Množenju u frekvencijskoj domeni istovjetna je konvolucija u vremenskoj (i obra
 Cilj ovakvog modeliranja je pronaći bitne informacije u govornom signalu. Pretpostavka na
 kojoj se temelji daljnji rad je da je skoro sva informacija iz govornog signala sadržana
 u prijenosnoj funkciji govornog trakta, tj. pobuda (kvazi-periodični impulsi) ostaje
-konstantnna tijekom govora (veliko pojednostavljenje, međutim svi modeli na kojima
+konstantna tijekom govora (veliko pojednostavljenje, međutim svi modeli na kojima
 se temelji ovo područje zasnivaju na ovoj činjenici \cite{multiplier, emotion, sidhu2024mfcc}).
 Zbog toga želimo pronaći način za 
 razdvajanje tih dvaju elemenata modela. Ako primijenimo logaritamsku funkciju na
@@ -112,7 +112,7 @@ komponenata modela na konačni rezultat, a to je glas (engl. speech).
 Jedino što preostaje je pronaći način za što efikasniji opis odziva vokalnog trakta. On će
 u konačnici predstavljati zvučne zapise na kojima će model neuronske mreže biti treniran.
 U području automatskog prepoznavanja govora te identifikaciji govornika uvelike se koriste
-Mel kepstralni koeficijenti.
+Mel kepstralni koeficijenti. 
 
 
 \subsection{MFCC}
@@ -145,7 +145,7 @@ a određeni dio su novi uzorci dobiveni od podsustava za akviziciju.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/sliding.png} 
+    \includegraphics[width=1\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/sliding.png} 
     \caption{Preklapajući prozori}
     \label{pic:sliding}
 \end{figure}
@@ -155,31 +155,18 @@ polje koje zaduženo za spremanje trenutnog prozora podataka. Alokacija polja i 
 pomicanja starih podataka u polju koje sprema trenutni prozor prikazani su u isječku programskog
 koda \ref{code:sliding}.
 
-\begin{lstlisting}[language=C, caption=Sliding Window with Overlap, label=code:sliding]
-    int16_t newSamples[STEP_SIZE];
-    int16_t audioFrame[WINDOW_SIZE] = {0};
-    
-    /**
-    * Sliding window with overlap. Audio frame holds WINDOW_SIZE samples.
-    * Each update shifts "Samples to Keep" to the start of the buffer,
-    * discards "Old Samples" and makes space at the end for "New Samples."
-    *
-    * Before:
-    * -------------------------------------------------------------
-    * | Old Samples           | Samples to Keep                   |
-    * -------------------------------------------------------------
-    * |<----- STEP_SIZE ----->|<---- WINDOW_SIZE - STEP_SIZE ---->|
-    * -------------------------------------------------------------
-    *
-    * After:
-    * -------------------------------------------------------------
-    * | Kept Samples                      | New Samples           |
-    * -------------------------------------------------------------
-    * |<---- WINDOW_SIZE - STEP_SIZE ---->|<----- STEP_SIZE ----->|
-    * -------------------------------------------------------------
-    */
-    memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE) * 2);
-    memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE * 2);
+\begin{lstlisting}[language=C++, caption=Algoritam za korištenje novodohvaćenih podataka, label=code:sliding]
+/* polje za nove uzorke */
+int16_t newSamples[STEP_SIZE];
+
+/* polje za trenutni prozor */
+int16_t audioFrame[WINDOW_SIZE] = {0};
+
+/* pomicanje starih podataka prema pocetku aktivnog prozora */
+memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE)*2);
+
+/* stavljanje novih podataka na kraj aktivnog prozora */
+memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE*2);
 \end{lstlisting}
 
 WINDOW\_SIZE predstavlja konfigurabilnu veličinu prozora, dok STEP\_SIZE predstavlja 
@@ -194,18 +181,20 @@ dobili MFC koeficijente za takav zvučni isječak. Prva stvar koja dolazi na red
 je primjena funkcije vremenskog otvora (engl. window function). Budući da je svaki
 prozor (vremenski otvor) podataka opisan u \ref{sec:win} jednostavno odrezan od ostatka
 signala, tj. svega što je ostalo izvan prozora, dolazi do rasipanja energije po
-frekvencijskom sprektru ili spektralnog curenja (engl. spectral leakage). 
+frekvencijskom sprektru ili spektralnog curenja (engl. spectral leakage). Spektralno curenje
+je dobilo ime po tome što se energija sadržana u jednoj frekvencijskoj komponenti prelijeva
+u susjedne što čini spektar manje preciznim.
 Zbog toga je potrebno pomnožiti originalni signal s funkcijom vremenskog prozora. Postoje
 različite funkcije koje se koriste u tu svrhu, međutim u obradi govora najčešće se koristi
 Hannov prozor \cite{windowing}.
 Na slici \ref{pic:hann} prikazan je umnožak funkcije Hannovog prozora s funkcijom
 koja predstavlja zvučni signal. Na konačnom signalu je vidljivo da se rubni dijelovi
-signala vrijednostima približavaju nuli što sprječava diskontinuiranost signala i pojavu 
-nepoželjnih spektralnih komponenti.
+signala vrijednostima približavaju nuli što sprječava diskontinuiranost signala i jačanje
+spektralnih komponenti koje se nalaze u blizini onih od kojih je signal stvarno sastavljen.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.8\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/hann.png} 
+    \includegraphics[width=0.9\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/hann.png} 
     \caption{Hannov prozor}
     \label{pic:hann}
 \end{figure}
@@ -350,12 +339,13 @@ kanti). Samo preslikavanje se odrađuje pomoću trokutaskih filtara prikazanih n
 
 Za potrebe sustava za prepoznavanje glasa, određuju se donja i gornja granica preslikavanja 
 (LOWER\_BAND\_LIMIT i UPPER\_BAND\_LIMIT) koje su tijekom cijelog razvoja sustava "zacementirane"
-na 80 Hz i 7600 Hz (takve granice su se pokazale prikladne za ovu svrhu). Od donje do gornje
-granice, linearno (na Mel skali) se raspoređuju sredine filtara čija je širina na svaku stranu 
+na 80 Hz i 7600 Hz. Takve granice su se pokazale prikladne za ovu svrhu i najčešće
+su korištene u sustavima ovakvog tipa. Naime, informacijski najbogatije komponente
+se obično nalaze između ove dvije granice. Između njih linearno se (na Mel skali) raspoređuju sredine filtara čija je širina na svaku stranu 
 točno do sredine susjednog filtra. Izvan tog intervala vrijednost filtra je nula, dok je u središtu
 pojedinog filtra vrijednost istoga točno jedan. Nadalje, vrijednosti svake Melove frekvencijeske
 komponente doprinosi vrijednost frekvencijske komponente s Hz ljestvice onoliko koliko iznosi
-njena vrijednost pomnožena s vrijednosti filtra na tom mjestu. Za svaki filtar (koji odgovara
+njena vrijednost pomnožena s vrijednošću filtra na tom mjestu. Za svaki filtar (koji odgovara
 jednoj Mel frekvencijskoj komponenti) potrebno je provjeriti koliko svaka frekvencijska komponenta 
 s Hz ljestvice doprinosi toj Mel komponenti, tj. koliko energije iz početnog signala
 odgovara toj komponenti na Melovoj ljestvici. Programski kod koji se bavi opisanim prikazan je u 
@@ -364,18 +354,17 @@ komponenti logaritmirati jer je to potrebno za sljedeći korak, a to je generira
 
 \begin{lstlisting}[language=C++, caption=FFT, label=code:mel]
 void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram){
-    for (int melBin = 0; melBin < NUMBER_OF_MEL_BINS; melBin++) {
+    for(int melBin = 0; melBin < NUMBER_OF_MEL_BINS; melBin++){
         melSpectrogram[melBin] = 0.0;
-        for (int fftBin = 0; fftBin < NUMBER_OF_SPECTROGRAM_BINS; fftBin++){
+        for(int fftBin=0; fftBin<NUMBER_OF_SPECTROGRAM_BINS; fftBin++){
             float freq = fftBin * hzPerBin;
             float weight = 0.0;
 
-            if (freq >= melPoints[melBin] && freq < melPoints[melBin + 1]){
+            if(freq >= melPoints[melBin] && freq < melPoints[melBin + 1]){
                 weight = (freq - melPoints[melBin]) / (melPoints[melBin + 1] - melPoints[melBin]);
-            } else if (freq >= melPoints[melBin + 1] && freq < melPoints[melBin + 2]){
+            }else if(freq >= melPoints[melBin + 1] && freq < melPoints[melBin + 2]){
                 weight = (melPoints[melBin + 2] - freq) / (melPoints[melBin + 2] - melPoints[melBin + 1]);
             }
-
             melSpectrogram[melBin] += spectrogram[fftBin] * weight;
         }
         // Apply log scaling with a safeguard against log(0)
@@ -425,7 +414,8 @@ procesorskom snagom (sva informacija prozora podataka sadržana je u ovih 12 ili
 
 Implementacija  diskretne kosinusne transformacije prikazana je u odječku koda \ref{code:dct}.
 U konstruktoru razreda DCT inicijaliziraju se koeficijenti potrebni za izračun pojedinog MFCC-a,
-dok metoda compute računa MFCC-e za konkretni ulzni Mel-frekvencijski spektar. Na taj način
+dok metoda \texttt{void DCT::compute(const float* input, float* output)} 
+računa MFCC-e za konkretni ulazni Mel-frekvencijski spektar. Na taj način
 razdvojen je izračun na dva dijela: konstanti dio koji ne ovisi o ulaznom spektru (računa
 se pri konstrukciji objekta zaduženog za DCT) i dio koji
 ovisi o ulaznom spektru te ga je zbog toga potrebno računati u svakoj iteraciji.\newline{}
@@ -459,13 +449,13 @@ skali koja je ubjašnjena u \ref{sec:mel}. Međutim zašto su kepstralni možda 
 Dolazi od toga što smo tokom njihovih generiranja morali posegnuti za dvama transformacijama.
 Prva je bila FFT. Ona je signal iz vremenske domene prebacila u frekvencijsku (spektar
 signala). Druga transformacija je bila upravo DCT. Ona je još jednom računala spektar, međutim
-ovog putaje je to bio spektar spektra. Zbog toga su koeficijenti it ove domene dobili ime
+ovog putaje je to bio spektar spektra. Zbog toga su koeficijenti iz ove domene dobili ime
 kepstralni (keps je anagram od spek). Ovo sve se može povezati s modelom govora opisanog
-u \ref{sec:speech}. Spektar spektra nam omogućuje razdvajanje energija u pojedinim 
+u \ref{sec:speech}. Spektar logaritamskog spektra nam omogućuje razdvajanje energija u pojedinim 
 frekvencijskim spektrima te jako dobro razdvaja odziv vokalnog trakta od kvazi-periodičnog
-impulsa. Također, informaciju zvučnog prozora duljine WINDOW\_SIZE komprimirali smo
+impulsa kao što je prikazano na slici \ref{pic:rastav}. Također, informaciju zvučnog prozora duljine WINDOW\_SIZE komprimirali smo
 u svega NUMBER\_OF\_MFCCS Mel kepstralnih koeficijenata. Te veličine mogu varirati, a
-karakteristični iznosi u sustavima ovakvog tipa su redom 512 te 13. To je svega oko 2.5\% 
+karakteristični iznosi u sustavima ovakvog tipa su redom 512 te 12 ili 13. To je svega oko 2.5\% 
 broja početnih značajki (5\% ako se promatra memorijsko zauzeće jer float tip varijable
 zauzima 4 bajta, dok int16\_t zauzima 2 bajta). Blok dijagram cjelokupnog procesa prikazan
 je na slici \ref{pic:generation}.
@@ -530,13 +520,14 @@ izgradnju matrice NUMBER\_OF\_TIME\_SLICES.
 \end{lstlisting}
 
 Algoritam osvježavanja postojeće matrice značajki prikazan je slikom \ref{pic:featureImage}. 
-Pokazna matrica se sastoji od sedam vremenskih odsječaka i šest MFC koeficijenata. Crveni 
+Pokazna matrica se sastoji od sedam vremenskih odsječaka i šest MFC koeficijenata
+(broj značajki se u stvarnoj implementaciji razlikuje od pokaznog). Crveni 
 vremenski prozor značajki se dodaje je na kraj matrice, dok se istovremeno ostali pomiču prema
 naprijed te istiskuju najstariji prozor koji je u ovom slučaju obojan plavom bojom.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.5\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/featureImage.png} 
+    \includegraphics[width=0.4\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/featureImage.png} 
     \caption{Matrica značajki \cite{flowchart}}
     \label{pic:featureImage}
 \end{figure}

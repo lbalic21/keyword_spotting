@@ -2,10 +2,13 @@
 \label{sec:activation}
 
 Aktivacija neuronske mreže (engl. invoking) proces je u kojem se ulaznom sloju neuronske mreže 
-(engl. input layer) predaje matrica značajki. Biblioteka koja je korištena za implementaciju
+(engl. input layer) predaje matrica značajki generirana na način objašnjen u prethodnom
+poglavlju. Biblioteka koja je korištena za implementaciju
 neuronske mreže na mikrokontroleru je TensorFlow Lite \ref{tflm}. Omogućuje vrlo jednostavno
-korištenje treniranog modela (treniranog na računalu kako je opisano u ... te konvertiranog
-u polje koje se može koristiti na mikrokontroleru kako je opisano u ...). Trenirani model
+korištenje treniranog modela (treniranog na računalu kako je opisano u poglavlju
+o treniranju neuronske mreže \ref{sec:training} te konvertiranog
+u polje koje se može koristiti na mikrokontroleru kako je opisano u poglavlju
+o prilagodbi \ref{sec:convert}). Trenirani model
 je polje 8-bitnih vrijednosti koje predstavljaju pojedine parametre mreže dobivene upravo 
 treniranjem modela. Razred koji omotava korištenje biblioteke i modela prikazan je 
 u isječku koda \ref{code:NeuralNetwork}. 
@@ -18,8 +21,9 @@ class NeuralNetwork
         tflite::MicroInterpreter* interpreter = nullptr;
         TfLiteTensor* model_input = nullptr;
         uint8_t tensor_arena[TENSOR_ARENA_SIZE];
-        tflite::MicroMutableOpResolver<N> resolver;
+        tflite::MicroMutableOpResolver<NUMBER_OF_OPERATORS> resolver;
         float* model_input_buffer = nullptr;
+
     public:
         NeuralNetwork();
         void giveFeaturesToModel(float* features, size_t numberOfFeatures);
@@ -30,11 +34,14 @@ class NeuralNetwork
 \end{lstlisting}
 
 \texttt{const tflite::Model* model} predstavlja 
-pokazivač na polje parametara modela, dok \texttt{tflite::MicroMutableOpResolver<N> resolver}
-predstavlja arhitekturu neuronske mreže. Toj strukturi je potrebno dodati sve vrste slojeva 
+pokazivač na polje parametara modela (koji ujedno sadrži i informacije o samoj strukturi mreže),
+dok \texttt{tflite::MicroMutableOpResolver<N> resolver}
+predstavlja arhitekturu neuronske mreže koja koristi informacije iz polja parametara
+modela kako bi pravilno procesuirala dani ulaz. Toj strukturi je potrebno dodati sve vrste slojeva 
 i funkcija koje se koriste unutar arhitekture mreže koja je trenirana. Primjer dodavanja 
 nekih vrsta slojeva prikazan je u isječku koda \ref{code:resolver}. Nije bitan redoslijed 
-dodavanja, samo je potrebno dodati sve što ta mreža sadrži.
+dodavanja, samo je potrebno dodati sve što ta mreža sadrži. U suprotnom, inicijalizacija
+modela ne će uspjeti.
 
 \begin{lstlisting}[language=C++, caption=Gradnja arhitekture mreže, label=code:resolver]
 resolver.AddConv2D()            // konvolucijski sloj
@@ -63,10 +70,10 @@ na svaki novi vremenski prozor podataka jer će biti zagušeno akviziranje novih
 te cjelokupni sustav neće dobro raditi u stvarnom vremenu. Međutim, dobra vijest je da
 nije potrebno aktivirati mrežu na svaki novi vremenski korak jer je on svojom duljinom
 puno manji od duljine uzorka kojeg predstavlja cijela matrica. Drugim riječima, uzastopne
-verzije ulazne matrice podataka će biti vrlo slične i možemo pričekati nekoliko novih
+verzije ulazne matrice podataka bit će vrlo slične i možemo pričekati nekoliko novih
 iteracija prije nego li aktiviramo neuronsku mrežu (akviziranje signala i generiranje značajki
 tipično traje puno kraće od aktivacije). S druge strane, mreža se mora aktivirati dovoljno
-često jer u suprotnom postoji mogućnost propusta određeni naredbi. Parametar koji brine o tome 
+često jer u suprotnom postoji mogućnost propusta određenih naredbi. Parametar koji brine o tome 
 koliko često se mreža aktivira zove se NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING i određen
 je eksperimentalno zbog toga što drugačije strukture mreže imaju drugačije vrijeme odziva.
 Potrebno je maksimizirati broj aktiviranja mreže u određenom vremenu bez da se gube

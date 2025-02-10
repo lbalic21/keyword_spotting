@@ -18,8 +18,8 @@ class CommandRecognizer
 
     public:
         bool addCommand(Command* command);
-        uint8_t getNumOfCommands(void);
         bool recognize(float* outputData);
+        uint8_t getNumOfCommands(void);
 };
 
 #endif /* _COMMAND_RECOGNIZER_H_ */

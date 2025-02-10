@@ -3,7 +3,6 @@
 
 \section{Općenito}
 
-Okosnica cjelokupnog sustava za prepoznavanje izgovorenih naredbi je neuronska mreža.
 Neuronska mreža ili preciznije umjetna neuronska mreža je računalni model inspiriran
 biološkom strukturom neurona u mozgu čovjeka. Predstavlja jedan od najkorištenijih modela 
 u dubokom učenju. Sastoji se od čvorova (neurona) i jednosmjernih
@@ -11,8 +10,9 @@ veza između njih (sinapsa) koji na taj način tvore usmjereni graf. Čvorovi su
 a svaki od njih je povezan s čvorovima iz susjednog sloja na određeni način. Način na koji su
 određeni slojevi međusobno povezani određuje vrstu sloja. 
 
-Jednostavan primjer strukture neuronske mreže je potpuno povezani sloj (engl. fully connected layer
-ili dense layer) koji se često koristi kao osnovni građevni blok u umjetnim neuronskim mrežama \cite{dense}.
+Jednostavan primjer strukture neuronske mreže je mreža izgrađena od potpuno povezanih slojeva 
+(engl. fully connected layer ili dense layer). Oni se često koristi kao osnovni građevni blok u 
+umjetnim neuronskim mrežama \cite{dense}.
 U potpuno povezanom sloju svaki čvor jednog sloja povezan je sa svakim čvorom susjednog sloja.
 Ovakva struktura omogućava mreži fleksibilno učenje složenih odnosa između ulaznih i izlaznih podataka.
 
@@ -82,7 +82,7 @@ Cilj svakog treniranja jest smanjiti vrijednost funkcije gubitka. Stoga se sve t
 ažuriraju na način da njihove promjene pomaknu trenutno stanje mreže u smjeru negativne derivacije
 funckije gubitka (gradijentni spust). Takvim pristupom, mreža kroz iteracije s novim podacima smanjuje funkciju gubitka
 (efektivno daje sve točnije predikcije). Težine se ažuriraju od izlaznog sloja prema ulaznom 
-(eng. backpropagation) jer na izlaz pojedinog sloja utječu njegovi ulazi, tj. izlazi prijašnjeg
+(engl. backpropagation) jer na izlaz pojedinog sloja utječu njegovi ulazi, tj. izlazi prijašnjeg
 sloja (izlaz svakog sloja je funkcija izlaza prijašenjeg sloja, a kad izračunamo derivaciju
 funkcije, pomjenom njenih ulaza znamo u kojem smjeru će se mijenjati vrijednost same funkcije).
 
