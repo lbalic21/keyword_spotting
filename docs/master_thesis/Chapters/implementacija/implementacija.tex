@@ -1,4 +1,4 @@
-\chapter{Implementacija i rezultati}
+\chapter{Implementacija}
 \label{pog:implement}
 
 Informacije o strukturi i parametrima modela neuronske mreže spremljeni su u obliku polja
@@ -48,7 +48,7 @@ u isječku koda \ref{code:commands}. Značenje pojedinog parametra detaljno je o
 Još jedna stvar koju je potrebno eksperimentalno utvrditi jest sposobnost sustava da
 odradi sve potrebne zadatke na vrijeme. Ne smije se dogoditi propuštanje akviziranja
 novih podataka zbog kašnjenja bilo kojeg drugog dijela sustava jer se time narušava
-svrha rada cjelokupnog sustava. U tablici \ref{tab:rts} prikazana su prosječna
+svrha rada cjelokupnog sustava. U tablici \ref{tab:rts} prikazana su maksimalna
 vremena potrebna za odrađivanje poslova pojedinih dijelova sustava. 
 
 \begin{table}[htb]
@@ -70,7 +70,62 @@ vidljivo je da je vremenski najzahtjevniji posao aktivacija neuronske mreže, sl
 generiranje značajki, a akvizicija i prepoznavanje naredbi imaju trajanje zanemarivo u odnosu
 na prethodna dva. Svaka nova iteracija uzima STEP\_SIZE novih uzoraka na obradu. U ovom slučaju
 taj broj iznosi 384 što odgovara 24 ms novih zvučnih podataka. Podešavanje varijable
-NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING predstavlja krajnji korak kalibracije sustava.
-Potrebno ju je postaviti na najmanji mogući broj koji neće narušavati rad sustava.
+NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING predstavlja krajnji korak kalibracije sustava, a odnosi
+se na period aktivacije neuronske mreže.
+Potrebno ju je postaviti na najmanji mogući broj koji neće narušavati rad sustava. 
 
+\begin{figure}[htb]
+    \centering
+    \includegraphics[width=1\linewidth]{Chapters/implementacija/rts.png} 
+    \caption{Kritičan trenutak rada sustava}
+    \label{pic:rts}
+\end{figure}
 
+Na slici \ref{pic:rts} prikazan je kritični trenutak rada sustava u kojem je sustav 
+u stanju čekanja na posljednji prozor podataka prije aktivacije neuronske mreže. Svi
+podaci koji su došli prije tog trenutka su već obrađeni. U trenutku t = 0 ms akviziraju se
+nova 384 podatka, tj. 24 ms novih podataka. Svi trenuci u kojima je potrebno obraditi nove podatke
+pojavljuju se s periodom od 24 ms te su na grafu označeni okomitom isprekidanom linijom i brojem
+koji predstavlja koja iteracija dohvaćanja novih podataka je u pitanju. Nakon dohvaćanja
+posljednjeg prozora podataka (t = 0 ms), generiraju se značajke nad tim prozorom te aktivira neuronska mreža.
+Vodoravne linije predstavljaju trajanja
+generiranja značajki i procesuiranja podataka u neuronskoj mreži. Duljine linija otprilike
+odgovaraju trajanju procesa: generiranje značajki 6 ms, obrada u neuronskoj mreži 78 ms 
+(uzeto je malo dulje trajanje kako bi se uzelo u obzir bilo kakvo nepredviđeno mrtvo vrijeme sustava).
+Vidljivo je da aktivacija i procesuiranje podataka unosi u sustav kašnjenje veće od perioda
+akvizicije novih podataka. Potrebno je provjeriti nakon koliko novih iteracija akvizicije i obrade
+podataka sustav opet može aktivirati neuronsku mrežu, tj. koliki je period aktivacije.
+
+Ako bismo postavili period aktivacije na 4, sustav bi trebao odraditi aktivaciju prošlog
+perida i obradu svih novih podataka prije trenutka t = 96 ms. U tom trenutku sustav bi se trebao
+u najgorem slučaju nalaziti u istom stanju kao u početnom trenutku (t = 0 ms). Na grafu
+je vidljivo da sustav u tom trenutku neće stići obraditi sve što je potrebno, ali je vrlo blizu
+toga (uzmimo u obzir i grafičko produljenje trajanja obrade podataka i aktivacije neuronske mreže). 
+Ono što je poželjno je svakako da sustav ne bude na rubu stabilnosti jer malim kašnjenjem će se
+kroz vijek rada uređaja akumulirati kašnjenje i u jednom trenutku će doći do gubljenja podataka.
+Za točnu provjeru stabilnosti, problem ćemo riješiti analitički.
+
+Zaključak je da je u jednom periodu rada sustava, tj. aktivacije neuronske mreže, potrebno
+generirati značajke za zadnji prozor podataka iz prošlog perioda, aktivirati neuronsku mrežu
+za prošli period te generirati značajke za sve nove prozore podataka u tom periodu (ne uključujući
+posljednji prozor).
+Neka je $t_{fg}$ vrijeme potrebno za generiranje
+značajki, $t_{nn}$ vrijeme potrebno za proces obrade podataka u neuronskoj mreži,
+$t_{new}$ veličina novih podataka u ms, a N broj novih iteracija akvizicije i obrade podataka
+prije aktivacije mreže (period). Tada vrijedi:
+
+\begin{equation}
+    t_{fg} + t_{nn} + (N - 1) \cdot t_{fg} \leq N \cdot t_{new}
+\end{equation}
+
+Iz toga proizlazi da minimalni broj novih iteracija prije aktivacije mreže mora zadovoljavati
+uvjet:
+
+\begin{equation}
+    N \geq \frac{t_{nn}}{t_{new} - t_{fg}}
+\end{equation}
+
+Za konkretne iznose iz tablice \ref{tab:rts} i $t_{new} = 24$ ms dobivamo da je 
+$N \geq 4.03$. Rezultat je vrlo blizu mogućnosti korištenja već spomenutog
+perioda aktivacije mreže koji iznosi 4. Međutim, najmanji mogući period, a da sustav 
+sigurno ostane stabilan, iznosi 5.
