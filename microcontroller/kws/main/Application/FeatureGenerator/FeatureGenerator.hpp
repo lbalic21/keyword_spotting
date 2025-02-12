@@ -21,6 +21,10 @@ class FeatureGenerator
         FFT fft;
         MelSpectrogram melSpectrogram;
         DCT dct;
+
+        float audioWindow[WINDOW_SIZE] = {0.0};
+        float spectrogram[NUMBER_OF_SPECTROGRAM_BINS] = {0.0};
+        float melSpectro[NUMBER_OF_MEL_BINS] = {0.0};
 };
 
 #endif /* FEATURE_GENERATOR_H */

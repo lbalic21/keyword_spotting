@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include <string.h>
 #include "audio_pipeline.h"
 #include "i2s_stream.h"

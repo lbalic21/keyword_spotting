@@ -5,7 +5,7 @@ bool CommandRecognizer::recognize(float* outputData)
     for(int i = 0; i < commandCount; i++)
     {
         commands[i]->giveResult(outputData[i]);
-        if(commands[i]->isRecognized() && (((esp_timer_get_time() - lastCommandInvoke[i]) / 1000) >= COOL_OF_PERIOD_MS))
+        if(commands[i]->isRecognized() && (((esp_timer_get_time() - lastCommandInvoke[i]) / 1000) >= COOL_DOWN_PERIOD_MS))
         {
             commands[i]->execute();
             commands[i]->resetHistory();

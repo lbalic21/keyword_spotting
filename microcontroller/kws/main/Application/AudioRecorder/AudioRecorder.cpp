@@ -71,14 +71,18 @@ void AudioRecorder::captureAudioTask(void* pvParameters)
     int16_t *buffer = (int16_t*)malloc(512);
     
     while (1) {
-        int read_len = audio_element_input(i2s_stream_reader, (char *)buffer, 512);
+        //int64_t start = esp_timer_get_time();
+        int readLen = audio_element_input(i2s_stream_reader, (char *)buffer, 512);
         //for(int i = 0; i < read_len/2; i++)
         //{
         //    printf("%d - %d\n", i, buffer[i]);
         //}
-        if (read_len > 0) {
-            xRingbufferSend(recorder->ringBuffer, buffer, read_len, portMAX_DELAY);
+        if(readLen > 0)
+        {
+            xRingbufferSend(recorder->ringBuffer, buffer, readLen, portMAX_DELAY);
         }
+        //int64_t end = esp_timer_get_time();
+        //printf("AudioRecorder-> (start:%lld, end: %lld, time: %lld) us\n", start, end, (end - start));
     }
 }
 

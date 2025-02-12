@@ -1,7 +1,4 @@
 #include "FeatureGenerator.hpp"
-#include "dsps_fft2r.h"
-#include "dsps_wind.h"
-#include "math.h"
 
 static const char *TAG = "Feature Generator";
 
@@ -11,15 +8,13 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, float* featureSlice
     /*************************** WINDOW ******************************/
     /*****************************************************************/
 
-    float audioWindow[WINDOW_SIZE];
-    window.apply(audioFrame, audioWindow);
+    window.apply(audioFrame, this->audioWindow);
     
     /*****************************************************************/
     /*************************** FFT *********************************/
     /*****************************************************************/
 
-    float spectrogram[NUMBER_OF_SPECTROGRAM_BINS];
-    fft.compute(audioWindow, spectrogram);
+    fft.compute(this->audioWindow, this->spectrogram);
 
     //for(int i = 0; i < NUMBER_OF_SPECTROGRAM_BINS; i++)
     ////{
@@ -30,8 +25,7 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, float* featureSlice
     /*********************** MEL SPECTRO *****************************/
     /*****************************************************************/
 
-    float melSpectro[NUMBER_OF_MEL_BINS] = {0.0};
-    melSpectrogram.generate(spectrogram, melSpectro);
+    melSpectrogram.generate(this->spectrogram, this->melSpectro);
 
     //for(size_t i = 0; i < NUMBER_OF_MEL_BINS; i++)
     //{
@@ -42,7 +36,7 @@ bool FeatureGenerator::generateFeatures(int16_t* audioFrame, float* featureSlice
     /*************************** DCT *********************************/
     /*****************************************************************/
 
-    dct.compute(melSpectro, featureSlice);
+    dct.compute(this->melSpectro, featureSlice);
 
     return true;
 }

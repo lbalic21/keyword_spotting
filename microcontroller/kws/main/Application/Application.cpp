@@ -59,13 +59,18 @@ float featureImage[NUMBER_OF_FEATURES] = {0};
 
 void Application(void)
 {
-    ESP_LOGI(TAG, "Application started");
+    /* static images testing, uncomment this if you want to test static audio data */
+    //testingFacility(no);
 
+    ESP_LOGI(TAG, "Application started");
     ESP_LOGI(TAG, "Time slices in a second: %d", NUMBER_OF_TIME_SLICES);
     ESP_LOGI(TAG, "Number of MFCCs in one time slice: %d", NUMBER_OF_MFCCS);
     ESP_LOGI(TAG, "Number of features in one image: %d", NUMBER_OF_FEATURES);
 
-    // Create and add commands
+    /**********************************************************************/
+    /****************************** COMMANDS ******************************/
+    /**********************************************************************/
+
     BlankCommand command_back("BACKGROUND", 1, 0.7);
     PrintCommand command_left("LEFT", 5, 0.8);
     PrintCommand command_no("NO", 3, 0.80);
@@ -83,40 +88,30 @@ void Application(void)
     recognizer.addCommand(&command_zero);
 
     recognizer.getNumOfCommands();
-
-    /******************************************************************************/
-    /************************** STARTING AUDIO RECORDER ***************************/
-    /******************************************************************************/
-
   
     /******************************************************************************/
     /****************************** MAIN SYSTEM LOOP ******************************/
     /******************************************************************************/
 
-    /* tracks the number of new feature slices before invoking the network */
-    uint32_t numberOfNewSlices = 0; 
-
-    ESP_LOGI(TAG, "Starting the main system loop");
-
-    int64_t start, end, startLoop, endLoop;
-
+    uint32_t numberOfNewSlices = 0;   /* tracks the number of new feature slices before invoking the network */ 
+    //int u =  0;                       /* not enough samples counter, for testing purposes */
     while(1)
     {   
-        startLoop = esp_timer_get_time();
-        /* static images testing, uncomment this if you want to test static audio data */
-        //testingFacility(no);
-        //ESP_LOGI(TAG, "LOOP");
+        //int64_t startLoop = esp_timer_get_time();
         
-
         /**********************************************************************/
         /*********************** ACQUIRING NEW SAMPLES ************************/
         /**********************************************************************/
 
+        //int64_t startGetSamples = esp_timer_get_time();
         uint32_t bytesRead = audioRecorder.getSamples(newSamples, STEP_SIZE);
+        //int64_t endGetSamples = esp_timer_get_time();
+        //printf("GetSamples-> (start:%lld, end: %lld, time: %lld) us\n", startGetSamples, endGetSamples, (endGetSamples - startGetSamples));
         //ESP_LOGI(TAG, "Samples retrieved: %ld (%ld bytes)", bytesRead / 2, bytesRead);
         if((bytesRead / 2) < STEP_SIZE)
         {
-            //ESP_LOGE(TAG, "Did not get enough samples");
+            //printf("Did not get enough samples %d\n", u++);
+            vTaskDelay(1);
             continue;
         }
 
@@ -147,14 +142,16 @@ void Application(void)
         /************************ GENERATING FEATURES *************************/
         /**********************************************************************/
     
-        start = esp_timer_get_time();
+        //int64_t startGen = esp_timer_get_time();
         bool success = featureGenerator.generateFeatures(audioFrame, featureSlice); 
-        end = esp_timer_get_time();
-        //printf("Time taken for feature generation: %lld us\n", (end - start));
+        //int64_t endGen = esp_timer_get_time();
+        //printf("FeatureGeneration-> (start:%lld, end: %lld, time: %lld) us\n", startGen, endGen, (endGen - startGen));
+        
 
         if(!success)
         {
             ESP_LOGE(TAG, "Generating feature failed");
+            vTaskDelay(1);
             continue;
         }
 
@@ -180,14 +177,16 @@ void Application(void)
         if(numberOfNewSlices == NUMBER_OF_NEW_SLICES_BEFORE_INVOKING)
         {
             //ESP_LOGI(TAG, "Invoking NN!");
-            start = esp_timer_get_time();
+            //int64_t startNN = esp_timer_get_time();
             network.giveFeaturesToModel(featureImage, NUMBER_OF_FEATURES);
             success = network.invoke();
-            end = esp_timer_get_time();
-            //printf("Time taken for invoking: %lld us\n", (end - start));
+            //int64_t endNN = esp_timer_get_time();
+            //printf("NN Invoke-> (start:%lld, end: %lld, time: %lld) us\n", startNN, endNN, (endNN - startNN));
+        
             if(!success)
             {
                 ESP_LOGE(TAG, "Model invoking failed");
+                vTaskDelay(1);
                 continue;
             }
             numberOfNewSlices = 0;
@@ -196,10 +195,13 @@ void Application(void)
             /*********************** RECOGNIZING COMMANDS **********************/
             /*******************************************************************/
 
+            //int64_t startRec = esp_timer_get_time();
             recognizer.recognize(network.outputData);
+            //int64_t endRec = esp_timer_get_time();
+            //printf("Recognize-> (start:%lld, end: %lld, time: %lld) us\n", startRec, endRec, (endRec - startRec));
         }
     
-        endLoop = esp_timer_get_time();
+        //int64_t endLoop = esp_timer_get_time();
         //printf("Time taken for loop: %lld us\n", (endLoop - startLoop));
         vTaskDelay(1);
     }
