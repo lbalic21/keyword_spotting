@@ -1,14 +1,14 @@
 \chapter{Implementacija i rezultati}
 \label{pog:implement}
 
-Informacije o strukturi i parametrima neuronske mreže spremljeni su u obliku polja
-programskog jezika C. Sustav polje učitava i koristi na način detaljno objašnjen 
+Informacije o strukturi i parametrima modela neuronske mreže spremljeni su u obliku polja
+programskog jezika C. Sustav na mikrokontroleru polje učitava i koristi na način detaljno objašnjen 
 u poglavlju o aktivaciji neuronske mreže na mikrokontroleru \ref{sec:activation}.
 Kako bi cjelokupni sustav radio u skladu sa zahtjevima, potrebno je u aplikaciji
 na mikrokontroleru dodati identične naredbe koje su odabrane prilikom treniranja
 modela. Stvaranje naredbi te njihovo dodavanje objektu zaduženom za prepoznavanje
-naredbi prikazano je u isječku koda \ref{code:commands}. Kategorije "pozadina" i
-"nepoznato" su predstavljene objektima klase BlankCommand, dok su ostale naredbe 
+naredbi prikazano je u isječku koda \ref{code:commands}. Kategorije "pozadina" (engl. "background") i
+"nepoznato" (engl. "unknown") su predstavljene objektima klase BlankCommand, dok su ostale naredbe 
 instance klase PrintCommand. Rezultat toga je ispis imena naredbe na konzolu u slučaju
 prepoznavanja govorne naredbe. Detalj koji je ključan za ispravan rad sustava je redoslijed
 dodavanja naredbi. On mora odgovarati redoslijedu koji je određen pri treniranju modela koji
@@ -49,24 +49,28 @@ Još jedna stvar koju je potrebno eksperimentalno utvrditi jest sposobnost susta
 odradi sve potrebne zadatke na vrijeme. Ne smije se dogoditi propuštanje akviziranja
 novih podataka zbog kašnjenja bilo kojeg drugog dijela sustava jer se time narušava
 svrha rada cjelokupnog sustava. U tablici \ref{tab:rts} prikazana su prosječna
-vremena potrebna za odrađivanje poslova pojedinih dijelova sustava.
+vremena potrebna za odrađivanje poslova pojedinih dijelova sustava. 
 
 \begin{table}[htb]
     \centering
     \begin{tabular}{|l|r|}
         \hline
         \textbf{Dio sustava} & \textbf{Vrijeme(ms)} \\ \hline
-        Akvizicija & 173241\\ \hline
-        Generiranje značajki & 41644 \\ \hline
-        Aktivacija neuronske mreže & 15704 \\ \hline
-        Prepoznavanje naredbi i aktivacija posla & 15704 \\ \hline
-        \textbf{Ukupno} & \textbf{Vrijeme(ms)} \\ \hline
+        Akvizicija uzoraka & 0.016\\ \hline
+        Generiranje značajki & 4.9 \\ \hline
+        Aktivacija neuronske mreže & 77 \\ \hline
+        Prepoznavanje naredbi i aktivacija posla & 0.028 \\ \hline
     \end{tabular}
     \caption{Vrijeme potrebno za određeni posao}
     \label{tab:rts}
 \end{table}
 
-Svaka nova iteracija uzima STEP\_SIZE novih uzoraka na obradu. U ovom slučaju
+Iz prikazanih podataka
+vidljivo je da je vremenski najzahtjevniji posao aktivacija neuronske mreže, slijedi ga 
+generiranje značajki, a akvizicija i prepoznavanje naredbi imaju trajanje zanemarivo u odnosu
+na prethodna dva. Svaka nova iteracija uzima STEP\_SIZE novih uzoraka na obradu. U ovom slučaju
 taj broj iznosi 384 što odgovara 24 ms novih zvučnih podataka. Podešavanje varijable
 NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING predstavlja krajnji korak kalibracije sustava.
 Potrebno ju je postaviti na najmanji mogući broj koji neće narušavati rad sustava.
+
+
