@@ -120,3 +120,36 @@ za klasificirati te je zbog toga ovakav rezultat očekivan.
     \caption{Konfuzijska matrica}
     \label{pic:confmtrx}
 \end{figure}
+
+\section{Usporedba s drugim modelima na istom skupu podataka}
+
+Usporediti naučeni model s već postojećim modelima nije jednostavno iz razloga što
+se većina modela temelji na složenijim arhitekturama koje imaju veći broj parametara te
+uz svoje rezultate ne prilažu način implementacije na mikrokontroleru. Međutim,
+u tablici \ref{tab:models} prikazana je usporedba ovog modela s drugima. Uz naš trenirani model,
+ubačen je identičan model treniran na samo dvije glasovne naredbe (ukupno četiri klase).
+Iz tablice je vidljivo da naš model zauzima najmanje memorije uz sličnu točnost za 4 klase te
+nešto manju za 7 klasa. Točnost bi se jednostavno mogla povećati složenijim potpuno povezanim
+slojevima na izlazu trenirane mreže, međutim ovo se čini kao najbolji kompromis između veličine
+mreže i njene točnosti.
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{|l|r|r|}
+        \hline
+        \textbf{Model} & \textbf{Accuracy (\%)} & \textbf{Model Size (KB)} \\ \hline
+        Naš CNN (7 klasa) & 88.2 & 15.7 \\ 
+        Naš CNN (4 klase) & 93.6& 15.6 \\ 
+        DNN (Deep Neural Network)          \cite{zhang2017hello} & 84.6 & 80 \\
+        CNN (Convolutional Neural Network) \cite{zhang2017hello} & 91.6 & 79 \\
+        LSTM (Long Short-Term Memory)      \cite{zhang2017hello} & 92.9 &79.5 \\
+        CRNN (Convolutional RNN)           \cite{zhang2017hello} & 94.0 & 79.7 \\
+        DS-CNN (Depthwise Separable CNN)   \cite{zhang2017hello} & 94.4 & 38.6  \\
+        TripletLoss-res15 \cite{triplet} & 95.2 & 237 \\
+        BC-ResNet-8 \cite{res} & 98.7 & 520 \\
+        WaveFormer \cite{waveformer} & 98.8 & 130  \\
+        \hline
+    \end{tabular}
+    \caption{Veličine različitih oblika modela i procentualna ušteda}
+    \label{tab:models}
+\end{table}
