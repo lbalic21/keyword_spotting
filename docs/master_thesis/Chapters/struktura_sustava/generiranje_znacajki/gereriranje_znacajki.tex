@@ -7,7 +7,7 @@ zvučnih uzoraka, potrebno ih je obraditi kako bi se mogli predati neuronskoj mr
 na klasifikaciju. Naime, modeli strojnog učenja (kao što je neuronska mreža) rade
 s različitim primjerima podataka. Razlikovanje primjera temelji se na određivanju
 različitih značajki ulaznih podataka. Klasičan primjer koji se koristi kako bi se 
-približio pojam značajki jest model predikcije cijene nekakve
+približio pojam značajki jest model predikcije cijene
 nekretnine. U tom slučaju značajke koje bi model mogao koristiti su lokacija,
 godina izgradnje, površina, razina energetske učinkovitosti i slično. Međutim, što
 bi bile značajke našeg ulaznog toka signala? Možemo, ispostavit će se naivno, uzeti
@@ -15,7 +15,7 @@ amplitudu svake vrijednosti. U slučaju da promatramo period od jedne sekunde
 signala s već spomenutim otipkavanjem od 16 kHz, broj značajki koje bi naš model
 morao ”progutati” jest 16000. Obraditi toliku količinu podataka u jako kratkom
 vremenu (sustav mora raditi bez konstantno i bez mrtvog vremena) na resursno
-ograničenom sustavu kao što je mikrokontroler ne zvuči obećavajuće. Nekako sve 
+ograničenom sustavu kao što je mikrokontroler ne zvuči obećavajuće. Sve 
 upućuje na to da je potrebno na neki način prilagoditi ulazni signal, tj. izvući
 iz signala bitne informacije i tako smanjiti veličinu podataka. 
 
@@ -29,7 +29,7 @@ vokalni trakt čiji su glavni dijelovi prikazani na slici \ref{pic:glas}.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.6\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/glas.png} 
+    \includegraphics[width=0.55\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/glas.png} 
     \caption{Presjek glave i osnovni dijelovi vokalnog trakta koji sudjeluju u produkciji govornog signala \cite{petrinovic2002}}
     \label{pic:glas}
 \end{figure}
@@ -123,7 +123,7 @@ prepoznavanju govora i govornika \cite{vasilijevic2011perceptual}.
 MFC koeficijenti (koji čine MFC vektor) pokazali su se odličnim načinom za spremanje informacije
 koja je sadržana u govoru, a konkretno predstavljaju kratkotrajni spektar snage glasovnog 
 signala. Naš sustav za prepoznavanje govornih naredbi će koristiti upravo njih za 
-značajke koje predstavljati zvučni signal akviziran s pomoću podsustava za akviziciju. 
+značajke koje predstavljaju zvučni signal akviziran s pomoću podsustava za akviziciju. 
 Najbolji način za opis ovih koeficijenata je prikaz postupka kojim se dobivaju.
 
 
@@ -146,26 +146,23 @@ a određeni dio su novi uzorci dobiveni od podsustava za akviziciju.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=1\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/sliding.png} 
+    \includegraphics[width=0.9\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/sliding.png} 
     \caption{Preklapajući prozori}
     \label{pic:sliding}
 \end{figure}
 
 U glavnoj petlji programskog koda inicijalizirano je polje koje sprema nove uzorke te 
 polje koje zaduženo za spremanje trenutnog prozora podataka. Alokacija polja i algoritam
-pomicanja starih podataka u polju koje sprema trenutni prozor prikazani su u isječku programskog
+pomicanja starih podataka u polju koje čuva trenutni prozor prikazani su u isječku programskog
 koda \ref{code:sliding}.
 
 \begin{lstlisting}[language=C++, caption=Algoritam za korištenje novodohvaćenih podataka, label=code:sliding]
 /* polje za nove uzorke */
 int16_t newSamples[STEP_SIZE];
-
 /* polje za trenutni prozor */
 int16_t audioFrame[WINDOW_SIZE] = {0};
-
 /* pomicanje starih podataka prema pocetku aktivnog prozora */
 memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE)*2);
-
 /* stavljanje novih podataka na kraj aktivnog prozora */
 memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE*2);
 \end{lstlisting}
@@ -195,7 +192,7 @@ spektralnih komponenti koje se nalaze u blizini onih od kojih je signal stvarno 
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.9\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/hann.png} 
+    \includegraphics[width=0.85\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/hann.png} 
     \caption{Hannov prozor}
     \label{pic:hann}
 \end{figure}
@@ -349,7 +346,7 @@ odgovara toj komponenti na Melovoj ljestvici. Programski kod koji se bavi opisan
 \ref{code:mel}. Na kraju cjelokupnog procesa, potrebno je svaku vrijednost Melovih frekvencijskih
 komponenti logaritmirati jer je to potrebno za sljedeći korak, a to je generiranje MFC koeficijenata.
 
-\begin{lstlisting}[language=C++, caption=FFT, label=code:mel]
+\begin{lstlisting}[language=C++, caption=Generiranje Melovog spektrograma, label=code:mel]
 void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram){
     for(int melBin = 0; melBin < NUMBER_OF_MEL_BINS; melBin++){
         melSpectrogram[melBin] = 0.0;
@@ -416,7 +413,8 @@ Rezultat DCT-a algoritma je vektor prvih NUMBER\_OF\_MFCCS MFC koeficijenata izu
 prvog. Prvi koeficijent se obično odbacuje jer sadrži samo energiju signala, a ne nosi
 dodatne informacije o spektru signala.
 
-\begin{lstlisting}[language=C++, caption=FFT, label=code:dct]
+\newpage
+\begin{lstlisting}[language=C++, caption=Diskretna kosinusna transformacija, label=code:dct]
 DCT::DCT() {
     const float pi = 3.14159265358979323846f;
     for (int i = 0; i < (NUMBER_OF_MFCCS + 1); ++i) {
@@ -507,7 +505,7 @@ je definirano kao jednodimenzionalno, međutim memorijski otisak je identičan i
 takva struktura odgovara ulazu neuronske mreže). Veličina tog polja NUMBER\_OF\_FEATURES je samo
 umnožak broja značajki pojedinog prozora NUMBER\_OF\_MFCCS i broja prozora potrebnog za 
 izgradnju matrice NUMBER\_OF\_TIME\_SLICES.
-
+\newpage
 \begin{lstlisting}[language=C++, caption=Generiranje matrice značajki, label=code:featureImage]
     float featureSlice[NUMBER_OF_MFCCS] = {0};
     float featureImage[NUMBER_OF_FEATURES] = {0};

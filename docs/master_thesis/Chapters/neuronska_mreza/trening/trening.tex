@@ -2,7 +2,7 @@
 \label{sec:training}
 
 Nakon definiranja strukture modela neuronske mreže, na red je došlo treniranje. Podaci 
-su u ovom trenutku podijeljeni u trenažni, validacijski te testni skup. Također,
+su u ovom trenutku podijeljeni u skup za treniranje, validacijski te testni skup. Također,
 svaki podatak (zvučni zapis) pretvoren je u dvodimenzijsku matricu značajki veličine 41x12.
 
 
@@ -87,7 +87,7 @@ Epoch 28: early stopping
 }
 
 Na slici \ref{pic:accuracy} prikazana su dva grafa. Lijevi prikazuje funkciju gubitka
-na trenažnom i validacijskom skupu, dok desni prikazuje točnost modela na istim skupovima.
+na skupu za treniranje i validacijskom skupu, dok desni prikazuje točnost modela na istim skupovima.
 Obje funkcije prikazane su u ovisnosti o broju odrađenih epoha treniranja. Vidljivo je
 kako se funkcija gubitka smanjuje s vremenom, a točnost raste. Nakon 20-ak epoha, funkcije
 se stabiliziraju. 
@@ -105,8 +105,8 @@ treniranja modela donosi se na temelju testnog skupa. To su podaci koje model ni
 niti u jednom trenutku treniranja i predstavljaju podatke kakve će model vidjeti u stvarnom
 svijetu. Funkcija gubitka na tom skupu iznosi 0.3480, dok točnost iznosi 0.8814.
 
-Na slici \ref{pic:confmtrx} prikazana je konfuzijska matrica napravljena nad podskupom
-testnog skupa podataka. Ona prikazuje koliko je puta model pogriješio u klasifikaciji
+Na slici \ref{pic:confmtrx} prikazana je konfuzijska matrica napravljena nad
+testnim skupa podataka. Ona prikazuje koliko je puta model pogriješio u klasifikaciji
 određene klase. Stupci matrice predstavljaju stvarne klase, a reci predviđene klase
 (izlaz treniranog modela). Na dijagonali matrice nalaze se točne klasifikacije, dok
 se izvan dijagonale se nalaze pogreške. Vidljivo je kako je model najviše griješio

@@ -4,7 +4,7 @@ Principi strukturiranja konvolucijske neuronske mreže za klasifikaciju matričn
 poput upravo pripremljenih prate opis u poglavlju o CNN-ovima \ref{sec:cnn}.
 Uz to, postoji zahtjev za što manjim modelom jer je isti potrebno implementirati na 
 mikrokontrolerskoj platformi koja ima ograničavajuće memorijske resurse. Također,
-vrijeme potrebno buđenje neuronske mreže, tj. kašnjenje koje unosi mreža
+vrijeme potrebno za buđenje neuronske mreže, tj. kašnjenje koje unosi mreža
 implementirana na mikrokontroleru izravno utječe na performanse sustava 
 koji bi trebao raditi u stvarnom vremenu. Imajući to na umu, izgradit ćemo
 mrežu dovoljno jednostavnu da pokrije spomenute uvjete, a s druge strane dovoljno
@@ -39,7 +39,6 @@ model = tf.keras.Sequential([
     layers.MaxPooling2D(pool_size=2, strides=2, padding='same'),
     layers.Conv2D(16, kernel_size=3, padding='same', activation='relu'),
     layers.MaxPooling2D(pool_size=2, strides=2, padding='same'),
-
     layers.Flatten(),   # Flatten the data for fully connected layers
     layers.Dense(8, activation='relu'),   # Fully connected layer
     layers.Dropout(0.1),                  # Dropout layer with 10% rate

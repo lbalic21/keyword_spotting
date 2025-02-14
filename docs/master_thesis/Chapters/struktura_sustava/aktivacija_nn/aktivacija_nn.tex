@@ -16,15 +16,15 @@ u isječku koda \ref{code:NeuralNetwork}.
 \begin{lstlisting}[language=C++, caption=Razred neuronske mreže, label=code:NeuralNetwork]
 class NeuralNetwork {
     private:
-    const tflite::Model* model = nullptr;
-    tflite::MicroMutableOpResolver<NUMBER_OF_OPERATORS> resolver;
-    float* model_input_buffer = nullptr;
+        const tflite::Model* model = nullptr;
+        tflite::MicroMutableOpResolver<NUMBER_OF_OPERATORS> resolver;
+        float* model_input_buffer = nullptr;
     public:
-    NeuralNetwork();
-    void giveFeaturesToModel(float* features, size_t numberOfFeatures);
-    bool invoke(void);
-    int numberOfClasses;
-    float* outputData;  
+        NeuralNetwork();
+        void giveFeaturesToModel(float* features, size_t numberOfFeatures);
+        bool invoke(void);
+        int numberOfClasses;
+        float* outputData;  
 };   
 \end{lstlisting}
 
@@ -37,7 +37,7 @@ i funkcija koje se koriste unutar arhitekture mreže koja je trenirana. Primjer 
 nekih vrsta slojeva prikazan je u isječku koda \ref{code:resolver}. Nije bitan redoslijed 
 dodavanja, samo je potrebno dodati sve što ta mreža sadrži. U suprotnom, inicijalizacija
 modela neće uspjeti.
-
+\newpage
 \begin{lstlisting}[language=C++, caption=Gradnja arhitekture mreže, label=code:resolver]
 resolver.AddConv2D()            // konvolucijski sloj
 resolver.AddFullyConnected()    // potpuno povezani sloj
