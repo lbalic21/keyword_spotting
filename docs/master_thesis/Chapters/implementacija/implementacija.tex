@@ -7,8 +7,8 @@ u poglavlju o aktivaciji neuronske mreže na mikrokontroleru \ref{sec:activation
 Kako bi cjelokupni sustav radio u skladu sa zahtjevima, potrebno je u aplikaciji
 na mikrokontroleru dodati identične naredbe koje su odabrane prilikom treniranja
 modela. Stvaranje naredbi te njihovo dodavanje objektu zaduženom za prepoznavanje
-naredbi prikazano je u isječku koda \ref{code:commands}. Kategorije "pozadina" (engl. "background") i
-"nepoznato" (engl. "unknown") su predstavljene objektima klase BlankCommand, dok su ostale naredbe 
+naredbi prikazano je u isječku koda \ref{code:commands}. Kategorije "pozadina" (engl. \textit{"background"}) i
+"nepoznato" (engl. \textit{"unknown"}) su predstavljene objektima klase BlankCommand, dok su ostale naredbe 
 instance klase PrintCommand. Rezultat toga je ispis imena naredbe na konzolu u slučaju
 prepoznavanja govorne naredbe. Detalj koji je ključan za ispravan rad sustava je redoslijed
 dodavanja naredbi. On mora odgovarati redoslijedu koji je određen pri treniranju modela koji
@@ -36,11 +36,11 @@ recognizer.addCommand(&command_zero);
 
 Zbog nesavršenosti skupa na kojem je treniran model i nejednakosti kvalitete
 zvučnih snimaka, neće svaka naredba biti prepoznata na isti način. Prvo, razlikovat će
-se pouzdanost vjerojatnosne intepretacije za različite klase. Drugo, uslijed izgovorene
+se pouzdanost vjerojatnosne interpretacije za različite klase. Drugo, uslijed izgovorene
 naredbe neke će klase imati najveću vjerojatnost različit broj iteracija rada sustava.
 To se događa zbog toga što sustav neprestano vrsti glavnu petlju opisanu u poglavlju
 o strukturi sustava \ref{pog:struktura_sustava} i trebao bi odraditi nekoliko iteracija tijekom izgovora
-jedne naredbe. Zbog svega navedenog potrebo je kalibrirati svaku naredbu zasebno.
+jedne naredbe. Zbog svega navedenog potrebno je kalibrirati svaku naredbu zasebno.
 Kalibracija se radi promjenom parametara pri konstrukciji objekta također prikazanog 
 u isječku koda \ref{code:commands}. Značenje pojedinog parametra detaljno je opisano u 
 \ref{sec:prepoy}. 
@@ -97,7 +97,7 @@ akvizicije novih podataka. Potrebno je provjeriti nakon koliko novih iteracija a
 podataka sustav opet može aktivirati neuronsku mrežu, tj. koliki je period aktivacije.
 
 Ako bismo postavili period aktivacije na 4, sustav bi trebao odraditi aktivaciju prošlog
-perida i obradu svih novih podataka prije trenutka t = 96 ms. U tom trenutku sustav bi se trebao
+perioda i obradu svih novih podataka prije trenutka t = 96 ms. U tom trenutku sustav bi se trebao
 u najgorem slučaju nalaziti u istom stanju kao u početnom trenutku (t = 0 ms). Na grafu
 je vidljivo da sustav u tom trenutku neće stići obraditi sve što je potrebno, ali je vrlo blizu
 toga (uzmimo u obzir i grafičko produljenje trajanja obrade podataka i aktivacije neuronske mreže). 

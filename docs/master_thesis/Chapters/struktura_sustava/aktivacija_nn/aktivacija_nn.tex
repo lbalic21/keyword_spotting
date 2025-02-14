@@ -1,13 +1,13 @@
 \section{Aktivacija neuronske mreže}
 \label{sec:activation}
 
-Aktivacija neuronske mreže (engl. invoking) proces je u kojem se ulaznom sloju neuronske mreže 
-(engl. input layer) predaje matrica značajki generirana na način objašnjen u prethodnom
+Aktivacija neuronske mreže (engl. \textit{invoking}) proces je u kojem se ulaznom sloju neuronske mreže 
+(engl. \textit{input layer}) predaje matrica značajki generirana na način objašnjen u prethodnom
 poglavlju. Biblioteka koja je korištena za implementaciju
-neuronske mreže na mikrokontroleru je TensorFlow Lite \ref{tflm}. Omogućuje vrlo jednostavno
+neuronske mreže na mikrokontroleru je TensorFlow Lite \cite{tflm}. Omogućuje vrlo jednostavno
 korištenje treniranog modela (treniranog na računalu kako je opisano u poglavlju
 o treniranju neuronske mreže \ref{sec:training} te konvertiranog
-u polje koje se može koristiti na mikrokontroleru kako je opisano u poglavlju
+u polje koje se može koristiti na mikrokontroleru kako je opisano u dijelu
 o prilagodbi \ref{sec:convert}). Trenirani model
 je polje 8-bitnih vrijednosti koje predstavljaju pojedine parametre mreže dobivene upravo 
 treniranjem modela. Razred koji omotava korištenje biblioteke i modela prikazan je 
@@ -28,15 +28,15 @@ class NeuralNetwork {
 };   
 \end{lstlisting}
 
-\texttt{const tflite::Model* model} predstavlja 
+Članska varijabla \texttt{const tflite::Model* model} predstavlja 
 pokazivač na polje parametara modela (koji ujedno sadrži i informacije o samoj strukturi mreže),
-dok \texttt{tflite::MicroMutableOpResolver<N> resolver}
+dok \texttt{tflite:: MicroMutableOpResolver<NUMBER\_OF\_OPERATORS> resolver}
 predstavlja arhitekturu neuronske mreže koja koristi informacije iz polja parametara
 modela kako bi pravilno procesuirala dani ulaz. Toj strukturi je potrebno dodati sve vrste slojeva 
 i funkcija koje se koriste unutar arhitekture mreže koja je trenirana. Primjer dodavanja 
 nekih vrsta slojeva prikazan je u isječku koda \ref{code:resolver}. Nije bitan redoslijed 
 dodavanja, samo je potrebno dodati sve što ta mreža sadrži. U suprotnom, inicijalizacija
-modela ne će uspjeti.
+modela neće uspjeti.
 
 \begin{lstlisting}[language=C++, caption=Gradnja arhitekture mreže, label=code:resolver]
 resolver.AddConv2D()            // konvolucijski sloj
@@ -51,7 +51,7 @@ te ju aktivirati. Nakon aktivacije, mreža "provlači" vrijednosti kroz svoju st
 izlazu daje vjerojatnosti da određeni ulaz (matrica značajki) predstavlja naučenu naredbu. 
 Kako je objašnjeno u \ref{sec:data}, broj kategorija za koje trenirana mreža daje na izlazu
 vjerojatnosti je za dva veći od broja naredbi koje mreža može prepoznati. Dodatne kategorije
-su "pozadina" (engl. background) i "nepoznato" (engl. unknown). 
+su "pozadina" (engl. \textit{background}) i "nepoznato" (engl. \textit{unknown}). 
 
 Aktivacija neuronske mreže i dobivanje vrijednosti na njenom izlazu, koje predstavljaju
 vjerojatnosti da ulazna matrica značajki pripada određenoj kategoriji, samo je jedna iteracija 
@@ -71,8 +71,8 @@ tipično traje puno kraće od aktivacije). S druge strane, mreža se mora aktivi
 često jer u suprotnom postoji mogućnost propusta određenih naredbi. Parametar koji brine o tome 
 koliko često se mreža aktivira zove se NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING i određen
 je eksperimentalno zbog toga što drugačije strukture mreže imaju drugačije vrijeme odziva.
-Potrebno je maksimizirati broj aktiviranja mreže u određenom vremenu bez da se gube
-uzorci ulaznog signala.
+Potrebno je maksimizirati broj aktiviranja mreže u određenom vremenu bez gubitaka
+uzoraka ulaznog signala.
 
 \begin{figure}[htb]
     \centering
@@ -91,4 +91,5 @@ U slučaju da smo aktivirali mrežu rjeđe, ne bismo prepoznali naredbu (npr. pr
 prozor). 
 
 No, takav pristup otvara mjesto drugom problemu. Ne želimo niti višestruko prepoznavanje
-jednom izgovorene naredbe. Tu na scenu stupa podsustav za prepoznavanje i okidanje naredbi.
+jednom izgovorene naredbe. Tu na scenu stupa podsustav za prepoznavanje i okidanje zadatka
+povezanog s određenom naredbom.

@@ -17,33 +17,32 @@ s kojim je moguće komunicirati putem I2S protokola. Na slici
 \end{figure}
 
 Najvažniji dio razvojne platforme je upravo ESP32-WROVER-E mikrokontroler
-na kojem je cjelopukni sustav za prepoznavanje govornih naredbi 
+na kojem je cjelokupni sustav za prepoznavanje govornih naredbi 
 implementiran. Upravo on je zadužen za komunikaciju s ES8388 
 audio kodekom \cite{es8388}. ES8388 je integrirani sklop koji na spomenutoj
-platformi služi za analogno-digitalnu (engl. ADC) te digitalno-analognu 
-(engl. DAC) pretvorbu, tj. upravljanje audio ulazom (mikrofon) te audio
+platformi služi za analogno-digitalnu (engl. \textit{ADC}) te digitalno-analognu 
+(engl. \textit{DAC}) pretvorbu, tj. upravljanje audio ulazom (mikrofon) te audio
 izlazom (AUX konektor). Mikrokontroler putem I2C sučelja konfigurira kodek,
 dok konkretne zvučne signale uzima putem I2S sučelja. Budući da je ESP32 Lyrat
 platforma prilagođena razvoju audio sustava, konfiguracija i puštanje u pogon
 akvizicije zvuka je vrlo jednostavno. U programskom kodu \ref{code:ES8388init}
 prikazana je inicijalizacija kodeka.\\
 
-\begin{lstlisting}[language=C++, caption=Inicijalizacija kodeka]
+\begin{lstlisting}[language=C++, caption=Inicijalizacija kodeka, label=code:ES8388init]
     audio_board_handle_t board_handle = audio_board_init();
     audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_ENCODE, AUDIO_HAL_CTRL_START);
 \end{lstlisting}
-\label{code:ES8388init}
 
 Sav posao koji se nalazi iza prikazanih naredbi, obavlja ESP-ADF
-(Espressif Audio Development Framework). To je biblioteka koja pojednostavljuje
+(engl. \textit{Espressif Audio Development Framework}). To je biblioteka koja pojednostavljuje
 razvoj aplikacija vezanih za obradu zvuka kao što je akvizicija, kodiranje i 
 dekodiranje različitih formata audio zapisa te komunikacija s računalom ili 
 memorijskom karticom.
 Nakon inicijalizacije kodeka i definiranja konfiguracije postavki I2S komunikacije,
-potrebno je samo pokrenuti protočni akvizicijski sustav (engl. pipeline), 
+potrebno je samo pokrenuti protočni akvizicijski sustav (engl. \textit{pipeline}), 
 a to je prikazano u programskom kodu \ref{code:pipeline}.\\
 
-\begin{lstlisting}[language=C++, caption=Pokretanje akvizicijskog sustava]
+\begin{lstlisting}[language=C++, caption=Pokretanje akvizicijskog sustava, label=code:pipeline]
     ESP_LOGI(TAG, "Creating i2s stream");
     audio_element_handle_t i2s_stream_reader;
     i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
@@ -59,7 +58,6 @@ a to je prikazano u programskom kodu \ref{code:pipeline}.\\
     audio_pipeline_register(pipeline, i2s_stream_reader, "i2s");
     audio_pipeline_run(pipeline);
 \end{lstlisting}
-\label{code:pipeline}
 
 Frekvencija otipkavanja postavljena u konfiguraciji iznosi 16000 Hz što
 je dovoljno za ovakav tip sustava \cite{wardentinyml}.
@@ -70,12 +68,12 @@ odvojena akvizicija sirovih podataka (sirovi u smislu da nisu još obrađeni ni
 na kakav način) od ostatka sustava. Ovaj podsustav je proizvođač novih podataka,
 dok je ostatak sustava potrošač (također jednodretven). Sve što je preostalo je
 ubaciti pouzdan i efikasan način komunikacije između. Za tu svrhu odabran je
-kružni međuspremnik (engl. ring buffer). On omogućuje asinkrono pisanje u njega
+kružni međuspremnik (engl. \textit{ring buffer}). On omogućuje asinkrono pisanje u njega
 te čitanje iz njega. Implementacija takve strukture dostupna je unutar FreeRTOS-a 
-\ref{ringbuff}. 
+\cite{ringbufferrr}. 
 
 
-\begin{lstlisting}[language=C++, caption=Razred AudioRecorder]
+\begin{lstlisting}[language=C++, caption=Razred AudioRecorder, label=code:AudioRecorder]
 class AudioRecorder
 {
     private:
@@ -90,7 +88,6 @@ class AudioRecorder
         uint32_t getSamples(int16_t* samples, size_t numOfSamples);
 };
 \end{lstlisting}
-\label{code:AudioRecorder}
 
 Opisani podsustav za akviziciju u programskom kodu zapakiran je u razred imena 
 AudioRecorder \ref{code:AudioRecorder}. Prema van, razred nudi metodu potpisa

@@ -1,17 +1,17 @@
 \chapter{Uvod}
 \label{pog:uvod}
 
-\section{Tiny ML}
+%\section{Tiny ML}
 
 Modeli strojnog učenja revolucionarizirali su tehnologiju koju koristimo u svakodnevnom
 životu tako što su omogućili računalima učenje iz podataka kojima raspolažu u svrhu
 donošenja odluka u situacijama za koje nisu eksplicitno programirana. Tradicionalno
-su takvi modeli bili namijenjeni za računala visokih performanci i neograničavajućih
-resursa, međutim sve bržim razvojem IoT (eng. Internet of Things) područja te
+su takvi modeli bili namijenjeni za računala visokih performansi i neograničavajućih
+resursa, međutim sve bržim razvojem IoT (engl. \textit{Internet of Things}) područja te
 zahvaljujući pristupačnoj cijeni mikrokontrolerskih sustava, počela je prilagodba
 modela strojnog učenja za takve sustave. Na prvi pogled dva nespojiva svijeta
 su se susrela te pronašla svoju primjenu u raznovrsnim sustavima.
-Tiny ML (eng. Tiny Machine Learning) je naziv koji se odnosi na implementaciju
+Tiny ML (engl. \textit{Tiny Machine Learning}) je naziv koji se odnosi na implementaciju
 modela strojnog učenja na uređaje ograničenih resursa kao što su mobilni telefoni
 i mikrokontroleri. Glavne karakteristike modela namijenjenih za takve sustave su
 relativno malen memorijski otisak, mogućnost odziva u stvarnom vremenu,
@@ -19,25 +19,25 @@ smanjenje potrošnje i internetskog prometa te sigurnost \cite{tinyml}. Sustav
 implementiran kroz ovaj rad ima zadatak prepoznati unaprijed zadane glasovne
 naredbe te pokrenuti izvršavanje određenog posla vezanog uz specifičnu naredbu.
 
-\section{Opis problema}
+%\section{Opis problema}
 
 Okruženi smo digitalnim glasovnim asistentima kao što su Googleov Assistant,
 Appleova Siri te Amazonova Alexa. Ovakvi sustavi mogu u vrlo kratkom
-roku pružiti zatražene informacije te bez ikakvog problema komunicirati s osobom
-koja ih koristi. Za prepoznavanje i obradu ljudskog govora te dohvaćanje bitnih
+roku pružiti zatražene informacije i bez ikakvog problema komunicirati s osobom
+koja ih koristi. Za prepoznavanje i obradu ljudskog govora i dohvaćanje bitnih
 informacija zaduženi su modeli kojima je potrebna velika procesorska moć i dovoljno
 prostora za pohranu te se zbog toga taj dio posla odrađuje na serverskim računalima.
-Takav sustav podrazumijeva konstantnu internetsku vezu te stabilni i dugotrajni
-izvor električne energije. Kada bi mobilni uređaji slali konstatan tok audio podataka
+Takav sustav podrazumijeva konstantnu internetsku vezu uz stabilan i dugotrajan
+izvor električne energije. Kada bi mobilni uređaji slali konstantan tok zvučnih podataka
 na server, brzo bi ispraznili bateriju te nepotrebno koristili mobilne podatke za
 pristup internetu. Zbog toga su takvi sustavi osmišljeni da čekaju naredbu za
 početak komunikacije, a tek onda uspostave vezu sa serverom. Međutim, i dalje
-nam ostaje problem konstantne akvizicije ulaznih audio podataka te prepoznavanje
+nam ostaje problem konstantne akvizicije ulaznih zvučnih podataka te prepoznavanje
 naredbe kao što je ”Hey Google” ili nešto slično. U ovoj situaciji savršenu primjenu
 pronašli su procesori izrazito male potrošnje na kojima je moguće implementirati
 optimizirane modele strojnog učenja. Takav procesor bi konstantno akvizirao podatke
-s audio ulaza te lokalno, uz pomoć treniranog modela, čekao ključnu riječ te nakon
-prepoznavanja dao znak cijelom sustavu da se može ”probuditi” iz stanja niske
+s mikrofona te lokalno, uz pomoć treniranog modela, čekao ključnu riječ nakon
+koje bi dao znak cijelom sustavu da se može ”probuditi” iz stanja niske
 potrošnje te odraditi svoj posao. Ovakvim pristup, postignuta je efikasnost, niska
 potrošnja, brz odaziv, smanjena je potrošnja internetskih podataka te možda i
 najvažnija stvar - privatnost. Naime, nema potrebe za konstantnim slanjem glasovnih

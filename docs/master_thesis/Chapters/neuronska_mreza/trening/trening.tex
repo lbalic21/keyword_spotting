@@ -15,10 +15,10 @@ model.compile(
 \end{lstlisting}
 
 U isječku koda \ref{code:modelcompile} prikazana je priprema modela za treniranje.
-Za optimizacijski postupak odabran je Adam algoritam (engl. Adaptive Moment Estimation).
+Za optimizacijski postupak odabran je Adam algoritam (engl. \textit{Adaptive Moment Estimation}).
 Adam algoritam je vrsta gradijentnog spusta koja koristi prilagodljivu stopu učenja.
-Za funkciju gubitka odabrana je kategorička unakrsna entropija (engl. Sparse Categorical
-Crossentropy). Ona se koristi za treniranje višeklasnih klasifikacijskih modela, a
+Za funkciju gubitka odabrana je kategorička unakrsna entropija (engl. \textit{Sparse Categorical
+Crossentropy}). Ona se koristi za treniranje višeklasnih klasifikacijskih modela, a
 matematički je opisana u nastavku \ref{eq:crossentropyloss}.
 
 \begin{equation}
@@ -35,7 +35,7 @@ gdje:
 \end{itemize}
 
 Nakon prolaska BATCH\_SIZE (u našem slučaju 32) uzoraka kroz mrežu, računa se
-gubitak na opisani način te se ažuriaraju težine mreže (gradijentnim spustom).
+gubitak na opisani način te se ažuriraju težine mreže (gradijentnim spustom).
 Prolazak svih uzoraka kroz mrežu označava kraj jedne epohe. Treniranje traje 
 proizvoljan broj epoha, a u ovom slučaju može se konfigurirati varijablom EPOCHS
 (u našem slučaju 50).
@@ -45,8 +45,8 @@ predstavlja postotak točno klasificiranih uzoraka u odnosu na ukupan broj uzora
 
 Početak treniranja modela prikazan je u isječku koda \ref{code:training}. Modelu
 su predani testni i validacijski skupovi podataka. Uz to, postavljeni su uvjeti ranijeg
-zaustavljanja terniranja (engl. Early Stopping) je se može dogoditi da model
-konvergira u minimum funkcije gubitka prije isteka predvišenih epoha. Nakon
+zaustavljanja treniranja (engl. \textit{Early Stopping}) jer se može dogoditi da model
+konvergira u minimum funkcije gubitka prije isteka predviđenog broja epoha. Nakon
 što model prestane smanjivati funkciju gubitka na validacijskom skupu, treniranje
 se smatra završenim, a model se sprema u stanje s najmanjim gubitkom (nije nužno 
 stanje nakon posljednje odrađene epohe).
@@ -61,7 +61,7 @@ history = model.fit(
 \end{lstlisting}
 
 U nastavku je prikazan proces treniranja. Vidljivo je kako se funkcija
-gubitka smanjuje s vremenom, a točnost modela raste. Model je kovergirao nakon 20-ak
+gubitka smanjuje s vremenom, a točnost modela raste. Model je konvergirao nakon 20-ak
 epoha te je uzeo stanje s kraja 18. epohe. U postavkama modela namješteno je da se
 treniranje ne zaustavi odmah nego da da modelu još određeni broj epoha koji je
 u našem slučaju 10 (patience=10).
@@ -88,8 +88,8 @@ Epoch 28: early stopping
 
 Na slici \ref{pic:accuracy} prikazana su dva grafa. Lijevi prikazuje funkciju gubitka
 na trenažnom i validacijskom skupu, dok desni prikazuje točnost modela na istim skupovima.
-Obje funckije prikazane su u ovisnosti o broju odrađenih epoha treniranja. Vidljivo je
-kako se funkcija gubitka smanjuje s vremenom, a točnost raste. Nakon 20-ak epoha, funckije
+Obje funkcije prikazane su u ovisnosti o broju odrađenih epoha treniranja. Vidljivo je
+kako se funkcija gubitka smanjuje s vremenom, a točnost raste. Nakon 20-ak epoha, funkcije
 se stabiliziraju. 
 
 \begin{figure}[htb]
@@ -107,7 +107,7 @@ svijetu. Funkcija gubitka na tom skupu iznosi 0.3480, dok točnost iznosi 0.8814
 
 Na slici \ref{pic:confmtrx} prikazana je konfuzijska matrica napravljena nad podskupom
 testnog skupa podataka. Ona prikazuje koliko je puta model pogriješio u klasifikaciji
-određene klase. Stupci matrice predstavljaju stvarne klase, a retci predviđene klase
+određene klase. Stupci matrice predstavljaju stvarne klase, a reci predviđene klase
 (izlaz treniranog modela). Na dijagonali matrice nalaze se točne klasifikacije, dok
 se izvan dijagonale se nalaze pogreške. Vidljivo je kako je model najviše griješio
 u klasifikaciji klase "unknown". To je slučaj zbog toga što se u toj klasi nalaze
@@ -123,7 +123,7 @@ za klasificirati te je zbog toga ovakav rezultat očekivan.
 
 \section{Usporedba s drugim modelima na istom skupu podataka}
 
-Usporediti naučeni model s već postojećim modelima nije jednostavno iz razloga što
+Usporediti naučeni model s postojećim modelima nije jednostavno zato što
 se većina modela temelji na složenijim arhitekturama koje imaju veći broj parametara te
 uz svoje rezultate ne prilažu način implementacije na mikrokontroleru. Međutim,
 u tablici \ref{tab:models} prikazana je usporedba ovog modela s drugima. Uz naš trenirani model,
@@ -139,10 +139,10 @@ mreže i njene točnosti.
         \hline
         \textbf{Model} & \textbf{Accuracy (\%)} & \textbf{Model Size (KB)} \\ \hline
         Naš CNN (7 klasa) & 88.2 & 15.7 \\ 
-        Naš CNN (4 klase) & 93.6& 15.6 \\ 
+        Naš CNN (4 klase) & 93.6 & 15.6 \\ 
         DNN (Deep Neural Network)          \cite{zhang2017hello} & 84.6 & 80 \\
         CNN (Convolutional Neural Network) \cite{zhang2017hello} & 91.6 & 79 \\
-        LSTM (Long Short-Term Memory)      \cite{zhang2017hello} & 92.9 &79.5 \\
+        LSTM (Long Short-Term Memory)      \cite{zhang2017hello} & 92.9 & 79.5 \\
         CRNN (Convolutional RNN)           \cite{zhang2017hello} & 94.0 & 79.7 \\
         DS-CNN (Depthwise Separable CNN)   \cite{zhang2017hello} & 94.4 & 38.6  \\
         TripletLoss-res15 \cite{triplet} & 95.2 & 237 \\

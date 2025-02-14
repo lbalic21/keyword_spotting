@@ -7,11 +7,11 @@ mikrokontrolerskoj platformi koja ima ograničavajuće memorijske resurse. Tako�
 vrijeme potrebno buđenje neuronske mreže, tj. kašnjenje koje unosi mreža
 implementirana na mikrokontroleru izravno utječe na performanse sustava 
 koji bi trebao raditi u stvarnom vremenu. Imajući to na umu, izgradit ćemo
-mrežu dovoljno jednostavnu da pokrije spomenute uvjete, a struge strane dovoljno
+mrežu dovoljno jednostavnu da pokrije spomenute uvjete, a s druge strane dovoljno
 složenu, tako da je sposobna pravilno klasificirati ulazne podatke.
 
 Ulazni podaci su matrice dimenzija (32, 41, 12, 1). Podmatrica dimenzija (41, 12) 
-predstavlja matricu značajki pojedinog audio zapisa. U konfiguraciji je odabrano 
+predstavlja matricu značajki pojedinog zvučnog zapisa. U konfiguraciji je odabrano 
 12 MFC koeficijenata (od 2. do 13.), a zbog veličine prozora (WINDOW\_SIZE) 
 koja iznosi 512 (32 ms) i veličine koraka (STEP\_SIZE) koja iznosi 384 (24 ms)
 jedna sekunda zapisa se sastoji od 41 vremenskog okvira. Dodatne dimenzije matrice
@@ -22,7 +22,7 @@ slučaju svaki kanal predstavlja prisutnost određene boje u slici. Matrice zna�
 generirane nad zvučnim zapisima ponašaju se kao crno-bijele slike (svaka vrijednost
 predstavlja svjetlinu određenog piksela).
 
-ULazni sloj u neuronsku mrežu prate dva konvolucijska s pripadnim slojevima za
+Ulazni sloj u neuronsku mrežu prate dva konvolucijska s pripadnim slojevima za
 poduzorkovanje. Prvi konvolucijski sloj ima 32 jezgre veličine \texttt{3x3},
 a drugi njih 16 iste veličine. Oba sloja za poduzorkovanje rade s matricom
 veličine \texttt{2x2} te pomakom iznosa dva. Slijedi ih podmreža koja se sastoji 

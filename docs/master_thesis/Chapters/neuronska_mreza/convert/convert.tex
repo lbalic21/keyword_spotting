@@ -30,10 +30,10 @@ Ukupni broj parametara koje mreža ima iznosi 9439 što u memoriji zauzima malo 
 \end{verbatim}
 }
 
-Međutim, spremljeni model u memoriji osim vrijednosti parametara mora imqti i informaciju 
+Međutim, spremljeni model u memoriji osim vrijednosti parametara mora imati i informaciju 
 o samoj strukturi mreže što znatno povećava sami memorijski otisak. Datoteka s nastavkom
-".pb" (engl. protobuff) čuva sve informacije potrebne za korištenje treniranog modela,
-a konretni model u tom obliku zauzima nešto više od 173 KB. Korištenje takvog modela
+".pb" (engl. \textit{protobuff}) čuva sve informacije potrebne za korištenje treniranog modela,
+a konkretni model u tom obliku zauzima nešto više od 173 KB. Korištenje takvog modela
 na mikrokontroleru nije prihvatljivo niti zbog veličine niti zbog oblika zapisa. Zbog 
 toga je potrebno prilagoditi model. Tensorflow Lite biblioteka omogućava vrlo jednostavnu
 promjenu formata spremanja informacije o treniranom modelu. Format s nastavkom ".tflite"
@@ -42,7 +42,7 @@ kako bismo saželi model još više te ga pretvorili u oblik pogodan za korište
 mikrokontroleru. Spomenuta metoda sažimanja zove se kvantizacija, a oblik u kojem će model
 biti spremljen zove se "flatbuffer".
 
-Kvantizacija je metoda optimizacije modela kojom se smanjuje broj bitova potrevnih za
+Kvantizacija je metoda optimizacije modela kojom se smanjuje broj bitova potrebnih za
 spremanje informacije o parametrima modela. 
 To je proces mapiranja brojeva s pomičnim zarezom u cijele brojeve.
 Ova redukcija preciznosti (s 32 na 8 bitova)
@@ -66,7 +66,7 @@ REPLACE_TEXT = QUANTIZATION_MODEL.replace('/', '_').replace('.', '_')
 \end{lstlisting}
 
 Tablica \ref{tab:model_sizes} prikazuje veličine modela u različitim koracima prilagodbe.
-Konačni model prihavtljive je veličine za implementaciju na mikrokontrolerskom sustavu, 
+Konačni model prihvatljive je veličine za implementaciju na mikrokontrolerskom sustavu, 
 a iznosi svega 9\% početne veličine modela.
 
 \begin{table}[htb]

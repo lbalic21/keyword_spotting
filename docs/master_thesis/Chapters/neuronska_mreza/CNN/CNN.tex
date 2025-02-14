@@ -1,32 +1,33 @@
 \section{Konvolucijska neuronska mreža}
 \label{sec:cnn}
 
-Konvolucijska neuronska mreža (eng. Convolutional neural network, CNN) je vrsta 
-umjetne neuronske mreže koja je pogodna je za obradu podataka s rešetkastom
+Konvolucijska neuronska mreža (engl. \textit{Convolutional neural network ili CNN}) je vrsta 
+umjetne neuronske mreže koja je pogodna je za obradu podataka s rešetkastom (matričnom)
 topologijom, a najviše se koristi za rješavanje problema iz područja klasifikacije slika
 te računalnog vida. Inspirirane su načinom funkcioniranja moždanog korteksa 
 zaduženog za vid kod sisavaca \cite{pycodemates}. Obrada slike koju vide sisavci
-funkionira hijerarhijski, tj. u mozgu se ne obrađuje cjelokupna slika odjednom,
-nego postoje jednostanije stanice koje su zadužene za prepoznavanje osnovnijih
-oblika koji se nakon toga stapaju u složenije i složenije. Na poslijetku 
-organizam je u mogućnosti prepoznati cjelokupnu sliku koju gleda očima.
+funkcionira hijerarhijski, tj. u mozgu se ne obrađuje cjelokupna slika odjednom,
+nego postoje jednostavnije stanice koje su zadužene za prepoznavanje osnovnijih
+oblika koji se nakon toga stapaju u složenije i složenije. Na posljetku 
+organizam može prepoznati cjelokupnu sliku koju gleda očima.
 Međutim, kakve veze ima klasifikacija slika s problemom prepoznavanja glasovnih naredbi?
 Naime, generirana matrica značajki iz poglavlja \ref{sec:gen} predstavlja upravo dvodimenzionalnu
-sliku koja se može koristiti kao ulaz u konvolucijsku neuronsku mrežu. 
+sliku koja se može koristiti kao ulaz u konvolucijsku neuronsku mrežu.
 
 Računalni modeli koji koriste strukturu sličnu opisanoj mogu iz
 podataka koji su u takvom obliku izvući značajke samostalno što znači da nema
-potrebe za korištenjem metoda koje eksplicitno izvlače bitne značajke iz podataka
+potrebe za korištenjem metoda koje eksplicitno izvlače bitne značajke iz matričnih podataka
 \cite{1}. Arhitektura najjednostavnije konvolucijske neuronske mreže
 uključuje:
 
 \begin{itemize}
-    \item \(Ulaz\) (eng. Input Layer): ulazni sloj modela, prima matrični podatak
+    \item \(Ulaz\): ulazni sloj modela, prima matrični podatak
     \item \(Konvolucijski\) \(sloj\): osnovni sloj modela. Njegov glavni zadatak
           je ekstrakcija značajki iz ulaznih podataka. Vidi \ref{sub:conv}.
     \item \(Sloj\) \(za\) \(poduzorkovanje\): smanjuje dimenzionalnost (vidi \ref{sub:pooling})
+    \item \(Sloj\) \(za\) \(poravnavanje\): spaja konvolucijski i potpuno povezani dio (vidi \ref{sub:flat})
     \item \(Potpuno\) \(povezani\) \(sloj\): povezuje značajke s klasifikacijom (vidi \ref{sub:dense})
-    \item \(Izlaz\) : izlazni sloj, daje vjerojatnosti klasifikacije (vidi \ref{sub:output})
+    \item \(Izlaz\): izlazni sloj, daje vjerojatnosti klasifikacije (vidi \ref{sub:output})
 \end{itemize}
 
 \begin{figure}[htb]
@@ -45,13 +46,14 @@ složenijih ili manje složenih potpuno povezanih slojeva.
 \subsection{Konvolucijski sloj}
 \label{sub:conv}
 
-Najbitniji dio konvolucijske neuronske mreže je konvolucijski sloj zbog toga što se
+Najbitniji dio konvolucijske neuronske mreže je konvolucijski sloj 
+(engl. \textit{convolutional layer}) zbog toga što se
 u njemu događa konvolucija. Konvolucija (u neuronskim mrežama) je proces kojim 
 iz ulazne matrice podataka (slike) na izlazu dobijemo matricu značajki ili
 mapu značajki. Neka ulazna matrica bude oblika \( x \in M_{mn}(\mathbb{R}) \).
 Umjesto težina (kao kod potpuno povezanog sloja), konvolucijski sloj koristi
 matricu \( \omega \in M_{pr}(\mathbb{R}) \) koju nazivamo filtar ili
-jezgra (eng. kernel) \cite{keras_layers}. Svaki konvolucijski 
+jezgra (eng. \textit{kernel}) \cite{keras_layers}. Svaki konvolucijski 
 sloj može imati proizvoljan broj filtara. Izlazna (u ovom slučaju dvodimenzionalna)
 mapa značajki tada se računa na sljedeći način:
 
@@ -69,14 +71,14 @@ h(i, j) = (\omega * x)(i, j) =
 Formula koja se zapravo koristi naziva se unakrsna korelacija, međutim, zbog sličnosti s 
 formulom konvolucije, mreža nosi takav naziv \cite{gracan2020}. Na slici 
 \ref{pic:convolution} prikazan je proces koji se događa tijekom prolaska 
-ulaznog podatka kroz konvolucijski sloj. Ulaz (eng. input) se konvolucijski množi
+ulaznog podatka kroz konvolucijski sloj. Ulaz (eng. \textit{input}) se konvolucijski množi
 s jezgrom kako bismo dobili izlaznu matricu značajki \cite{cnn_how}. U slučaju prikazanom na slici,
 ulazna slika je veličine \(4 \times 4\), dok je jezgra veličine \(3 \times 3\). Prvo se podmatrica ulaznog
 podatka veličine jednake veličini jezgre (\(3 \times 3\)) skalarno množi s jezgrom. Izlaz je 
-skalarni umnožak na koji se može dodati konstantna vrijednost (eng. bias). Nakon
+skalarni umnožak na koji se može dodati konstantna vrijednost (eng. \textit{bias}). Nakon
 toga se jezgra pomiče po ulaznoj matrici, tj. sljedeći element izlazne matrice je
 skalarni umnožak jezgre i sljedeće podmatrice ulaznog podatka. Koliko će se jezgra
-pomaknuti određuje pomak (eng. stride). U slučaju na slici \ref{pic:convolution}
+pomaknuti određuje pomak (eng. \textit{stride}). U slučaju na slici \ref{pic:convolution}
 pomak iznosi jedan.
 
 \begin{figure}[htb]
@@ -86,10 +88,10 @@ pomak iznosi jedan.
       \label{pic:convolution}
 \end{figure}
 
-Rezultat opisanog procesa je mapa značajki koja je manja od ulazne, a njema veličina
+Rezultat opisanog procesa je mapa značajki koja je manja od ulazne, a njena veličina
 obrnuto proporcionalno ovisi o veličini jezgre te pomaku \cite{cnn_whatis}. 
 
-Slično procesu koji se odvija u mozgu čovjeka, opisani struktura omogućava hijerarhijsko učenje.
+Slično procesu koji se odvija u mozgu čovjeka, opisana struktura omogućava hijerarhijsko učenje.
 Naime, svaki konvolucijski sloj sadrži jezgre koje su zadužene za lokalno pretraživanje
 određenih uzoraka (upravo konvolucijom izvlačimo stvari koje su slične između različitih
 ulaznih slika). Koje jezgre se trebaju koristiti? Vrlo jednostavno, proces učenja (treniranja
@@ -115,7 +117,7 @@ Gdje:
     \item \(C_{\text{out}}\): Broj filtara (odnosno mapa izlaznih značajki).
 \end{itemize}
 
-Kako bismo bolje dočarali razliku u broju parametara između ovakog sloja i potpuno povezanog sloja,
+Kako bismo bolje dočarali razliku u broju parametara između ovakvog sloja i potpuno povezanog sloja,
 uzmimo za primjer sliku \ref{pic:convolution}. Ulazna slika je veličine \(4 \times 4\),
 jezgra \(3 \times 3\), a izlaz 
 \(2 \times 2\). Neka je slika jednokanalna, a broj jezgri jedan (sve kao na slici). Konvolucijski sloj
@@ -135,9 +137,9 @@ Gdje:
 \end{itemize}
 
 Također, kao što je opisano u poglavlju \ref{pog:neuronska_mreza} vrijednost neurona (čvora) na
-izlazu it sloja potrebno je provući kroz aktivacijsku funkciju. Postoje različite vrste funkcija
+izlazu iz sloja potrebno je provući kroz aktivacijsku funkciju. Postoje različite vrste funkcija
 koje se koriste u različitim granama strojnog i dubokog učenja \cite{activation_fcn}, a za
-primjenu u konvolucijskim slojevima, najefektivnija se pokazala ReLu (eng. Rectified linear units)
+primjenu u konvolucijskim slojevima, najefektivnija se pokazala ReLu (eng. \textit{Rectified linear units})
 \cite{relu}. To je funkcija koja vraća nulu ako joj je ulaz negativan, a za svaki pozitivan
 ulaz samo prosljeđuje istu vrijednost na izlaz. Modelirana je formulama \ref{eq:relu1} i 
 \ref{eq:relu2}, a prikazana je na slici \ref{pic:relu}. 
@@ -163,18 +165,19 @@ ulaz samo prosljeđuje istu vrijednost na izlaz. Modelirana je formulama \ref{eq
     \label{pic:relu}
 \end{figure}
 
-Prednosti ReLu funcije nad nad drugim aktivacijskim funkcijama je u tome za negativne
+Prednosti ReLu funkcije nad drugim aktivacijskim funkcijama je u tome što za negativne
 ulaze uopće ne aktivira neuron što izuzetno povećava efikasnost. Druga prednost je u tome
-što izlaz nelinearno raste s porastom ulazne vrijednosti što znači da nikad neće ući
+što izlaz linearno raste s porastom ulazne vrijednosti što znači da nikad neće ući
 u zasićenje. Ta osobina je važna jer utječe na izgled funkcije gubitka te ubrzava
 konvergenciju gradijentnog spusta prema minimumu funkcije gubitka \cite{activation_fcn}.
 
 
 \subsection{Sloj za poduzorkovanje}
 \label{sub:pooling}
-Sloj za poduzorkvanje (eng. Pooling layer): služi smanjenju dimenzionalnosti matrice
+Sloj za poduzorkovanje (engl. \textit{pooling layer}) služi smanjenju dimenzionalnosti matrice
 značajki na izlazu iz konvolucijskog sloja. Najčešće korištene tehnike su maksimalno 
-(eng. max pooling) i prosječno poduzorkovanje (eng. average pooling). Radi tako da više 
+(engl. \textit{max pooling}) i prosječno poduzorkovanje (engl. \textit{average pooling}). 
+Radi tako da više 
 susjednih vrijednosti spoji u jednu te tako na svom izlazu da matricu manjih dimenzija 
 \cite{pooling1}. Na taj način postupno smanjuje broj parametara, smanjuje broj
 operacija potrebnih za daljnje računanje te ono najbitnije, kontrolira
@@ -187,15 +190,16 @@ prenaučenost \cite{cnn_whatis}. Na slici \ref{pic:pooling} prikazane su obje na
     \label{pic:pooling}
 \end{figure}
 
-Prosječno poduzorkovanje izglađuje sliku (eng. smoothing). Zbog toga oštri detalji slike
+Prosječno poduzorkovanje izglađuje sliku (engl. \textit{smoothing}). Zbog toga oštri detalji slike
 mogu biti izgubljeni što znači da se određene značajke možda neće prepoznati kada se 
-koristi ova metoda. Maksimalno uzorkovanje odabire najsvjetlije piksele iz slike,
+koristi ova metoda. Maksimalno uzorkovanje odabire piksele s najvećom vrijednošću iz slike,
 a oni su se pokazali kao najbitnije značajke jer daju najbolje rezultate \cite{cnn_whatis}.
-Suprotno tome, minimalno uzorkovanje (eng. min pooling) odabralo bi najtamnije piksele,
-međutim ono se najrjeđe koristi.
+Suprotno tome, minimalno uzorkovanje (engl. \textit{min pooling}) odabralo bi piksele s najmanjom
+vrijednošću, međutim ono se najrjeđe koristi.
 
 \subsection{Sloj za poravnavanje}
-Sloj za poravnavanje (eng. flatten layer) je sloj koji dolazi nakon posjednjeg sloja
+\label{sub:flat}
+Sloj za poravnavanje (engl. \textit{flatten layer}) je sloj koji dolazi nakon posljednjeg sloja
 za poduzorkovanje. Njegova jedina zadaća je poravnati izlaz iz prijašnjeg sloja.
 Ovaj sloj ništa ne računa, ništa ne uči, jedina zadaća mu je od ulaznih mapa značajki
 napraviti jedan vektor koji je onda moguće povezati na potpuno povezani sloj. Zbog
@@ -212,7 +216,7 @@ na slici \ref{pic:cnn}. Na slici \ref{pic:flatten} prikazana je uloga ovog sloja
 
 \subsection{Potpuno povezani sloj}
 \label{sub:dense}
-Potpuno povezani sloj (eng. Fully Connected Layer) detaljnije je pojašnjen u poglavlju
+Potpuno povezani sloj (engl. \textit{fully connected layer}) detaljnije je pojašnjen u poglavlju
 \ref{pog:neuronska_mreza}. Nakon prijašnjih slojeva koji su služili za izvlačenje
 značajki iz ulaznih podataka, na red dolazi klasifikacija. Budući da je prethodnik
 prvom ovakvom sloju sloj za poravnavanje, nemamo problem sa spajanje ovog sloja na dosad
@@ -223,7 +227,7 @@ pridonose određenoj izlaznoj klasi.
 
 \subsection{Izlazni sloj}
 \label{sub:output}
-Izlazni (eng. Output Layer) je posljednji sloj potpuno povezanog sloja (a ujedno i cijele
+Izlazni (engl. \textit{output layer}) je posljednji sloj potpuno povezanog sloja (a ujedno i cijele
 neuronske mreže). Ima onoliko neurona koliko želimo imati klasa, pojedina vrijednost
 neurona predstavlja vjerojatnost pripadnosti klasi. Da bi to stvarno funkcioniralo na takav
 način, potrebno je odrediti prikladnu aktivacijsku funkciju. Funkcija koja radi baš to 
@@ -254,11 +258,11 @@ da je neprekidna i diferencijabilna, za razliku od klasične \( \max \) funkcije
 
 \subsection{Regularizacija}
 Regularizacija je postupak kojim se smanjuje složenost modela kako bi se spriječila
-prenaučenost (engl. overfitting). Prenaučenost se događa kada model ima preveliku  
+prenaučenost (engl. \textit{overfitting}). Prenaučenost se događa kada model ima preveliku  
 sposobnost prilagodbe podacima za treniranje, ali ne i za podacima za testiranje.
 U neuronskim mrežama je implementiran u obliku sloja koji tijekom
 treniranja slučajnim odabirom postavlja određeni postotak 
-težina u modelu na nulu (engl. dropout layer).
+težina u modelu na nulu (engl. \textit{dropout layer}).
 
 \subsection{Poznate arhitekture konvolucijskih mreža}
 Arhitektura konvolucijske mreže je ključni faktor koji određuje njene performanse i
