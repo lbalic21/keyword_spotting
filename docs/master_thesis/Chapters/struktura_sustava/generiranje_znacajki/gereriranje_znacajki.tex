@@ -418,14 +418,16 @@ dok metoda \texttt{void DCT::compute(const float* input, float* output)}
 računa MFCC-e za konkretni ulazni Mel-frekvencijski spektar. Na taj način
 razdvojen je izračun na dva dijela: konstanti dio koji ne ovisi o ulaznom spektru (računa
 se pri konstrukciji objekta zaduženog za DCT) i dio koji
-ovisi o ulaznom spektru te ga je zbog toga potrebno računati u svakoj iteraciji.\newline{}
-
+ovisi o ulaznom spektru te ga je zbog toga potrebno računati u svakoj iteraciji.
+Rezultat DCT-a algoritma je vektor prvih NUMBER\_OF\_MFCCS MFC koeficijenata izuzev
+prvog. Prvi koeficijent se obično odbacuje jer sadrži samo energiju signala, a ne nosi
+dodatne informacije o spektru signala.
 
 \begin{lstlisting}[language=C++, caption=FFT, label=code:dct]
 DCT::DCT()
 {
     const float pi = 3.14159265358979323846f;
-    for (int i = 0; i < NUMBER_OF_MFCCS; ++i) {
+    for (int i = 0; i < (NUMBER_OF_MFCCS + 1); ++i) {
         for (int j = 0; j < NUMBER_OF_MEL_BINS; ++j) {
             coefficients[i * NUMBER_OF_MEL_BINS + j] = cos(pi * i * (j + 0.5f) / NUMBER_OF_MEL_BINS);
         }
@@ -433,13 +435,15 @@ DCT::DCT()
 }
 
 void DCT::compute(const float *input, float *output) {
-    for (int i = 0; i < NUMBER_OF_MFCCS; i++) {
+    float temp[NUMBER_OF_MFCCS + 1];
+    for (int i = 0; i < (NUMBER_OF_MFCCS + 1); i++) {
         output[i] = 0.0;
         for (int j = 0; j < NUMBER_OF_MEL_BINS; j++) {
             output[i] += input[j] * coefficients[i * NUMBER_OF_MEL_BINS + j];
         }
         output[i] *= sqrt(2.0 / NUMBER_OF_MEL_BINS);
     }
+    if(i != 0)  output[i - 1] = temp[i];
 }
 \end{lstlisting}
 

@@ -115,25 +115,35 @@
 
 % Sažetak na hrvatskom
 \begin{sazetak}
-  Unesite sažetak na hrvatskom.
-
-  
+  Diplomski rad opisuje razvoj sustava za prepoznavanje govornih naredbi u
+  stvarnom vremenu na ESP32 mikrokontroleru. 
+  Rad uključuje opis modularne arhitekture sustava koja koristi
+  Mel kepstralne koeficijente (MFCC), dobivene iz akviziranog zvučnog signala,
+  za treniranje konvolucijske neuronske mreže (CNN). Uz samu implementaciju,
+  rad opisuje teorijsku pozadinu generiranja Mel kepstralnih koeficijenata te strukture
+  i treniranja neuronske mreže. Implementirani sustav može pouzdano prepoznati 5 različitih
+  govornih naredbi te pokrenuti odgovarajući posao povezan s tom naredbom.
 \end{sazetak}
 
 \begin{kljucnerijeci}
-  
+ govorne naredbe; MFCC; CNN; mikrokontroler
 \end{kljucnerijeci}
 
 
 % Abstract in English
 \begin{abstract}
-  Enter the abstract in English.
-  
- 
+  This master's thesis describes the development of a real-time voice command
+  recognition system on the ESP32 microcontroller, also known as keyword spotting (KWS).
+  The thesis includes a description of a system with a modular architecture that uses
+  Mel-frequency cepstral coefficients (MFCC) extracted from the audio signal to train
+  a convolutional neural network (CNN). In addition to the implementation, the thesis
+  describes the theoretical background of generating MFCCs and the structure and training
+  of the neural network. The implemented system can reliably recognize 5 different voice
+  commands and execute the corresponding task associated with that command.
 \end{abstract}
 
 \begin{keywords}
-  the first keyword; the second keyword; the third keyword
+  kws; MFCC; CNN; microcontroller
 \end{keywords}
 
 
@@ -144,9 +154,7 @@
 
 \include{Chapters/privitak/dataset_pw}
 \include{Chapters/privitak/conf}
-
 \include{Chapters/privitak/mfcc}
-
 \include{Chapters/privitak/audio_mfcc}
 
 \end{document}

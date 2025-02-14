@@ -14,22 +14,17 @@ treniranjem modela. Razred koji omotava korištenje biblioteke i modela prikazan
 u isječku koda \ref{code:NeuralNetwork}. 
 
 \begin{lstlisting}[language=C++, caption=Razred neuronske mreže, label=code:NeuralNetwork]
-class NeuralNetwork
-{
+class NeuralNetwork {
     private:
-        const tflite::Model* model = nullptr;
-        tflite::MicroInterpreter* interpreter = nullptr;
-        TfLiteTensor* model_input = nullptr;
-        uint8_t tensor_arena[TENSOR_ARENA_SIZE];
-        tflite::MicroMutableOpResolver<NUMBER_OF_OPERATORS> resolver;
-        float* model_input_buffer = nullptr;
-
+    const tflite::Model* model = nullptr;
+    tflite::MicroMutableOpResolver<NUMBER_OF_OPERATORS> resolver;
+    float* model_input_buffer = nullptr;
     public:
-        NeuralNetwork();
-        void giveFeaturesToModel(float* features, size_t numberOfFeatures);
-        bool invoke(void);
-        int numberOfClasses;
-        float* outputData;  
+    NeuralNetwork();
+    void giveFeaturesToModel(float* features, size_t numberOfFeatures);
+    bool invoke(void);
+    int numberOfClasses;
+    float* outputData;  
 };   
 \end{lstlisting}
 

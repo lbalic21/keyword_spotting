@@ -35,10 +35,8 @@ izgradnje opisane mreže.
 \begin{lstlisting}[language=C++, caption=Struktura mreže, label=code:network]
 model = tf.keras.Sequential([
     layers.Input(shape=input_shape),    # Input layer
-
     layers.Conv2D(32, kernel_size=3, padding='same', activation='relu'),
     layers.MaxPooling2D(pool_size=2, strides=2, padding='same'),
-
     layers.Conv2D(16, kernel_size=3, padding='same', activation='relu'),
     layers.MaxPooling2D(pool_size=2, strides=2, padding='same'),
 

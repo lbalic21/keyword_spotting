@@ -71,17 +71,13 @@ za augmentaciju prikazana je u odsječku programskog koda \ref{code:augmentation
 def augment_audio(audio: AudioSegment) -> AudioSegment:
     augmented = audio
     if random.random() > 0.5:
-        augmented = speedup(augmented, playback_speed=random.uniform(1.1, 1.5))
-    augmented = normalize(augmented)
+      augmented = normalize(speedup(augmented, playback_speed=random.uniform(1.1, 1.5)))
     if random.random() > 0.5:
-        volume_change = random.uniform(-5, 5) 
-        augmented = augmented + volume_change
+      augmented = augmented + random.uniform(-5, 5)
     if random.random() > 0.5:
-        delay_ms = random.randint(100, 500) 
-        echo = augmented - random.uniform(5, 10) 
-        augmented = augmented.overlay(echo, position=delay_ms)
-    if random.random() > 0.5:
-        augmented = augmented.reverse()
+      echo = augmented - random.uniform(5, 10) 
+      augmented = augmented.overlay(echo, position=random.randint(100, 500))
+    if random.random() > 0.5: augmented = augmented.reverse()
     return augmented
 \end{lstlisting}
 
@@ -117,12 +113,10 @@ Učitavanje zvučnih zapisa iz datotečnog sustava pojednostavljeno je korišten
 TensorFlow biblioteke, a prikazano je u odsječku programskog koda \ref{code:load}.
 
 \begin{lstlisting}[language=Python, caption=Učitavanje zvučnih zapisa, label=code:load]
-train_dataset, validation_dataset = tf.keras.utils.audio_dataset_from_directory(
+train_set, validation_set = tf.keras.utils.audio_dataset_from_directory(
     directory=commands_dataset,
     batch_size=BATCH_SIZE,
     validation_split=TEST_DATASET_SIZE + VALIDATION_DATASET_SIZE,
-    seed=0,
-    output_sequence_length=SAMPLE_RATE,
     subset='both')
 \end{lstlisting}
 

@@ -2,16 +2,22 @@
 \label{pog:zakljucak}
 
 Sustav za prepoznavanje govornih naredbi u stvarnom vremenu uspješno je implementiran
-na mikrokontrolerskoj platformi ESP32-S3 Lyrat. Nudi jednostavniju modularnu
+na mikrokontrolerskoj platformi ESP32 Lyrat. Nudi jednostavniju modularnu
 stukturu od postojećih (\cite{arm_kws}, \cite{tflmicrospeech}) uz sposobnost pouzdanog 
 prepoznavanja većeg skupa
-naredbi. Implementirani sustav može prepoznati sedam
+naredbi. Implementirani sustav može prepoznati pet
 različitih naredbi te aktivirati prikladni posao dodijeljen svakoj naredbi. 
 Također, omogućen je odabir 
 drugačijeg podskupa govornih naredbi, a uz malo više truda moguće je proširiti skup naredbi
 željenim zvučnim zapisima koji će predstavljati naredbu prilagođenu korisniku.
 Osim toga, modularna struktura sustava
 omogućuje laganu prilagodnu pojedinih dijelova za različite namjene. Na taj način stvorena je
-osnova za implementaciju različitih sustava za prepoznavanje drugih vrsta senzorskih podataka.
+osnova za implementaciju različitih sustava za prepoznavanje drugih vrsta senzorskih podataka
+ili čak korištenje drugih vrsta neuronskih mreža. Ono što bi moglo poboljšati sustav
+u budučnosti je
+nekorištenje brojeva s pomičnim zarezom u generiranju MFC koeficijenata. Na konkretnom
+mikontroleru to ne predstavlja prevelik problem zbog jedinice
+za operacije s pomičnim zarezom (engl. \textit{Floating Point Unit ili FPU}),
+ali na drugim mikrokontrolerima bi takav pristup osjetno ubrzao cijeli proces.
 
 

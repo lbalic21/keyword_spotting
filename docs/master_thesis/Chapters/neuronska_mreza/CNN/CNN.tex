@@ -252,6 +252,13 @@ da je neprekidna i diferencijabilna, za razliku od klasične \( \max \) funkcije
     \label{pic:softmax}
 \end{figure}
 
+\subsection{Regularizacija}
+Regularizacija je postupak kojim se smanjuje složenost modela kako bi se spriječila
+prenaučenost (engl. overfitting). Prenaučenost se događa kada model ima preveliku  
+sposobnost prilagodbe podacima za treniranje, ali ne i za podacima za testiranje.
+U neuronskim mrežama je implementiran u obliku sloja koji tijekom
+treniranja slučajnim odabirom postavlja određeni postotak 
+težina u modelu na nulu (engl. dropout layer).
 
 \subsection{Poznate arhitekture konvolucijskih mreža}
 Arhitektura konvolucijske mreže je ključni faktor koji određuje njene performanse i
