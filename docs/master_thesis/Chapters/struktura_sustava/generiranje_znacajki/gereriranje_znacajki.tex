@@ -1,35 +1,33 @@
-\section{Generiranje značajki}
+\section{Izdvajanje značajki}
 \label{sec:gen}
 
-Generiranje značajki je drugi podsustav spomenut u uvodnom dijelu, također
-prikazan na slici \ref{pic:struktura_sustava}. Nakon što je omogućena akvizicija
+Izdvajanje značajki je drugi podsustav implementiranog sustava i prikazan je na slici 
+\ref{pic:struktura_sustava}. Nakon što je provedena akvizicija
 zvučnih uzoraka, potrebno ih je obraditi kako bi se mogli predati neuronskoj mreži 
-na klasifikaciju. Naime, modeli strojnog učenja (kao što je neuronska mreža) rade
-s različitim primjerima podataka. Razlikovanje primjera temelji se na određivanju
-različitih značajki ulaznih podataka. Klasičan primjer koji se koristi kako bi se 
-približio pojam značajki jest model predikcije cijene
-nekretnine. U tom slučaju značajke koje bi model mogao koristiti su lokacija,
-godina izgradnje, površina, razina energetske učinkovitosti i slično. Međutim, što
-bi bile značajke našeg ulaznog toka signala? Možemo, ispostavit će se naivno, uzeti
-amplitudu svake vrijednosti. U slučaju da promatramo period od jedne sekunde
-signala s već spomenutim otipkavanjem od 16 kHz, broj značajki koje bi naš model
-morao ”progutati” jest 16000. Obraditi toliku količinu podataka u jako kratkom
-vremenu (sustav mora raditi bez konstantno i bez mrtvog vremena) na resursno
-ograničenom sustavu kao što je mikrokontroler ne zvuči obećavajuće. Sve 
-upućuje na to da je potrebno na neki način prilagoditi ulazni signal, tj. izvući
-iz signala bitne informacije i tako smanjiti veličinu podataka. 
+na klasifikaciju. Naime, modeli strojnog učenja tipično ne rade izravno nad sirovim 
+podacima, već na izdvojenim značajkama dobivenima analizom ulaznih podataka. Jedan 
+tipičan primjer koji se koristi kako bi se 
+približio pojam značajki podataka je model predikcije cijene
+nekretnine. U tom slučaju kao značajke koje bi prediktivni model mogao koristiti su lokacija,
+godina izgradnje, površina, razina energetske učinkovitosti i sl. 
+Najjednostavnija značajka kod zvučnog signala koju je moguće izravno izdvojiti je vrijednost 
+uzorka, ali to sasvim sigurno nije dobar odabir jer bi se u model trebalo ubaciti 16000 
+uzoraka u sekundi, što nije prikladno ne samo za mikrokontroler s ograničenom računalnom 
+moći. Također, same vrijednosti neobrađenih uzoraka ne pružaju dovoljnu distinkciju između 
+različitih klasa, već je potreban sofisticiraniji pristup izdvajanju značajki koji će 
+rezultirati i bitno manjom količinom podataka, što će biti obrazloženo u nastavku. 
 
 \subsection{Model govora}
 \label{sec:speech}
 
-Kako bismo identificirali kojim značajkama bi bilo korisno opisati ljudski govor,
-potrebno je na neki način modelirati nastanak glasa. Prilikom govorne komunikacije,
+Kako bi se identificiralo kojim značajkama bi bilo korisno opisati ljudski govor i time glasovne naredbe,
+potrebno je razumijeti na koji način se modelira nastanak glasa. Prilikom govorne komunikacije,
 pluća govornika se pod djelovanjem mišića prsnog koša stišću i potiskuju zrak kroz
 vokalni trakt čiji su glavni dijelovi prikazani na slici \ref{pic:glas}.
 
 \begin{figure}[htb]
     \centering
-    \includegraphics[width=0.55\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/glas.png} 
+    \includegraphics[width=0.60\linewidth]{Chapters/struktura_sustava/generiranje_znacajki/glas.png} 
     \caption{Presjek glave i osnovni dijelovi vokalnog trakta koji sudjeluju u produkciji govornog signala \cite{petrinovic2002}}
     \label{pic:glas}
 \end{figure}
@@ -59,22 +57,22 @@ svojstva sporo mijenjaju s vremenom. Međutim, ako se promatraju dovoljno kratki
 segmenti govornog signala, svaki se segment može učinkovito modelirati kao izlaz
 iz linearnog, vremenski invarijantnog sustava pobuđenog bilo
 kvazi-periodičnim impulsima bilo slučajnim šumom (engl. \textit{random noise signal}).
-Opisani sustav može se prikazati jednadžbom \ref{eq:govor}.
+Opisani sustav može se prikazati jednadžbom \eqref{eq:govor} .
 
 \begin{equation}
     X(f) = E(f) \cdot H(f)
     \label{eq:govor}
 \end{equation}
 
-gdje je:
+gdje su:
 \begin{itemize}
     \item \(X(f)\) odziv sustava (govor),
     \item \(E(f)\) pobuda (kvazi-periodični impuls),
     \item \(H(f)\) prijenosna funkcija vokalnog trakta.
 \end{itemize}
 
-U vremenskoj domeni isti sustav može se prikazati jednadžbom \ref{eq:govor_vremenska}.
-Množenju u frekvencijskoj domeni istovjetna je konvolucija u vremenskoj (i obratno!).
+U vremenskoj domeni isti sustav može se prikazati jednadžbom \eqref{eq:govor_vremenska} .
+Množenju u frekvencijskoj domeni istovjetna je konvolucija u vremenskoj i obratno:
 
 \begin{equation}
     x(t) = e(t) \ast h(t)
@@ -82,13 +80,11 @@ Množenju u frekvencijskoj domeni istovjetna je konvolucija u vremenskoj (i obra
 \end{equation}
 
 Cilj ovakvog modeliranja je pronaći bitne informacije u govornom signalu. Pretpostavka na
-kojoj se temelji daljnji rad je da je skoro sva informacija iz govornog signala sadržana
+kojoj se temelji daljnji rad je da je gotovo sva bitna informacija iz govornog signala sadržana
 u prijenosnoj funkciji govornog trakta, tj. pobuda (kvazi-periodični impulsi) ostaje
-konstantna tijekom govora (veliko pojednostavljenje, međutim svi modeli na kojima
-se temelji ovo područje zasnivaju na ovoj činjenici \cite{multiplier, emotion, sidhu2024mfcc}).
-Zbog toga želimo pronaći način za 
-razdvajanje tih dvaju elemenata modela. Ako primijenimo logaritamsku funkciju na
-sustav opisan u frekvencijskoj domeni proizlazi \ref{eq:logaritam}.
+konstantna tijekom govora. Premda to predstavlja veliko pojednostavljenje stvarne situacije, gotovo svi modeli na kojima se temelji ovo područje zasnivaju na takvom pristupu \cite{multiplier, emotion, sidhu2024mfcc}.
+Ako se primijeni logaritamska funkcija na
+sustav opisan u frekvencijskoj domeni, dobiva se:
 
 \begin{equation}
     \label{eq:logaritam}
@@ -98,7 +94,7 @@ sustav opisan u frekvencijskoj domeni proizlazi \ref{eq:logaritam}.
     \end{aligned}
 \end{equation}
 
-Prikazanim su uspješno razdvojeni elementi modela, tj. vidljiv je rastav na pribrojnike
+Prikazanim formulama uspješno su razdvojeni elementi modela, tj. vidljiv je rastav na pribrojnike
 ako se primijeni logaritamska skala. Na slici \ref{pic:rastav} prikazan je utjecaj
 komponenata modela na konačni rezultat, a to je glas (engl. \textit{speech}). 
 
@@ -109,39 +105,34 @@ komponenata modela na konačni rezultat, a to je glas (engl. \textit{speech}).
     \label{pic:rastav}
 \end{figure}
 
-Jedino što preostaje je pronaći način za što efikasniji opis odziva vokalnog trakta. On će
+Preostaje pronaći način za što efikasniji opis odziva vokalnog trakta. On će
 u konačnici predstavljati zvučne zapise na kojima će model neuronske mreže biti treniran.
 U području automatskog prepoznavanja govora te identifikaciji govornika uvelike se koriste
-Mel kepstralni koeficijenti.
+tzv. Mel-kepstralni koeficijenti.
 
-
-\subsection{Mel kepstralni koeficijenti}
+\subsection{Mel-kepstralni koeficijenti}
 \label{MFCCconstruction}
-Mel kepstralni koeficijenti (engl. \textit{Mel frequency cepstral coefficients ili MFCC}), tj. mjera 
-euklidske udaljenosti MFCC vektora jedna je od najčešće korištenih mjera u automatskom 
+Mel kepstralni koeficijenti (engl. \textit{Mel frequency cepstral coefficients ili MFCC}) predstavljaju mjeru 
+euklidske udaljenosti MFCC vektora i jedna su od najčešće korištenih mjera u automatskom 
 prepoznavanju govora i govornika \cite{vasilijevic2011perceptual}. 
-MFC koeficijenti (koji čine MFC vektor) pokazali su se odličnim načinom za spremanje informacije
+MFC koeficijenti (koji čine MFC vektor) pokazali su se odličnim načinom za pohranjivanje informacije
 koja je sadržana u govoru, a konkretno predstavljaju kratkotrajni spektar snage glasovnog 
-signala. Naš sustav za prepoznavanje govornih naredbi će koristiti upravo njih za 
-značajke koje predstavljaju zvučni signal akviziran s pomoću podsustava za akviziciju. 
-Najbolji način za opis ovih koeficijenata je prikaz postupka kojim se dobivaju.
+signala. Sustav koji se razvija u okviru ovog rada za prepoznavanje govornih naredbi će koristiti upravo te koeficijente za opis
+značajki koje predstavljaju zvučni signal akviziran s pomoću podsustava za akviziciju. 
+Najbolji način za razumijevanje ovih koeficijenata je prikaz postupka kojim se oni dobivaju, što će biti prikazano u nastavku.
 
 
 \subsubsection{Preklapajući prozori}
 \label{sec:win}
-Izlaz iz podsustava za akviziciju je signal koji predstavlja zvuk iz okoline uređaja, 
+Izlaz iz podsustava za akviziciju je signal koji predstavlja zvuk iz okoline uređaja prikupljen senzorom, 
 a nove uzorke je moguće dobiti kontinuiranim pozivima prikladne metode tog podsustava
 na način opisan u poglavlju \ref{sec:acq}. Kontinuirani dotok novih uzoraka potrebno 
-je uokviriti, tj. uzimati određeni broj uzoraka, obraditi ih te opet uzeti novije uzorke. 
-Pozadina ovakvog pristupa opisana je u poglavlju \ref{sec:speech} u kojem je predstavljen
-model nastajanja govora. Naime, kako bi takav model dobro radio, potrebno je promatrati
-kratke isječke signala u kojima su ton i visina signala stabilni. Također, potrebno je
-ne uzeti svaki put cijeli okvir novih uzoraka, nego, u svrhu boljeg očuvanja informacije,
-ostaviti određeni broj uzoraka iz starog okvira. Tako smo dobili okvir ili 
-prozor (engl. \textit{window})
-koji se pomiče po akviziranom signalu, tj. svaki sljedeći je jednim dijelom preklopljen
-preko prošlog što je prikazano na slici \ref{pic:sliding}. Zelenom bojom je obojen prozor
-u iteraciji nakon prozora obojenog svijetlo smeđom bojom. Određeni dio uzoraka je isti,
+je podijeliti u vremenske okvire koji se kontinuirano obrađuju. 
+Ovaj pristup opisan je u poglavlju \ref{sec:speech} u kojem je predstavljen
+model nastajanja govora, a kako bi opisani model dobro radio, potrebno ga je promatrati
+kroz kratke isječke signala u kojima su ton i visina signala stabilni. Također, potrebno je prilikom uzimanja novog vremenskog okvira postići određeno preklapanje s prethodnim okvirom, odnosno prozorom (engl. \textit{window})
+koji se pomiče po akviziranom signalu što je prikazano na slici \ref{pic:sliding}. Zelenom bojom je prikazan je prozor
+u iteraciji koja slijedi nakon prethodnog prozora obojenog svijetlo-smeđom bojom. Jedan dio se preklapa,
 a određeni dio su novi uzorci dobiveni od podsustava za akviziciju.
 
 \begin{figure}[htb]
@@ -154,7 +145,7 @@ a određeni dio su novi uzorci dobiveni od podsustava za akviziciju.
 U glavnoj petlji programskog koda inicijalizirano je polje koje sprema nove uzorke te 
 polje koje zaduženo za spremanje trenutnog prozora podataka. Alokacija polja i algoritam
 pomicanja starih podataka u polju koje čuva trenutni prozor prikazani su u isječku programskog
-koda \ref{code:sliding}.
+koda \ref{code:sliding} .
 
 \begin{lstlisting}[language=C++, caption=Algoritam za korištenje novodohvaćenih podataka, label=code:sliding]
 /* polje za nove uzorke */
@@ -167,27 +158,27 @@ memcpy(audioFrame, audioFrame + STEP_SIZE, (WINDOW_SIZE - STEP_SIZE)*2);
 memcpy(audioFrame + WINDOW_SIZE - STEP_SIZE, newSamples, STEP_SIZE*2);
 \end{lstlisting}
 
-WINDOW\_SIZE predstavlja konfigurabilnu veličinu prozora, dok STEP\_SIZE predstavlja 
+\texttt{WINDOW\_SIZE} predstavlja konfigurabilnu veličinu prozora, dok \texttt{STEP\_SIZE} predstavlja 
 konfigurabilni broj novih uzoraka koji će biti dohvaćeni (veličina koraka prozora).
 Spomenute konstante, kao i ostali konfigurabilni parametri, definirani su u 
-datoteci Configuration.hpp, a prikazani u dodatku \ref{add:config} .
+datoteci \\ \texttt{Configuration.hpp}, a prikazani u dodatku \ref{add:config} .
 
 \subsubsection{Funkcija vremenskog otvora}
 Nakon što je ustanovljen način dohvaćanja sirovih zvučnih uzoraka, potrebno je
 nad pojedinačnim prozorom podataka napraviti sve što je potrebno kako bismo
-dobili MFC koeficijente za takav zvučni isječak. Prva stvar koja dolazi na red 
-je primjena funkcije vremenskog otvora (engl. \textit{window function}). Budući da je svaki
+dobili MFC koeficijente za takav zvučni isječak. Najprije je potrebno primijeniti funkciju vremenskog otvora
+(engl. \textit{window function}). Budući da je svaki
 prozor (vremenski otvor) podataka opisan u \ref{sec:win} jednostavno odrezan od ostatka
 signala, tj. svega što je ostalo izvan prozora, dolazi do rasipanja energije po
-frekvencijskom spektru ili spektralnog curenja (engl. spectral leakage). Spektralno curenje
+frekvencijskom spektru ili spektralnog curenja (engl. \textit{spectral leakage}). Spektralno curenje
 je dobilo ime po tome što se energija sadržana u jednoj frekvencijskoj komponenti prelijeva
 u susjedne što čini spektar manje preciznim.
 Zbog toga je potrebno pomnožiti originalni prozor signala s funkcijom vremenskog otvora. Postoje
-različite funkcije koje se koriste u tu svrhu, međutim u obradi govora najčešće se koristi
+različite funkcije koje se koriste u tu svrhu, a u obradi govora najčešće se koristi
 Hannov prozor (otvor) \cite{windowing}.
 Na slici \ref{pic:hann} prikazan je umnožak funkcije Hannovog prozora s funkcijom
 koja predstavlja zvučni signal. Na konačnom signalu je vidljivo da se rubni dijelovi
-signala vrijednostima približavaju nuli što sprječava diskontinuiranost signala i jačanje
+signala vrijednostima približavaju nuli što sprječava diskontinuitet signala i jačanje
 spektralnih komponenti koje se nalaze u blizini onih od kojih je signal stvarno sastavljen.
 
 \begin{figure}[htb]
@@ -198,16 +189,16 @@ spektralnih komponenti koje se nalaze u blizini onih od kojih je signal stvarno 
 \end{figure}
 
 Opisani postupak množenja originalnog prozora signala Hannovim prozorom prikazan je 
-matematičkim izrazom \ref{eq:window}.
+matematičkim izrazom \eqref{eq:window} .
 
 \begin{equation}
     x_w[n] = x[n] \cdot w[n]
     \label{eq:window}
 \end{equation}
 
-gdje je:
+gdje su:
 \begin{itemize}
-    \item \( x_w[n] \) signal nakon primjene Hann prozora,
+    \item \( x_w[n] \) signal nakon primjene Hannovog prozora,
     \item \( x[n] \) originalni diskretni signal,
     \item \( w[n] \) Hann prozor definiran kao:
     \begin{equation}
@@ -219,8 +210,8 @@ gdje je:
 
 Budući da su uzorci tipa \texttt{int16\_t} (16-bitni broj), raspon vrijednosti signala 
 prije množenja s funkcijom prozora je [$-2^{15}$, $2^{15} - 1$], tj. [-32768, 32767]. Uz množenje
-signala funkcijom prozora, cjelokupni signal skalirat ćemo na raspon [-1, 1] dijeljenjem svakog
-uzorka s 32768. Dobiveni signal veličine WINDOW\_SIZE i tipa \texttt{float} (realni broj) je nakon
+signala funkcijom prozora, cjelokupni signal skalirat će se na raspon [-1, 1] dijeljenjem svakog
+uzorka s 32768. Dobiveni signal veličine \texttt{WINDOW\_SIZE} i tipa \texttt{float} (realni broj) je nakon
 opisane obrade spreman za spektralnu analizu koja podrazumijeva korištenje diskretne Fourierove
 transformacije.
 
@@ -229,37 +220,37 @@ transformacije.
 
 Diskretna Fourierova transformacija (engl. \textit{Discrete Fourier Transform ili DFT}) matematička je
 funkcija koja se koristi za analizu diskretnih signala u frekvencijskoj domeni. 
-DFT diskretnog signala \( x[n] \) s \( N \) uzoraka definirana je izrazom \ref{eq:dft}.
+DFT diskretnog signala \( x[n] \) s \( N \) uzoraka definirana je izrazom \eqref{eq:dft} .
 
 \begin{equation}
     X[k] = \sum_{n=0}^{N-1} x[n] e^{-j 2 \pi k n / N}, \quad k = 0, 1, \dots, N-1
     \label{eq:dft}
 \end{equation}
 
-gdje je:
+gdje su:
 \begin{itemize}
     \item \( X[k] \): spektralni koeficijent na \( k \)-toj frekvenciji,
     \item \( x[n] \): signal u vremenskoj domeni,
-    \item \( N \): broj uzoraka signala,
+    \item \( N \): broj uzoraka signala.
 \end{itemize}
 
 Međutim, računalno je zahtjevna te se zbog toga koristi puno brži algoritam izračuna
-frekvencijskih komponenata koji se zove Brza Fourierova transformacija (engl. \textit{Fast Fourier
+frekvencijskih komponenata koji se zove brza Fourierova transformacija (engl. \textit{Fast Fourier
 Transform ili FFT}). To je učinkovita računalna implementacija DFT-a koja značajno smanjuje
 broj operacija potrebnih za izračun koeficijenata spektra.
 
-Na mikrokontrolerskom sustavu koji se koristi za implementaciju cjelokupnog sustava
-dostupne su funkcije koje izračunavaju spektralne koeficijente za dani signal. 
+Na mikrokontrolerskom sustavu koji se koristi za implementaciju dostupne su funkcije koje
+izračunavaju spektralne koeficijente za dani signal. 
 Programski kod \ref{code:fft} prikazuje inicijalizacijski kod potreban za pravilnu 
-upotrebu FFT-a te metodu \texttt{void FFT::compute(float* frame, float* spectrogram)} 
-razreda FFT koja izračunava koeficijente koji predstavljaju kvadratnu vrijednost
+upotrebu FFT-a te metodu \\ \texttt{void FFT::compute(float* frame, float* spectrogram)} 
+razreda \texttt{FFT} koja izračunava koeficijente koji predstavljaju kvadratnu vrijednost
 amplitude svake frekvencijske komponente (spektar snage signala) kojih ima 
-WINDOW\_SIZE / 2 + 1 (još definirano kao NUMBER\_OF\_SPECTROGRAM\_BINS). 
+\texttt{WINDOW\_SIZE / 2 + 1} (još definirano kao \texttt{NUMBER\_OF\_SPECTROGRAM\_BINS}). 
 Funkcija prima pokazivač na prozor (\texttt{float* frame}) te pokazivač na polje
 u koje će biti spremljen rezultat FFT-a (\texttt{float* spectrogram}). Izlazna
-varijabla je imena \texttt{spectrogram} jer spektralnom analizom signala dobijemo
-nešto što se zove spektrogram. Preciznije, spektrogram bi će biti dvodimenzionalno
-polje koje sadrži više ovakvih jednodimenzionalnih vektora koje dobijemo nakon
+varijabla je naznačena kao \texttt{spectrogram} jer se spektralnom analizom signala dobiva tzv.
+spektrogram koji predstavlja dvodimenzionalno
+polje koje sadrži više jednodimenzionalnih vektora koji se dobivaju nakon
 Fourierove transformacije jednog prozora. 
 
 \begin{lstlisting}[language=C++, caption=FFT, label=code:fft]
@@ -283,13 +274,13 @@ Fourierove transformacije jednog prozora.
 
 \subsubsection{Melovo skaliranje}
 \label{sec:mel}
-Izlaz iz modula koji se bavi Fourierovom transformacijom je frekvencijski spektar signala.
-Preciznije svaki element tog vektora je amplituda snage određene frekvencije sadržane u signalu.
-Te frekvencije su raspoređene linearno. Međutim, čovjek ne percipira jednako male promjene 
-na višim frekvencijama isto kao na nižim. Zbog toga je potrebno na neki način skalirati
+Izlaz iz FFT modula je frekvencijski spektar signala.
+Svaki element izlaznog vektora je amplituda snage određene frekvencije sadržane u signalu.
+Te frekvencije raspoređene su linearno. Međutim, čovjek ne percipira jednako male promjene 
+na višim frekvencijama na isti način kao na nižima. Zbog toga je potrebno na neki način skalirati
 razmake između frekvencija kako bi bolje odgovarali ljudskoj percepciji. Za potrebe toga
-osmišljena je Melova skala (engl. \textit{Mel scale}). Preslikavanje na takvu skalu opisano je formulom
-\ref{eq:mel}.
+osmišljena je tzv. Melova skala (engl. \textit{Mel scale}). Preslikavanje na takvu skalu opisano je formulom
+\eqref{eq:mel} .
 
 \begin{equation}
     m(f) = 2595 \cdot \log_{10}\left(1 + \frac{f}{700}\right)
@@ -302,9 +293,9 @@ gdje je:
     \item \(f\) frekvencija u Hertzima.
 \end{itemize}
 
-Na slici \ref{pic:mel} prikazano je preslikavanje iz Hertz ljestvice u Melovu. Vidljivo je da
+Na slici \ref{pic:mel} prikazano je preslikavanje iz Hertzove ljestvice u Melovu. Vidljivo je da
 jednake promjene frekvencije u Hertzima na višim frekvencijama odgovaraju manjoj promjeni 
-na Mel skali nego na nižim frekvencijama (logaritamsko preslikavanje), a to izravno
+na Melovoj skali nego na nižim frekvencijama (logaritamsko preslikavanje), a to izravno
 odgovara ljudskoj percepciji koja je osjetljivija na promjene u nižim dijelovima spektra.
 
 \begin{figure}[htb]
@@ -314,14 +305,14 @@ odgovara ljudskoj percepciji koja je osjetljivija na promjene u nižim dijelovim
     \label{pic:mel}
 \end{figure}
 
-Budući da je naš sustav diskretan, postoji prirodni broj frekvencijskih komponenti koje 
-dobijemo na izlazu iz Fourierove transformacije (NUMBER\_OF\_SPECTROGRAM\_BINS) koji
-izravno ovisi o broju točaka nad kojima se vrši FFT. Sljedeći korak koji je potreban je
-napraviti preslikavanje iz Hertz ljestvice u Melovu. Prije početka preslikavanja, potrebno
-je odrediti rezoluciju preslikavanja, tj. koliko spektralnih komponenti želimo na 
-novoj (Melovoj) ljestvici. Taj parametar također je određen u konfiguracijskoj datoteci
-\texttt{Configuration.hpp}, a zove se NUMBER\_OF\_MEL\_BINS (u prijevodu broj Melovih
-kanti). Samo preslikavanje se odrađuje pomoću trokutastih filtara prikazanih na slici 
+Budući da je sustav koji se koristi diskretan, postoji prirodni broj frekvencijskih komponenti koje 
+se dobivaju na izlazu iz Fourierove transformacije \\ (\texttt{NUMBER\_OF\_SPECTROGRAM\_BINS}) koji
+izravno ovisi o broju točaka nad kojima se obavlja FFT. Sljedeći korak je 
+preslikavanje iz Hz ljestvice u Melovu. Prije početka preslikavanja, potrebno
+je odrediti rezoluciju preslikavanja, tj. koliko će biti spektralnih komponenti na 
+novoj Melovoj ljestvici. Taj parametar također je određen u konfiguracijskoj datoteci
+\texttt{Configuration.hpp}, a zove se \texttt{NUMBER\_OF\_MEL\_BINS} (u prijevodu broj Melovih
+"kanti"). Samo preslikavanje radi se  pomoću trokutastih filtara prikazanih na slici 
 \ref{pic:melfilter}.
 
 \begin{figure}[htb]
@@ -332,19 +323,22 @@ kanti). Samo preslikavanje se odrađuje pomoću trokutastih filtara prikazanih n
 \end{figure}
 
 Za potrebe sustava za prepoznavanje glasa, određuju se donja i gornja granica preslikavanja 
-(LOWER\_BAND\_LIMIT i UPPER\_BAND\_LIMIT) koje su tijekom cijelog razvoja sustava "zacementirane"
+(\texttt{LOWER\_BAND\_LIMIT} i \texttt{UPPER\_BAND\_LIMIT}) koje su tijekom cijelog razvoja sustava fiksirane
 na 80 Hz i 7600 Hz. Takve granice su se pokazale prikladne za ovu svrhu i najčešće
-su korištene u sustavima ovakvog tipa. Naime, informacijski najbogatije komponente
-se obično nalaze između ove dvije granice. Između njih linearno se (na Mel skali) raspoređuju sredine filtara čija je širina na svaku stranu 
+su korištene u sustavima ovakve vrste. Naime, informacijski najbogatije komponente
+se obično nalaze između ove dvije granice. Između njih linearno se (na Melovoj skali)
+raspoređuju sredine filtara čija je širina na svaku stranu 
 točno do sredine susjednog filtra. Izvan tog intervala vrijednost filtra je nula, dok je u središtu
-pojedinog filtra vrijednost istoga točno jedan. Nadalje, vrijednosti svake Melove frekvencijske
-komponente doprinosi vrijednost frekvencijske komponente s Hz ljestvice onoliko koliko iznosi
+pojedinog filtra vrijednost točno jedan. Nadalje, vrijednost svake Melove frekvencijske
+komponente doprinosi vrijednosti frekvencijske komponente s Hz ljestvice onoliko koliko iznosi
 njena vrijednost pomnožena s vrijednošću filtra na tom mjestu. Za svaki filtar (koji odgovara
-jednoj Mel frekvencijskoj komponenti) potrebno je provjeriti koliko svaka frekvencijska komponenta 
+jednoj Melovoj frekvencijskoj komponenti) potrebno je provjeriti koliko svaka frekvencijska komponenta 
 s Hz ljestvice doprinosi toj Mel komponenti, tj. koliko energije iz početnog signala
 odgovara toj komponenti na Melovoj ljestvici. Programski kod koji se bavi opisanim prikazan je u 
-\ref{code:mel}. Na kraju cjelokupnog procesa, potrebno je svaku vrijednost Melovih frekvencijskih
-komponenti logaritmirati jer je to potrebno za sljedeći korak, a to je generiranje MFC koeficijenata.
+\ref{code:mel} . Na kraju cjelokupnog procesa, svaka se Melova frekvencijska
+komponenta mora logaritmirati jer je to potrebno za sljedeći korak, a to je generiranje MFC koeficijenata.
+
+\newpage
 
 \begin{lstlisting}[language=C++, caption=Generiranje Melovog spektrograma, label=code:mel]
 void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram){
@@ -369,27 +363,27 @@ void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram){
 
 \subsubsection{Diskretna kosinusna transformacija}
 
-Posljednji korak u procesu generiranja Mel kepstralnih koeficijenata (MFCC) je primjena diskretne
+Posljednji korak u procesu generiranja Mel-kepstralnih koeficijenata (MFCC) je primjena diskretne
 kosinusne transformacije (engl. \textit{Discrete Cosine Transform ili DCT}) na vektor Melovih spektralnih
 koeficijenata. Ona pretvara signal iz vremenske ili frekvencijske domene u 
 domenu kosinusnih komponenti. Rezultat DCT-a je niz koeficijenata koji predstavljaju energiju 
 signala u različitim frekvencijskim opsezima. 
 Postoje različiti tipovi DCT-a, ali za MFCC se najčešće koristi DCT-II koja je prikazana
-formulom \ref{eq:dct}.
+formulom \eqref{eq:dct} .
 
 \begin{equation}
     \label{eq:dct}
     C(k) = \sqrt{\frac{2}{N}} \sum_{n=0}^{N-1} X(n) \cdot \cos\left[ \frac{\pi}{N} \left(n + \frac{1}{2}\right) k \right], \quad k = 0, 1, \dots, N-1
 \end{equation}
-Gdje su:
+gdje su:
 \begin{itemize}
-\item $C(k)$: koeficijenti DCT-a (u našem slučaju MFCC)
+\item $C(k)$: koeficijenti DCT-a (u ovom slučaju MFCC),
 \item $X(n)$: ulazni Mel-frekvencijski spektar,
 \item $N$: broj uzoraka u ulaznom spektru,
 \item $k$: indeks koeficijenta (MFCC-a).
 \end{itemize}
 
-Primjenom DCT-a na ovaj Melov spektar postiže se:
+Primjenom DCT-a na Melov spektar postiže se:
 
 \begin{enumerate}
 \item \textbf{Dekorelacija podataka}: Komponente Mel-frekvencijskog spektra obično su jako 
@@ -402,14 +396,14 @@ Ostatak koeficijenata se odbacuje jer sadrže manje bitne informacije ili šum. 
 smanjuju se zahtjevi za memorijom i procesorskom snagom.
 \end{enumerate}
 
-Implementacija diskretne kosinusne transformacije prikazana je u odsječku koda \ref{code:dct}.
-U konstruktoru razreda DCT inicijaliziraju se koeficijenti potrebni za izračun pojedinog MFCC-a,
+Implementacija diskretne kosinusne transformacije prikazana je u odsječku koda \ref{code:dct} .
+U konstruktoru razreda \texttt{DCT} inicijaliziraju se koeficijenti potrebni za izračun pojedinog MFCC-a,
 dok metoda \texttt{void DCT::compute(const float* input, float* output)} 
-računa MFCC-e za konkretni ulazni Mel-frekvencijski spektar. Tako
-razdvojen je izračun na dva dijela: konstanti dio koji ne ovisi o ulaznom spektru (računa
+računa MFCC-e za konkretni ulazni Mel-frekvencijski spektar. Tako je izračun
+razdvojen na dva dijela: konstanti dio koji ne ovisi o ulaznom spektru (računa
 se pri konstrukciji objekta zaduženog za DCT) i dio koji
 ovisi o ulaznom spektru te ga je zbog toga potrebno računati u svakoj iteraciji.
-Rezultat DCT-a algoritma je vektor prvih NUMBER\_OF\_MFCCS MFC koeficijenata izuzev
+Rezultat DCT algoritma je vektor prvih \texttt{NUMBER\_OF\_MFCCS MFC} koeficijenata, izuzev
 prvog. Prvi koeficijent se obično odbacuje jer sadrži samo energiju signala, a ne nosi
 dodatne informacije o spektru signala.
 
@@ -436,23 +430,23 @@ void DCT::compute(const float *input, float *output) {
 }
 \end{lstlisting}
 
-Rezultat cijelog procesa generiranja značajki je NUMBER\_OF\_MFCCS Mel kepstralnih
-koeficijenata. Zašto se tako zovu? Melovi su jer su bazirani na Melovoj frekvencijskoj
-skali koja je objašnjena u \ref{sec:mel}. Međutim zašto su kepstralni možda nije intuitivno.
-Dolazi od toga što smo tijekom njihovih generiranja morali posegnuti za dvama transformacijama.
-Prva je bila FFT. Ona je signal iz vremenske domene prebacila u frekvencijsku (spektar
-signala). Druga transformacija je bila upravo DCT. Ona je još jednom računala spektar, međutim
-ovog puta je to bio spektar spektra. Zbog toga su koeficijenti iz ove domene dobili ime
-kepstralni (keps je anagram od spek). Ovo sve se može povezati s modelom govora opisanog
-u \ref{sec:speech}. Spektar logaritamskog spektra nam omogućuje razdvajanje energija u pojedinim 
+Rezultat cijelog procesa izdvajanja značajki prikupljenog zvuka je \texttt{NUMBER\_OF\_MFCCS} Mel-kepstralnih
+koeficijenata. Naziv dolazi od toga što su ti koeficijenti temeljeni na Melovoj frekvencijskoj
+skali koja je opisana u \ref{sec:mel}, ali možda nije odmah jasno zašto se zovi i kepstralni.
+To dolazi od toga što se tijekom njihovog izračuna moralo posegnuti za dvjema transformacijama.
+Prva je bila FFT koja signal iz vremenske domene transformira u frekvencijsku (spektar
+signala). Druga transformacija bila je DCT, koja još jednom računala spektar, ali
+ovog puta je to bio spektar samog spektra. Zbog toga su koeficijenti iz ove domene dobili ime
+kepstralni (keps je anagram od spek). Ovo se nadalje može povezati s modelom govora opisanim
+u \ref{sec:speech}. Spektar logaritamskog spektra omogućuje razdvajanje energija u pojedinim 
 frekvencijskim spektrima te jako dobro razdvaja odziv vokalnog trakta od kvazi-periodičnog
-impulsa kao što je prikazano na slici \ref{pic:rastav}. Također, informaciju zvučnog
-prozora duljine WINDOW\_SIZE komprimirali smo
-u svega NUMBER\_OF\_MFCCS Mel kepstralnih koeficijenata. Te veličine mogu varirati, a
+impulsa, kao što je prikazano na slici \ref{pic:rastav}. Također, informacija zvučnog
+prozora duljine \texttt{WINDOW\_SIZE} sažeta je
+u svega \texttt{NUMBER\_OF\_MFCCS} Mel-kepstralnih koeficijenata. Te veličine mogu varirati, a
 karakteristični iznosi u sustavima ovakvog tipa su redom 512 te 12 ili 13. To je svega
 oko 2.5\% 
-broja početnih značajki (5\% ako se promatra memorijsko zauzeće jer float tip varijable
-zauzima 4 bajta, dok int16\_t zauzima 2 bajta). Blok dijagram cjelokupnog procesa prikazan
+broja početnih značajki (5\% ako se promatra memorijsko zauzeće jer \texttt{float} tip varijable
+zauzima 4 bajta, dok \texttt{int16\_t} zauzima 2 bajta). Blok dijagram cjelokupnog procesa prikazan
 je na slici \ref{pic:generation}.
 
 \begin{figure}[htb]
@@ -469,43 +463,42 @@ okvira zvučnog zapisa tipične duljine od oko 20 do 30 ms \cite{wardentinyml}.
 Na način koji je opisan u
 \ref{sec:win} u sljedećoj iteraciji dohvatit će se određeni broj novih uzoraka koji će
 sudjelovati u stvaranju novog okvira nad kojim je 
-potrebno generirati nove Mel kepstralne koeficijente koji odgovaraju tom prozoru na način
+potrebno generirati nove Mel-kepstralne koeficijente koji odgovaraju tom prozoru na način
 identičan opisanom. Proces dohvaćanja novih uzoraka te generiranje novih MFCC-a kontinuirano
-se ponavlja kroz cijeli vijek rada uređaja. Rezultat generiranja značajki je 
-jednodimenzionalni vektor koji sadrži NUMBER\_OF\_MFCCS koeficijenata. Tako generirane značajke
+se ponavlja. Rezultat generiranja značajki je 
+jednodimenzionalni vektor koji sadrži \texttt{NUMBER\_OF\_MFCCS} koeficijenata. Tako generirane značajke
 je potrebno predati podsustavu koji je zadužen za aktivaciju neuronske mreže. Konkretno,
-sustav za prepoznavanje koristi konvolucijsku neuronsku mrežu čija je struktura te 
-područje primjene podrobnije opisano u \ref{sec:cnn}. One dobro funkcioniraju u klasifikaciji
+sustav za prepoznavanje glasovnih naredbi koristi konvolucijsku neuronsku mrežu čija su struktura i
+područje primjene podrobnije opisani u \ref{sec:cnn}. One dobro funkcioniraju u klasifikaciji
 višedimenzionalnih matrica. Ideja je primijeniti takvu strukturu na značajke koje su prethodno
 generirane. Uzastopni vektori MFC koeficijenata slagani su u dvodimenzionalnu matricu koja
-onda može biti predana neuronskoj mreži. Možemo reći da je takvim slaganjem dobivena slika
-zvučnog zapisa proizvoljne duljine. Što će odrediti koliko će prozora podataka biti u jednom 
-trenutku predano na klasifikaciju? Pa upravo duljina podataka nad kojima je mreža i trenirana.
-Detaljniji opis skupa podataka za treniranje mreže nalazi se u \ref{sec:dataset}, najbitnije
-za reći ovdje je da se radi o skupu zvučnih zapisa u trajanju od jedne sekunde. Zbog toga
-je potrebno napraviti matricu od onoliko prozora koliko je potrebno da pokriju
-vrijeme od 1 sekunde. Broj takvih prozora NUMBER\_OF\_TIME\_SLICES će ovisiti
-o veličini prozora WINDOW\_SIZE,
-broju novih uzoraka u svakoj iteraciji STEP\_SIZE te frekvenciji otipkavanja
-SAMPLE\_RATE. Funkcija \ref{eq:timeslices} prikazuje opisanu ovisnost.
+može biti predana na obradu neuronskoj mreži. Može se reći da je takvim slaganjem koeficijenata dobivena slika
+zvučnog zapisa proizvoljne duljine. Koliko će prozora podataka može biti u jednom 
+koraku predano na klasifikaciju određuje duljina podataka nad kojima je mreža i trenirana, što je detaljnije
+opisano u poglavlju \ref{sec:dataset}. Duljina pojedinog zvučnog zapisa u tom skupu iznosi jednu sekundu. 
+Zbog toga je potrebno napraviti matricu od onoliko prozora koliko je potrebno da se pokrije odabrano 
+vrijeme promatranja signala od 1 sekunde, pri čemu će broj takvih prozora \texttt{NUMBER\_OF\_TIME\_SLICES} ovisiti
+o veličini prozora \texttt{WINDOW\_SIZE},
+broju novih uzoraka u svakoj iteraciji \texttt{STEP\_SIZE} i frekvenciji otipkavanja
+\texttt{SAMPLE\_RATE}. Funkcija \eqref{eq:timeslices} prikazuje opisanu ovisnost.
 
 \begin{equation}
     \label{eq:timeslices}
     \text{NUMBER\_OF\_TIME\_SLICES} = \left\lfloor \frac{\text{SAMPLE\_RATE} - \text{WINDOW\_SIZE}}{\text{STEP\_SIZE}} \right\rfloor + 1
 \end{equation}
 
-Budući da se konstantno akviziraju novi podaci te generiraju njihove značajke, a veličina
+Budući da se konstantno akviziraju novi podaci i izdvajaju njihove značajke, a veličina
 dvodimenzionalne matrice koja se predaje neuronskoj mreži ostaje stalna, potrebno je 
-dolaskom značajki novog vremenskog prozora, odbaciti najstariji, ostale pomaknuti prema početku
-te na kraj matrice dodati najnovije značajke. Algoritam je vrlo sličan onom koji novoakvizirane
-uzorke dodaje na kraj vremenskog prozora prije generiranja značajki, a prikazan je u odsječku
-programskog koda \ref{code:featureImage}. U polje \texttt{featureSlice} se spremaju novonastale
-značajke, a polje \texttt{featureImage} sadrži trenutačno dvodimenzionalno polje značajki (ovdje je
-je definirano kao jednodimenzionalno, međutim memorijski otisak je identičan i, ono najbitnije,
-takva struktura odgovara ulazu neuronske mreže). Veličina tog polja NUMBER\_OF\_FEATURES je samo
-umnožak broja značajki pojedinog prozora NUMBER\_OF\_MFCCS i broja prozora potrebnog za 
-izgradnju matrice NUMBER\_OF\_TIME\_SLICES.
-\newpage
+dolaskom značajki novog vremenskog prozora odbaciti najstariji, a ostale pomaknuti prema početku
+te na kraj matrice dodati najnovije značajke. Algoritam je sličan onome koji novoprikupljene
+uzorke dodaje na kraj vremenskog prozora prije izdvajanja značajki, a prikazan je u odsječku
+programskog koda \ref{code:featureImage}. U polje \texttt{featureSlice} se pohranjuju novonastale
+značajke, a polje \texttt{featureImage} sadrži trenutačno dvodimenzionalno polje značajki. Ovdje je
+polje definirano kao jednodimenzionalno, ali je memorijski otisak identičan i
+takva struktura odgovara ulazu neuronske mreže. Veličina tog polja \texttt{NUMBER\_OF\_FEATURES} je 
+umnožak broja značajki pojedinog prozora \texttt{NUMBER\_OF\_MFCCS} i broja prozora potrebnog za 
+izgradnju matrice \texttt{NUMBER\_OF\_TIME\_SLICES}.
+
 \begin{lstlisting}[language=C++, caption=Generiranje matrice značajki, label=code:featureImage]
     float featureSlice[NUMBER_OF_MFCCS] = {0};
     float featureImage[NUMBER_OF_FEATURES] = {0};

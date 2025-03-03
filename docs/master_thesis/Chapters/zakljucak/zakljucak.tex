@@ -13,9 +13,10 @@ drugačijeg podskupa govornih naredbi, a uz malo više truda moguće je proširi
 Osim toga, modularna struktura sustava
 omogućuje laganu prilagodnu pojedinih dijelova za različite namjene. Na taj način stvorena je
 osnova za implementaciju različitih sustava za prepoznavanje drugih vrsta senzorskih podataka
-ili čak korištenje drugih vrsta neuronskih mreža. Ono što bi moglo poboljšati sustav
+ili čak korištenje drugih vrsta neuronskih mreža. Ono što bi moglo poboljšati rad sustava
 u budućnosti je
-nekorištenje brojeva s pomičnim zarezom u generiranju MFC koeficijenata. Na konkretnom
+izbjegavanje korištenja brojeva s pomičnim zarezom u generiranju MFC koeficijenata. Brže, ali 
+implementacijski složenije rješenje je korištenje cjelobrojnih tipova podataka. Na konkretnom
 mikrontroleru to ne predstavlja prevelik problem zbog jedinice
 za operacije s pomičnim zarezom (engl. \textit{Floating Point Unit ili FPU}),
 ali na drugim mikrokontrolerima bi takav pristup osjetno ubrzao cijeli proces.

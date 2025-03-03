@@ -1,10 +1,11 @@
-\chapter{Neuronska mreža}
+\chapter{Neuronska mreža za prepoznavanje govornih naredbi}
 \label{pog:neuronska_mreza}
 
-\section{Općenito}
+\section{Načela rada neuronskih mreža}
 
-Neuronska mreža ili preciznije umjetna neuronska mreža (engl. \textit{neural network}) je računalni model inspiriran
-biološkom strukturom neurona u mozgu čovjeka. Predstavlja jedan od najkorištenijih modela 
+Neuronska mreža ili, preciznije, umjetna neuronska mreža (engl. \textit{neural network}) je 
+računalni model inspiriran
+biološkom strukturom neurona u mozgu. Predstavlja jedan od najkorištenijih modela 
 u dubokom učenju. Sastoji se od čvorova (neurona) i jednosmjernih
 veza između njih (sinapsa) koji tako tvore usmjereni graf. Čvorovi su grupirani u slojeve,
 a svaki od njih je povezan s čvorovima iz susjednog sloja na određeni način. Način na koji su
@@ -25,8 +26,8 @@ Ovakva struktura omogućava mreži fleksibilno učenje složenih odnosa između 
 
 Na slici \ref{pic:dense_layer} prikazana je struktura neuronske mreže koja se sastoji od ulaznog sloja,
 dva potpuno povezana sloja te izlaznog sloja. Srednji slojevi (svi osim ulaznog i izlaznog)
-se još nazivaju i skriveni slojevi jer kad koristimo model neuronske mreže, gledamo
-na njega kao na crnu kutiju koja na ulazu prima vrijednosti te na izlazu daje vrijednosti
+se još nazivaju i skriveni slojevi jer kada se koristi model neuronske mreže, obično se
+na njega gleda kao na crnu kutiju koja na ulazu prima vrijednosti te na izlazu daje vrijednosti
 izračunate kroz sve skrivene slojeve \cite{fully_connected}.
 
 Svaka veza između pojedinih čvorova ima određenu vrijednost koju nazivamo težina, a svaki čvor
@@ -39,11 +40,11 @@ zapravo predstavlja funkciju koja može aktivirati svoj izlaz i vezu sa sljedeć
 
 Jednadžba \eqref{eq:neuron_activation} modelira ponašanje pojedinog čvora u mreži. Aktivacijska
 funkcija \( f \) je vrlo bitna u odvajanju bitnih od nebitnih utjecaja pojedinih čvorova na sljedeći
-čvor. Također, ona nam omogućava modeliranje složenijih nelinearnih odnosa \cite{activation_fcn}.
+čvor. Također, ona omogućava modeliranje složenijih nelinearnih odnosa \cite{activation_fcn}.
 Kada bi čvor bio modeliran
-bez aktivacijske funkcije svako preslikavanje koje bi činio bi bilo linearno, a zbog toga što nam
+bez aktivacijske funkcije, svako preslikavanje koje bi činio bi bilo linearno, a zbog toga što
 svaka kompozicija linearnih funkcija daje opet linearnu funkciju, cjelokupna mreža ne bi bila sposobna
-modelirati kompleksnije stvari. Sastavnice modela čvora su sljedeće:
+modelirati kompleksnije odnose. Sastavnice modela čvora su sljedeće:
 
 \begin{itemize}
   \item \( a \): izlazna vrijednost čvora (aktivacija)
@@ -54,18 +55,18 @@ modelirati kompleksnije stvari. Sastavnice modela čvora su sljedeće:
   \item \( n \): broj čvorova u prijašnjem sloju koji imaju vezu s modeliranim čvorom
 \end{itemize}
 
-Povezivanjem više ovako definiranih čvorova gradimo neuronske mreže. Ulaz u neuronsku mrežu 
+Povezivanjem više ovako definiranih čvorova gradi se neuronska mreža. Ulaz u neuronsku mrežu 
 je informacija na temelju koje će na izlazu iz mreže biti vrijednost izračunata s pomoću svih
 slojeva u mreži. Kako bi vrijednosti na izlazu iz mreže imale smisla, tj. davale korisnu
 informaciju, potrebno je trenirati mrežu. Treniranje mreže, u općem slučaju nadziranog strojnog
 učenja, podrazumijeva korištenje označenog skupa podataka koji je istog oblika kao i podaci
 koji će biti na ulazu u mrežu tijekom korištenja same mreže. Arhitektura mreže (vrsta, veličina
 i broj slojeva) određena je prije samog treniranja, dok se težine, pomaci te samim time i 
-razine aktivacija uče, tj. treniraju. Treniranje je proces u kojem se neuronska mreža "hrani" 
-označenim skupom podataka (označeni skup predstavlja podatke za koje znamo što bi mreža trebala
+razine aktivacija uče, tj. treniraju. Treniranje je proces u kojem neuronska mreža na svoj ulaz dobiva
+označeni skup podataka (označeni skup predstavlja podatke za koje znamo što bi mreža trebala
 dati na izlazu) te provjerava koliko izlazi odstupaju od prave oznake. Na početku su sve težine
 uglavnom inicijalizirane na nulu. Podatak se predaje ulaznom sloju, prolazi kroz sve skrivene
-slojeve te na izlazu mreža izbaci određenu vrijednost koja se s očekivanom uspoređuje s pomoću
+slojeve te na izlazu mreža izbacuje određenu vrijednost koja se s očekivanom uspoređuje s pomoću
 funkcije gubitka. Takva funkcija predstavlja koliko izlazi iz mreže odstupaju od očekivanih.
 
 %Na slici \ref{pic:feedforward} prikazana je jednostavna neuronska mreža čiji izlaz daje određenu
@@ -83,8 +84,8 @@ ažuriraju tako da njihove promjene pomaknu trenutačno stanje mreže u smjeru n
 funkcije gubitka (gradijentni spust). Takvim pristupom, mreža kroz iteracije s novim podacima smanjuje funkciju gubitka
 (efektivno daje sve točnije predikcije). Težine se ažuriraju od izlaznog sloja prema ulaznom 
 (engl. \textit{backpropagation}) jer na izlaz pojedinog sloja utječu njegovi ulazi, tj. izlazi prijašnjeg
-sloja (izlaz svakog sloja je funkcija izlaza prijašnjeg sloja, a kad izračunamo derivaciju
-funkcije, promjenom njenih ulaza znamo u kojem smjeru će se mijenjati vrijednost same funkcije).
+sloja. Naime, izlaz svakog sloja je funkcija izlaza prijašnjeg sloja, a kad se izračuna derivacija
+funkcije, promjenom njenih ulaza poznato je u kojem smjeru će se mijenjati vrijednost same funkcije.
 
 
 %Na slici \ref{pic:backprop} prikazana je mreža i način ažuriranja težina "unazad".
@@ -98,7 +99,7 @@ funkcije, promjenom njenih ulaza znamo u kojem smjeru će se mijenjati vrijednos
 Bez smanjenja općenitosti, funkcija gubitka prikazana je na trodimenzionalnom grafu
 na slici \ref{pic:descent}. Složene arhitekture mreža će imati više dimenzija zbog većeg broja
 težina \( w_i \). Cilj svakog treniranja mreže je doći što bliže minimumu ovakve funkcije.
-Svakom iteracijom pomičemo se sve bliže minimumu, a takva vrsta optimizacije naziva se
+Svakom iteracijom mreža se pomiče sve bliže minimumu, a takva vrsta optimizacije naziva se
 gradijentni spust (engl. \textit{gradient descent}).
 
 \begin{figure}[htb]

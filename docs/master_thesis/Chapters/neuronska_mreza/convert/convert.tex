@@ -38,9 +38,9 @@ na mikrokontroleru nije prihvatljivo niti zbog veličine niti zbog oblika zapisa
 toga je potrebno prilagoditi model. Tensorflow Lite biblioteka omogućava vrlo jednostavnu
 promjenu formata spremanja informacije o treniranom modelu. Format s nastavkom ".tflite"
 sažima model na nešto više od 41 KB. Međutim, postoji još nešto što je moguće napraviti
-kako bismo saželi model još više te ga pretvorili u oblik pogodan za korištenje na
+kako bi se model sažeo još više te pretvorio u oblik pogodan za korištenje na
 mikrokontroleru. Spomenuta metoda sažimanja zove se kvantizacija, a oblik u kojem će model
-biti spremljen zove se "flatbuffer".
+biti spremljen zove se \textit{flatbuffer}.
 
 Kvantizacija je metoda optimizacije modela kojom se smanjuje broj bitova potrebnih za
 spremanje informacije o parametrima modela. 
@@ -49,7 +49,7 @@ Ova redukcija preciznosti (s 32 na 8 bitova)
 pridonosi smanjenju veličine modela i ubrzanju izvođenja, a neznatno utječe na točnost
 modela \cite{quantization}. Ovim zahvatom veličina modela smanjena je na 16 KB. 
 
-Flatbuffer je oblik za serijalizaciju podataka razvijen u Googleu. Dizajniran je
+\textit{Flatbuffer} je oblik za serijalizaciju podataka razvijen u Googleu. Dizajniran je
 za učinkovitu pohranu i pristup podacima \cite{flatbuffers_docs}. 
 Pretvorbom treniranog modela u ovakav oblik
 dobiveno je polje podataka spremno za korištenje programskim jezikom C.
@@ -73,10 +73,10 @@ a iznosi svega 9\% početne veličine modela.
     \centering
     \begin{tabular}{|l|r|r|}
         \hline
-        \textbf{Model} & \textbf{Veličina (B)} & \textbf{Smanjenje (\%)} \\ \hline
-        Početni model & 173241 & 100\% \\ \hline
-        TF Lite & 41644 & 24.04\% \\ \hline
-        TF Lite + kvantizacija & 15704 & 9.06\% \\ \hline
+        \textbf{Model} & \textbf{Veličina (B)} & \textbf{Udio veličine početnog modela (\%)} \\ \hline
+        Početni model & 173241 & 100 \\ \hline
+        TF Lite & 41644 & 24.04 \\ \hline
+        TF Lite + kvantizacija & 15704 & 9.06 \\ \hline
     \end{tabular}
     \caption{Veličine različitih oblika modela}
     \label{tab:model_sizes}

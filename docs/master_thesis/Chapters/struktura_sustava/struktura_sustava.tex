@@ -1,28 +1,27 @@
-\chapter{Struktura sustava}
+\chapter{Arhitektura i implementacija sustava}
 \label{pog:struktura_sustava}
 
-Svrha cjelokupnog sustava je okidanje obavljanja određenog procesa, tj. signalizacija
-za početak obavljanja nekog posla glasom. Također, sustav mora biti sposoban pokrenuti
-proces u bilo kojem trenutku, a odaziv bi trebao biti trenutačan što
-znači da cijeli proces prikupljanja zvuka, obrade te izvršavanja mora raditi
-kontinuirano u stvarnom vremenu. Srce sustava, tj. dio koji je zadužen za
-samo prepoznavanje određene naredbe je neuronska
-mreža trenirana na skupu zvučnih zapisa koji sadrže željene naredbe, a čija je struktura
-detaljnije objašnjena u poglavlju o neuronskoj mreži \ref{pog:neuronska_mreza}.
-Shodno tome, sustav je izgrađen od četiri modularna
-podsustava implementirana na mikrokontroleru:
+Svrha cjelokupnog sustava je detekcija određenog glasovnog uzorka (glasovne naredbe) koja se može koristiti za okidanje obavljanja određenog procesa, pri čemu se prepoznavanje naredbe implementira na ugradbenom računalnom sustavu niske potrošnje i procesorske moći. Također, potrebno je da sustav može pokrenuti
+proces u bilo kojem trenutku te odaziv trebao biti sa što manjom latencijom, što
+znači da cijeli proces prikupljanja zvuka, obrade te izvršavanja akcije mora raditi
+kontinuirano u stvarnom vremenu. Centralni dio sustava koji je zadužen za
+samo prepoznavanje glasovne naredbe implementiran je u neuronske
+mreže trenirane na skupu zvučnih zapisa koji sadrže željene naredbe, a čija je struktura
+detaljnije objašnjena u poglavlju koje opisuje samu neuronsku mrežu \ref{pog:neuronska_mreza}.
+Imajući u vidu spomenute ciljeve, sustav je izgrađen od četiri modularna
+podsustava koja su u cijelosti implementirana na odabranom mikrokontroleru, a to su:
 
 \begin{itemize}
-    \item Akvizicija zvuka
-    \item Generiranje značajki
+    \item Prikupljanje zvuka
+    \item Izdvajanje značajki 
     \item Aktivacija neuronske mreže
     \item Prepoznavanje i aktivacija naredbi
 \end{itemize}
 
-Ideja u pozadini navede podjele je lakša prilagodba cjelokupnog
-sustava na različite mikrokontrolerske platforme, drugačiju obradu
-akviziranog zvuka, korištenje drugačije neuronske mreže ili samo 
-kreiranje specifičnog zadatka koji će se aktivirati određenom naredbom.
+Navedena podjela na podcjeline olakšava prilagodbu cjelokupnog
+sustava na različite mikrokontrolerske platforme i porodice, što uključuje drugačiju obradu
+prikupljenog zvuka, korištenje neke drugačije neuronske mreže ili samo 
+aktiviranje specifične akcije koja će se pokrenuti određenom glasovnom naredbom.
 Na slici \ref{pic:struktura_sustava} grafički je prikazan opisani sustav.
 
 \begin{figure}[htb]

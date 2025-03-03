@@ -1,7 +1,7 @@
 \section{Aktivacija neuronske mreže}
 \label{sec:activation}
 
-Aktivacija neuronske mreže (engl. \textit{invoking}) proces je u kojem se ulaznom sloju neuronske mreže 
+Aktivacija neuronske mreže proces je u kojem se ulaznom sloju neuronske mreže 
 (engl. \textit{input layer}) predaje matrica značajki generirana na način objašnjen u prethodnom
 poglavlju. Biblioteka koja je korištena za implementaciju
 neuronske mreže na mikrokontroleru je TensorFlow Lite \cite{tflm}. Omogućuje vrlo jednostavno
@@ -12,6 +12,7 @@ o prilagodbi \ref{sec:convert}). Trenirani model
 je polje 8-bitnih vrijednosti koje predstavljaju pojedine parametre mreže dobivene upravo 
 treniranjem modela. Razred koji omotava korištenje biblioteke i modela prikazan je 
 u isječku koda \ref{code:NeuralNetwork}. 
+\newpage
 
 \begin{lstlisting}[language=C++, caption=Razred neuronske mreže, label=code:NeuralNetwork]
 class NeuralNetwork {
@@ -32,12 +33,12 @@ class NeuralNetwork {
 pokazivač na polje parametara modela (koji ujedno sadrži i informacije o samoj strukturi mreže),
 dok \texttt{tflite:: MicroMutableOpResolver<NUMBER\_OF\_OPERATORS> resolver}
 predstavlja arhitekturu neuronske mreže koja koristi informacije iz polja parametara
-modela kako bi pravilno procesuirala dani ulaz. Toj strukturi je potrebno dodati sve vrste slojeva 
+modela kako bi pravilno procesirala dani ulaz. Toj strukturi je potrebno dodati sve vrste slojeva 
 i funkcija koje se koriste unutar arhitekture mreže koja je trenirana. Primjer dodavanja 
 nekih vrsta slojeva prikazan je u isječku koda \ref{code:resolver}. Nije bitan redoslijed 
 dodavanja, samo je potrebno dodati sve što ta mreža sadrži. U suprotnom, inicijalizacija
 modela neće uspjeti.
-\newpage
+
 \begin{lstlisting}[language=C++, caption=Gradnja arhitekture mreže, label=code:resolver]
 resolver.AddConv2D()            // konvolucijski sloj
 resolver.AddFullyConnected()    // potpuno povezani sloj
@@ -47,8 +48,8 @@ resolver.AddMaxPool2D()         // sloj za poduzorkovanje
 
 Nakon što je mreža alocirana na pravilan način (struktura polja u kojem se nalaze parametri
 mreže odgovara strukturi mreže na mikrokontroleru) moguće joj je predati matricu značajki
-te ju aktivirati. Nakon aktivacije, mreža "provlači" vrijednosti kroz svoju strukturu te na
-izlazu daje vjerojatnosti da određeni ulaz (matrica značajki) predstavlja naučenu naredbu. 
+te ju aktivirati. Nakon aktivacije, mreža obrađuje vrijednosti kroz svoju strukturu te na
+izlazu daje vjerojatnosti da određeni ulaz (matrica značajki) predstavlja naučenu naredbu.
 Kako je objašnjeno u \ref{sec:data}, broj kategorija za koje trenirana mreža daje na izlazu
 vjerojatnosti je za dva veći od broja naredbi koje mreža može prepoznati. Dodatne kategorije
 su "pozadina" (engl. \textit{background}) i "nepoznato" (engl. \textit{unknown}). 
@@ -56,21 +57,21 @@ su "pozadina" (engl. \textit{background}) i "nepoznato" (engl. \textit{unknown})
 Aktivacija neuronske mreže i dobivanje vrijednosti na njenom izlazu, koje predstavljaju
 vjerojatnosti da ulazna matrica značajki pripada određenoj kategoriji, samo je jedna iteracija 
 u radu sustava čija je struktura prikazana slikom \ref{pic:struktura_sustava}. Svakom novom 
-iteracijom rada sustava, akviziraju se novi zvučni uzorci, matrica značajki se osvježava, 
+iteracijom rada sustava prikupljaju se novi zvučni uzorci, matrica značajki se osvježava, 
 tj. noviji MFC koeficijenti dolaze u matricu. Novi podaci u matrici predstavljaju značajke 
 signala pomaknutog za dohvaćeni broj uzoraka (tipično 20-30 milisekundi) te je potrebno provjeriti
 kojoj kategoriji pripada taj vremenski prozor. Budući da je od aktivacije mreže do izlaska 
 rezultata u krajnjem sloju mreže potrebno određeno vrijeme, nije moguće aktivirati mrežu 
-na svaki novi vremenski prozor podataka jer će biti zagušeno akviziranje novih podataka
-te cjelokupni sustav neće dobro raditi u stvarnom vremenu. Međutim, dobra vijest je da
-nije potrebno aktivirati mrežu na svaki novi vremenski korak jer je on svojom duljinom
+na svaki novi vremenski prozor podataka jer će biti zagušeno prikupljanje novih podataka
+te cjelokupni sustav neće dobro raditi u stvarnom vremenu. Međutim, dobra strana postupka je da
+nije potrebno aktivirati mrežu na svaki novi vremenski korak jer je svojom duljinom
 puno manji od duljine uzorka kojeg predstavlja cijela matrica. Drugim riječima, uzastopne
-verzije ulazne matrice podataka bit će vrlo slične i možemo pričekati nekoliko novih
-iteracija prije nego li aktiviramo neuronsku mrežu (akviziranje signala i generiranje značajki
+verzije ulazne matrice podataka bit će vrlo slične i može se pričekati nekoliko novih
+iteracija prije nego li se aktivira neuronska mreža (akviziranje signala i izdvajanje značajki
 tipično traje puno kraće od aktivacije). S druge strane, mreža se mora aktivirati dovoljno
-često jer u suprotnom postoji mogućnost propusta određenih naredbi. Parametar koji brine o tome 
-koliko često se mreža aktivira zove se NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING i određen
-je eksperimentalno zbog toga što drugačije strukture mreže imaju drugačije vrijeme odziva.
+često jer u suprotnom postoji mogućnost propuštanja određenih naredbi. Parametar koji brine o tome 
+koliko često se mreža aktivira zove se \texttt{NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING} i određen
+je eksperimentalno zbog toga što drugačije strukture mreže imaju drugačija vremena odziva.
 Potrebno je maksimizirati broj aktiviranja mreže u određenom vremenu bez gubitaka
 uzoraka ulaznog signala.
 
@@ -87,9 +88,9 @@ izgovorene naredbe je tišina. U drugom i trećem prozoru očekuje se velika vje
 je prepoznata izgovorena naredba, dok se u prvom i četvrtom prozoru ne očekuje prepoznavanje
 određene naredbe (u tim prozorima veću vjerojatnost imaju kategorije "nepoznato" ili "pozadina").
 Upravo zbog prikazanog je potrebno što češće aktivirati mrežu i ne propustiti prepoznavanje naredbe. 
-U slučaju da smo aktivirali mrežu rjeđe, ne bismo prepoznali naredbu (npr. prvi pa četvrti
+U slučaju da se mreža aktivira rjeđe, ne bi se prepoznala naredbu (npr. prvi pa četvrti
 prozor). 
 
-No, takav pristup otvara mjesto drugom problemu. Ne želimo niti višestruko prepoznavanje
-jednom izgovorene naredbe. Tu na scenu stupa podsustav za prepoznavanje i okidanje zadatka
+No, takav pristup otvara mjesto drugom problemu. Nije poželjno niti višestruko prepoznavanje
+jednom izgovorene naredbe pa je stoga potreban podsustav za prepoznavanje i okidanje zadatka
 povezanog s određenom naredbom.

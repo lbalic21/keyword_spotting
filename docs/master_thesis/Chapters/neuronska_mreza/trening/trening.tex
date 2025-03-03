@@ -19,37 +19,37 @@ Za optimizacijski postupak odabran je Adam algoritam (engl. \textit{Adaptive Mom
 Adam algoritam je vrsta gradijentnog spusta koja koristi prilagodljivu stopu učenja.
 Za funkciju gubitka odabrana je kategorička unakrsna entropija (engl. \textit{Sparse Categorical
 Crossentropy}). Ona se koristi za treniranje višeklasnih klasifikacijskih modela, a
-matematički je opisana u nastavku \ref{eq:crossentropyloss}.
+matematički je opisana jednadžbom \eqref{eq:crossentropyloss} .
 
 \begin{equation}
     \label{eq:crossentropyloss}
     L = - \frac{1}{N} \sum_{i=1}^{N} \log p(y_i)
 \end{equation}
 
-gdje:
+gdje su:
 \begin{itemize}
-    \item \( L \) je gubitak.
-    \item \( N \) je broj uzoraka.
-    \item \( y_i \) je oznaka primjera (klasa).
-    \item \( p(y_i) \) vjerojatnost predikcije za ispravnu klasu.
+    \item \( L \): gubitak,
+    \item \( N \): broj uzoraka,
+    \item \( y_i \): oznaka primjera (klasa),
+    \item \( p(y_i) \): vjerojatnost predikcije za ispravnu klasu.
 \end{itemize}
 
-Nakon prolaska BATCH\_SIZE (u našem slučaju 32) uzoraka kroz mrežu, računa se
+Nakon prolaska \texttt{BATCH\_SIZE} (u ovom slučaju 32) uzoraka kroz mrežu, računa se
 gubitak na opisani način te se ažuriraju težine mreže (gradijentnim spustom).
 Prolazak svih uzoraka kroz mrežu označava kraj jedne epohe. Treniranje traje 
-proizvoljan broj epoha, a u ovom slučaju može se konfigurirati varijablom EPOCHS
-(u našem slučaju 50).
+proizvoljan broj epoha, a u ovom slučaju može se konfigurirati varijablom \texttt{EPOCHS}
+U ovom slučaju odabrano ih je 50.
 Posljednji parametar kojim je konfigurirana mreža je metrika koja se koristi za
-vrednovanje modela. U ovom slučaju koristi se točnost (engl. accuracy) koja
+vrednovanje modela. U ovom slučaju koristi se točnost (engl. \textit{accuracy}) koja
 predstavlja postotak točno klasificiranih uzoraka u odnosu na ukupan broj uzoraka.
 
 Početak treniranja modela prikazan je u isječku koda \ref{code:training}. Modelu
 su predani testni i validacijski skupovi podataka. Uz to, postavljeni su uvjeti ranijeg
-zaustavljanja treniranja (engl. \textit{Early Stopping}) jer se može dogoditi da model
+zaustavljanja treniranja (engl. \textit{early stopping}) jer se može dogoditi da model
 konvergira u minimum funkcije gubitka prije isteka predviđenog broja epoha. Nakon
 što model prestane smanjivati funkciju gubitka na validacijskom skupu, treniranje
-se smatra završenim, a model se sprema u stanje s najmanjim gubitkom (nije nužno 
-stanje nakon posljednje odrađene epohe).
+se smatra završenim, a model se sprema u stanje s najmanjim gubitkom koje nije nužno 
+stanje nakon posljednje odrađene epohe.
 
 \begin{lstlisting}[language=Python, caption=Trening, label=code:training]
 history = model.fit(
@@ -64,7 +64,7 @@ U nastavku je prikazan proces treniranja. Vidljivo je kako se funkcija
 gubitka smanjuje s vremenom, a točnost modela raste. Model je konvergirao nakon 20-ak
 epoha te je uzeo stanje s kraja 18. epohe. U postavkama modela namješteno je da se
 treniranje ne zaustavi odmah nego da da modelu još određeni broj epoha koji je
-u našem slučaju 10 (patience=10).
+u ovom slučaju 10 (\texttt{patience=10}).
 
 {
 \tiny
@@ -81,8 +81,7 @@ Epoch 4/50
 ...
 Epoch 28/50
 662/662 [==============================] - 3s 5ms/step - loss: 0.2817 - accuracy: 0.9040 - val_loss: 0.3869 - val_accuracy: 0.8823
-Restoring model weights from the end of the best epoch: 18.
-Epoch 28: early stopping
+Epoch 28: early stopping, restoring model weights from the end of the best epoch: 18.
 \end{verbatim}
 }
 
@@ -99,14 +98,14 @@ se stabiliziraju.
     \label{pic:accuracy}
 \end{figure}
 
-Konačni iznos funkcije gubitka na testnom skupu iznosi 0.2817, a točnost modela 0.9040, dok
-na validacijskom skupu iznosi redom 0.3869 i 0.8823. Međutim, konačna ocjena rezultata
+Konačni iznos funkcije gubitka na testnom skupu iznosi 0,2817, a točnost modela 0,9040, dok
+na validacijskom skupu iznosi redom 0,3869 i 0,8823. Međutim, konačna ocjena rezultata
 treniranja modela donosi se na temelju testnog skupa. To su podaci koje model nije vidio
 niti u jednom trenutku treniranja i predstavljaju podatke kakve će model vidjeti u stvarnom
-svijetu. Funkcija gubitka na tom skupu iznosi 0.3480, dok točnost iznosi 0.8814.
+svijetu. Funkcija gubitka na tom skupu iznosi 0,3480, dok točnost iznosi 0,8814.
 
 Na slici \ref{pic:confmtrx} prikazana je konfuzijska matrica napravljena nad
-testnim skupa podataka. Ona prikazuje koliko je puta model pogriješio u klasifikaciji
+testnim skupom podataka. Ona prikazuje koliko je puta model pogriješio u klasifikaciji
 određene klase. Stupci matrice predstavljaju stvarne klase, a reci predviđene klase
 (izlaz treniranog modela). Na dijagonali matrice nalaze se točne klasifikacije, dok
 se izvan dijagonale se nalaze pogreške. Vidljivo je kako je model najviše griješio
@@ -126,20 +125,22 @@ za klasificirati te je zbog toga ovakav rezultat očekivan.
 Usporediti naučeni model s postojećim modelima nije jednostavno zato što
 se većina modela temelji na složenijim arhitekturama koje imaju veći broj parametara te
 uz svoje rezultate ne prilažu način implementacije na mikrokontroleru. Međutim,
-u tablici \ref{tab:models} prikazana je usporedba ovog modela s drugima. Uz naš trenirani model,
+u tablici \ref{tab:models} prikazana je usporedba ovog modela s drugima. Uz implementirani model,
 ubačen je identičan model treniran na samo dvije glasovne naredbe (ukupno četiri klase).
-Iz tablice je vidljivo da naš model zauzima najmanje memorije uz sličnu točnost za 4 klase te
+Iz tablice je vidljivo da implementirani model zauzima najmanje memorije uz sličnu točnost za 4 klase te
 nešto manju za 7 klasa. Točnost bi se jednostavno mogla povećati složenijim potpuno povezanim
 slojevima na izlazu trenirane mreže, međutim ovo se čini kao najbolji kompromis između veličine
 mreže i njene točnosti.
+
+\newpage
 
 \begin{table}[htb]
     \centering
     \begin{tabular}{|l|r|r|}
         \hline
         \textbf{Model} & \textbf{Accuracy (\%)} & \textbf{Model Size (KB)} \\ \hline
-        Naš CNN (7 klasa) & 88.2 & 15.7 \\ 
-        Naš CNN (4 klase) & 93.6 & 15.6 \\ 
+        Implementirani CNN (7 klasa) & 88.2 & 15.7 \\ 
+        Implementirani CNN (4 klase) & 93.6 & 15.6 \\ 
         DNN (Deep Neural Network)          \cite{zhang2017hello} & 84.6 & 80 \\
         CNN (Convolutional Neural Network) \cite{zhang2017hello} & 91.6 & 79 \\
         LSTM (Long Short-Term Memory)      \cite{zhang2017hello} & 92.9 & 79.5 \\

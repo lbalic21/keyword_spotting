@@ -2,25 +2,25 @@
 
 Principi strukturiranja konvolucijske neuronske mreže za klasifikaciju matričnih podataka
 poput upravo pripremljenih prate opis u poglavlju o CNN-ovima \ref{sec:cnn}.
-Uz to, postoji zahtjev za što manjim modelom jer je isti potrebno implementirati na 
+Uz to, postoji zahtjev za što manjim modelom jer ga je potrebno implementirati na 
 mikrokontrolerskoj platformi koja ima ograničavajuće memorijske resurse. Također,
 vrijeme potrebno za buđenje neuronske mreže, tj. kašnjenje koje unosi mreža
 implementirana na mikrokontroleru izravno utječe na performanse sustava 
-koji bi trebao raditi u stvarnom vremenu. Imajući to na umu, izgradit ćemo
-mrežu dovoljno jednostavnu da pokrije spomenute uvjete, a s druge strane dovoljno
-složenu, tako da je sposobna pravilno klasificirati ulazne podatke.
+koji bi trebao raditi u stvarnom vremenu. Imajući to na umu, izgrađena
+mreža bit će dovoljno jednostavna da zadovolji spomenute uvjete, a s druge strane dovoljno
+složena, tako da je sposobna pravilno klasificirati ulazne podatke.
 
 Ulazni podaci su matrice dimenzija (32, 41, 12, 1). Podmatrica dimenzija (41, 12) 
 predstavlja matricu značajki pojedinog zvučnog zapisa. U konfiguraciji je odabrano 
-12 MFC koeficijenata (od 2. do 13.), a zbog veličine prozora (WINDOW\_SIZE) 
-koja iznosi 512 (32 ms) i veličine koraka (STEP\_SIZE) koja iznosi 384 (24 ms)
+12 MFC koeficijenata (od 2. do 13.), a zbog veličine prozora (\texttt{WINDOW\_SIZE}) 
+koja iznosi 512 (32 ms) i veličine koraka (\texttt{STEP\_SIZE}) koja iznosi 384 (24 ms)
 jedna sekunda zapisa se sastoji od 41 vremenskog okvira. Dodatne dimenzije matrice
 predstavljaju redom broj takvih matrica koje se odjednom daju mreži na treniranje 
-(BATCH\_SIZE) te dimenzija slike koja u ovom slučaju iznosi jedan. Konvolucijske
+(\texttt{BATCH\_SIZE}) te dimenzija slike koja u ovom slučaju iznosi jedan. Konvolucijske
 neuronske mreže također mogu raditi s višekanalnim matricama kao što su RGB slike. U tom 
 slučaju svaki kanal predstavlja prisutnost određene boje u slici. Matrice značajki
-generirane nad zvučnim zapisima ponašaju se kao crno-bijele slike (svaka vrijednost
-predstavlja svjetlinu određenog piksela).
+generirane nad zvučnim zapisima ponašaju se kao crno-bijele slike gdje svaka vrijednost
+predstavlja svjetlinu određenog piksela.
 
 Ulazni sloj u neuronsku mrežu prate dva konvolucijska s pripadnim slojevima za
 poduzorkovanje. Prvi konvolucijski sloj ima 32 jezgre veličine \texttt{3x3},

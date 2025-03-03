@@ -1,4 +1,4 @@
-\chapter{Implementacija}
+\chapter{Eksperimentalna provjera rada sustava}
 \label{pog:implement}
 
 Informacije o strukturi i parametrima modela neuronske mreže spremljeni su u obliku polja
@@ -10,9 +10,9 @@ na mikrokontroleru dodati identične naredbe koje su odabrane prilikom treniranj
 modela. Stvaranje naredbi te njihovo dodavanje objektu zaduženom za prepoznavanje
 naredbi prikazano je u isječcima koda \ref{code:commands} i \ref{code:commandsadd}.
 Kategorije "pozadina" (engl. \textit{"background"}) i
-"nepoznato" (engl. \textit{"unknown"}) su predstavljene objektima klase BlankCommand, 
+"nepoznato" (engl. \textit{"unknown"}) su predstavljene objektima klase \texttt{BlankCommand}, 
 dok su ostale naredbe 
-instance klase PrintCommand. Rezultat toga je ispis imena naredbe na konzolu u slučaju
+instance klase \texttt{PrintCommand}. Rezultat toga je ispis imena naredbe na konzolu u slučaju
 prepoznavanja govorne naredbe. Detalj koji je ključan za ispravan rad sustava je redoslijed
 dodavanja naredbi. On mora odgovarati redoslijedu koji je određen pri treniranju modela koji
 je pak određen redoslijedom učitavanja podataka za treniranje u Jupyter bilježnicu. Nakon
@@ -43,19 +43,20 @@ recognizer.addCommand(&command_zero);
 Zbog nesavršenosti skupa na kojem je treniran model i nejednakosti kvalitete
 zvučnih snimaka, neće svaka naredba biti prepoznata na isti način. Prvo, razlikovat će
 se pouzdanost vjerojatnosne interpretacije za različite klase. Drugo, uslijed izgovorene
-naredbe neke će klase imati najveću vjerojatnost različit broj iteracija rada sustava.
-To se događa zbog toga što sustav neprestano vrti glavnu petlju (opisanu u poglavlju
+naredbe, klase će imati najveću vjerojatnost različit broj iteracija rada sustava.
+To se događa zbog toga što sustav neprestano izvodi glavnu petlju (opisanu u poglavlju
 o strukturi sustava \ref{pog:struktura_sustava}) te bi trebao odraditi nekoliko iteracija tijekom izgovora
 jedne naredbe. Zbog svega navedenog potrebno je kalibrirati svaku naredbu zasebno.
 Kalibracija se radi promjenom parametara pri konstrukciji objekta također prikazanog 
 u isječku koda \ref{code:commands}. Značenje pojedinog  parametra detaljno je opisano u 
 \ref{sec:prepoy}. 
 
-Još jedna stvar koju je potrebno eksperimentalno utvrditi jest sposobnost sustava da
+Dodatna stvar koju je potrebno eksperimentalno utvrditi je sposobnost sustava da
 odradi sve potrebne zadatke na vrijeme. Ne smije se dogoditi propuštanje akviziranja
 novih podataka zbog kašnjenja bilo kojeg drugog dijela sustava jer se time narušava
 svrha rada cjelokupnog sustava. U tablici \ref{tab:rts} prikazana su maksimalna
-vremena potrebna za odrađivanje poslova pojedinih dijelova sustava. 
+vremena potrebna za odrađivanje poslova pojedinih dijelova sustava koja su također
+utvrđena eksperimentalno. 
 
 \begin{table}[htb]
     \centering
@@ -63,7 +64,7 @@ vremena potrebna za odrađivanje poslova pojedinih dijelova sustava.
         \hline
         \textbf{Dio sustava} & \textbf{Vrijeme(ms)} \\ \hline
         Akvizicija uzoraka & 0.016\\ \hline
-        Generiranje značajki & 4.9 \\ \hline
+        Izdvajanje značajki & 4.9 \\ \hline
         Aktivacija neuronske mreže & 77 \\ \hline
         Prepoznavanje naredbi i aktivacija posla & 0.028 \\ \hline
     \end{tabular}
@@ -73,10 +74,10 @@ vremena potrebna za odrađivanje poslova pojedinih dijelova sustava.
 
 Iz prikazanih podataka
 vidljivo je da je vremenski najzahtjevniji posao aktivacija neuronske mreže, slijedi ga 
-generiranje značajki, a akvizicija i prepoznavanje naredbi imaju trajanje zanemarivo u odnosu
-na prethodna dva. Svaka nova iteracija uzima STEP\_SIZE novih uzoraka na obradu. U ovom slučaju
+izdvajanje značajki, a akvizicija i prepoznavanje naredbi imaju trajanje zanemarivo u odnosu
+na prethodna dva. Svaka nova iteracija uzima \texttt{STEP\_SIZE} novih uzoraka na obradu. U ovom slučaju
 taj broj iznosi 384 što odgovara 24 ms novih zvučnih podataka. Podešavanje varijable
-NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING predstavlja krajnji korak kalibracije sustava, a odnosi
+\texttt{NUMBER\_OF\_NEW\_SLICES\_BEFORE\_INVOKING} predstavlja krajnji korak kalibracije sustava, a odnosi
 se na period aktivacije neuronske mreže.
 Potrebno ju je postaviti na najmanji mogući broj koji neće narušavati rad sustava. 
 
@@ -93,29 +94,29 @@ podaci koji su došli prije tog trenutka su već obrađeni. U trenutku t = 0 ms 
 nova 384 podatka, tj. 24 ms novih podataka. Svi trenuci u kojima je potrebno obraditi nove podatke
 pojavljuju se s periodom od 24 ms te su na grafu označeni okomitom isprekidanom linijom i brojem
 koji predstavlja koja iteracija dohvaćanja novih podataka je u pitanju. Nakon dohvaćanja
-posljednjeg prozora podataka (t = 0 ms), generiraju se značajke nad tim prozorom te aktivira neuronska mreža.
+posljednjeg prozora podataka (t = 0 ms), izdvajaju se značajke nad tim prozorom te aktivira neuronska mreža.
 Vodoravne linije predstavljaju trajanja
-generiranja značajki i procesuiranja podataka u neuronskoj mreži. Duljine linija otprilike
-odgovaraju trajanju procesa: generiranje značajki 6 ms, obrada u neuronskoj mreži 78 ms 
-(uzeto je malo dulje trajanje kako bi se uzelo u obzir bilo kakvo nepredviđeno mrtvo vrijeme sustava).
-Vidljivo je da aktivacija i procesuiranje podataka unosi u sustav kašnjenje veće od perioda
+izdvajanja značajki i procesiranja podataka u neuronskoj mreži. Duljine linija otprilike
+odgovaraju trajanju procesa: izdvajanje značajki 6 ms, a obrada u neuronskoj mreži 78 ms.
+Uzeto je malo dulje trajanje kako bi se uzelo u obzir bilo kakvo nepredviđeno mrtvo vrijeme sustava.
+Vidljivo je da aktivacija i procesiranje podataka unosi u sustav kašnjenje veće od perioda
 akvizicije novih podataka. Potrebno je provjeriti nakon koliko novih iteracija akvizicije i obrade
 podataka sustav opet može aktivirati neuronsku mrežu, tj. koliki je period aktivacije.
 
-Ako bismo postavili period aktivacije na 4, sustav bi trebao odraditi aktivaciju prošlog
+Ako bi se postavio period aktivacije na četiri, sustav bi trebao odraditi aktivaciju prošlog
 perioda i obradu svih novih podataka prije trenutka t = 96 ms. U tom trenutku sustav bi se trebao
 u najgorem slučaju nalaziti u istom stanju kao u početnom trenutku (t = 0 ms). Na grafu
 je vidljivo da sustav u tom trenutku neće stići obraditi sve što je potrebno, ali je vrlo blizu
 toga (uzmimo u obzir i grafičko produljenje trajanja obrade podataka i aktivacije neuronske mreže). 
-Ono što je poželjno je svakako da sustav ne bude na rubu stabilnosti jer malim kašnjenjem će se
+Ono što je poželjno je da sustav ne bude na rubu stabilnosti jer malim kašnjenjem će se
 kroz vijek rada uređaja akumulirati kašnjenje i u jednom trenutku će doći do gubljenja podataka.
-Za točnu provjeru stabilnosti, problem ćemo riješiti analitički.
+Za točnu provjeru stabilnosti, problem je potrebno riješiti analitički.
 
 Zaključak je da je u jednom periodu rada sustava, tj. aktivacije neuronske mreže, potrebno
-generirati značajke za zadnji prozor podataka iz prošlog perioda, aktivirati neuronsku mrežu
-za prošli period te generirati značajke za sve nove prozore podataka u tom periodu (ne uključujući
-posljednji prozor).
-Neka je $t_{fg}$ vrijeme potrebno za generiranje
+izdvojiti značajke za zadnji prozor podataka iz prošlog perioda, aktivirati neuronsku mrežu
+za prošli period te generirati značajke za sve nove prozore podataka u tom periodu, ne uključujući
+posljednji prozor.
+Neka je $t_{fg}$ vrijeme potrebno za izdvajanje
 značajki, $t_{nn}$ vrijeme potrebno za proces obrade podataka u neuronskoj mreži,
 $t_{new}$ veličina novih podataka u ms, a N broj novih iteracija akvizicije i obrade podataka
 prije aktivacije mreže (period). Tada vrijedi:
@@ -131,10 +132,10 @@ uvjet:
     N \geq \frac{t_{nn}}{t_{new} - t_{fg}}
 \end{equation}
 
-Za konkretne iznose iz tablice \ref{tab:rts} i $t_{new} = 24$ ms dobivamo da je 
-$N \geq 4.03$. Rezultat je vrlo blizu mogućnosti korištenja već spomenutog
+Za konkretne iznose iz tablice \ref{tab:rts} i $t_{new} = 24$ ms proizlazi da je 
+$N \geq 4,03$. Rezultat je vrlo blizu mogućnosti korištenja već spomenutog
 perioda aktivacije mreže koji iznosi 4. Međutim, najmanji mogući period, a da sustav 
-sigurno ostane stabilan, iznosi 5. Time je, ako uzmemo u obzir da širina matrice značajki 
+sigurno ostane stabilan, iznosi 5. Time je, ako se uzme u obzir da širina matrice značajki 
 predstavlja jednu sekundu ulaznih podataka i iznosi 41, dobivena brzina koja iznosi
-8.2 aktivacije neuronske mreže po sekundi što je sasvim dovoljno za sustav ovakvog tipa.
+8,2 aktivacije neuronske mreže po sekundi što je sasvim dovoljno za sustav ovakvog tipa.
 

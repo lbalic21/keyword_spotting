@@ -4,12 +4,12 @@
 Prvi korak u izgradnji sustava koji koristi bilo kakav tip modela strojnog učenja
 je odabir i priprema prikladnog skupa podataka na kojem će se taj model trenirati.
 Budući da je cilj sustava prepoznavanje govornih naredbi (engl. \textit{keyword spotting}),
-savršen otvoreni skup podataka je skup za treniranje prepoznavanja ograničenog
+prikladan otvoreni skup podataka za tu svrhu je skup za treniranje prepoznavanja ograničenog
 skupa govornih naredbi \cite{speechcommandsv2}. Riječ je o skupu koji
 se sastoji od oko 105000 zvučnih isječaka duljine oko jedne sekunde (frekvencija
 zapisa je 16 kHz) u kojima ljudi
 izgovaraju jednu od 35 različitih riječi. Također, skup ima nekoliko vrsta 
-pozadinske buke koja je ključna za rad ovakvog sustava u pravom svijetu. 
+pozadinske buke koja je ključna za rad ovakvog sustava u stvarnim uvjetima. 
 U prikupljanju podataka sudjelovalo je oko 2600 ljudi iz cijelog svijeta.
 U privitku je prikazana tablica koja prikazuje od kojih se riječi skup sastoji
 te koliko snimaka pojedinih riječi postoji \ref{tab:word_frequency}.
@@ -29,9 +29,9 @@ Jupyter bilježnicom koja se nalazi u GitHub repozitoriju
 
 Projektirani sustav mora moći prepoznati naredbe koje su izgovorene.
 Zbog toga, mora biti sposoban odbaciti sve ono što nije naredba koja se
-nalazi u odabranom skupu. Budući da će sustav raditi u stvarnom svijetu,
+nalazi u odabranom skupu. Budući da će sustav treba raditi u stvarnim uvjetima,
 jedna od kategorija (klasa)
-na kojoj model mora biti treniran jest pozadinska buka. Ona je sveprisutna te 
+na kojoj model mora biti treniran je i pozadinska buka. Ona je sveprisutna te 
 zbog toga sustav treba biti otporan takav tip zvukova. Odabrani skup podataka
 sadrži zvučne zapise kao što je zvuk perilice posuđa, zvuk vode koja teče
 iz slavine, bijeli šum te ružičasti šum. Bijeli šum je vrsta
@@ -39,30 +39,30 @@ signala koji u sebi sadrži sve frekvencije i sve imaju isti intenzitet,
 dok se ružičasti šum također sastoji od svih frekvencija, ali veći intenzitet
 imaju niže frekvencijske komponente \cite{noise}. Takvi zvukovi dobro predstavljaju
 tipičnu okolinu u kojoj bi se sustav mogao nalaziti. Međutim, zbog toga što skup
-podataka zadrži
+podataka sadrži
 svega nekoliko minuta takvih zvučnih zapisa, potrebno je na neki način dopuniti
-taj podskup podataka. Naime mreža koju treniramo će preferirati neku od klasa
+taj podskup podataka. Naime, mreža koju treniramo će preferirati neku od klasa
 ako takvih primjera ima mnogo više od primjera ostalih klasa. Drugim riječima,
-skup podataka za treniranje mora biti balansiran (primjera iz svake klase treba
-biti otprilike jednak broj) \cite{balance}. Uz to, za rad u stvarnom svijetu, nije 
+skup podataka za treniranje mora biti balansiran tj. primjera iz svake klase treba
+biti otprilike jednak broj \cite{balance}. Uz to, za rad u stvarnom svijetu, nije 
 loše u skup
 dodati zvučni zapis snimljen upravo na sustavu koji će i akvizirati podatke iz okoline.
 Budući da su svi zvučni zapisi 
 riječi u skupu podataka duljine od otprilike jedne sekunde, pozadinske zvukove
-je potrebno izrezati na identičnu duljinu kako bi mreža mogla primati vrlo 
+je potrebno skratiti na identičnu duljinu kako bi mreža mogla primati vrlo 
 precizno definiranu vrstu ulaznih podataka. O broju riječi iz klasa koje su odabrane 
-kao naredbe ovisit će koliko trebamo imati isječaka koji će predstavljati
-klasu pozadinskih zvukova. Metoda kojom lako možemo "umnožiti" broj pozadinskih 
+kao naredbe ovisit će koliko je potrebno isječaka koji će predstavljati
+klasu pozadinskih zvukova. Metoda kojom se lako može umnožiti broj pozadinskih 
 zvukova zove se augmentacija.
 
 Augmentacija zvuka je proces u kojem se različitim metodama može izmijeniti 
 zvučni zapis. U ovom slučaju koristi se za povećanje broja snimaka na kojima
-je pozadinska buka. Umjesto se samo kopiraju uzorci, ovakvim promjenama stvaraju
+je pozadinska buka. Umjesto da se samo kopiraju uzorci, ovakvim promjenama stvaraju
 se novi audio zapisi slični onima od kojih su nastali, međutim dovoljno različiti 
 da povećaju robusnost sustava. Metode korištene u umnožavanju danih zvukova
 pozadinske buke su nasumično ubrzavanje i povećanje ili smanjenje glasnoće,
 dodavanje jeke (preklapanje originalnog zapisa s istim, ali pomaknutim u vremenu)
-te okretanjem uzoraka u snimci (nova snimka je obrnuta od originala). Funkcija
+te okretanje uzoraka u snimci (nova snimka je obrnuta od originala). Funkcija
 za augmentaciju prikazana je u odsječku programskog koda \ref{code:augmentation}.
 
 \begin{lstlisting}[language=Python, caption=Augmentacija zvuka, label=code:augmentation]
@@ -84,7 +84,7 @@ Druga kategorija mora biti sastavljena od kombinacije različitih riječi za koj
 ne želimo klasifikaciju, tj. nisu odabrane u podskup naredbi. Ime te kategorije
 će biti "nepoznato" (engl. \textit{unknown}), a predstavljat će sve riječi koje nisu
 naredbe cjelokupnog sustava. Ova kategorija je nužna za rad sustava jer 
-treniranjem modela na različitim riječima povećava otpornost sustava na riječi
+se treniranjem modela na različitim riječima povećava otpornost sustava na riječi
 koje se ne nalaze u željenom skupu naredbi. Kada ova kategorija ne bi postojala,
 povećala bi se mogućnost slučajnog prepoznavanja neke riječi jer bi jedina kategorija
 koju sustav poznaje, a da ne predstavlja željene naredbe, bila pozadina koja
@@ -102,10 +102,10 @@ Nakon toga formira se mapa sa sedam datoteka koje predstavljaju sedam klasifikac
 kategorija.
 Broj zapisa u svakoj od kategorija odgovarat će broju zapisa u najmalobrojnijoj 
 kategoriji upravo zbog spomenute potrebe za balansiranim skupom podataka za treniranje
-(višak naredbi u nekoj od kategorija koje predstavljaju naredbe se neće koristiti, broj
+Višak naredbi u nekoj od kategorija koje predstavljaju naredbe se neće koristiti, broj
 zapisa u kategoriji pozadinske buke generirat će se augmentacijom po potrebi, a broj
 nasumično odabranih zapisa u kategoriji "nepoznato" moguće je napraviti proizvoljno
-velikim).
+velikim.
 
 Učitavanje zvučnih zapisa iz datotečnog sustava pojednostavljeno je korištenjem
 TensorFlow biblioteke, a prikazano je u odsječku programskog koda \ref{code:load}.
@@ -122,20 +122,20 @@ Učitavanjem smo dobili dva skupa podataka (engl. \textit{dataset}): skup za tre
 Skup za treniranje koristi se, kao što mu ime kaže, za treniranje neuronske mreže,
 dok se validacijskim skupom nakon svake epohe (pojam epoha je objašnjen u poglavlju \ref{sec:training}) 
 provjerava točnost modela, podešavaju
-hiperparametri i sprječava prenaučenost (te podatke model nije "vidio" tijekom treniranja).
+hiperparametri i sprječava prenaučenost.
 Uz to, od validacijskog skupa se još odvoji jedan dio koji se zove testni skup. On služi
 za konačno testiranje točnosti neuronske mreže jer te podatke mreža nije vidjela niti
 u jednom trenutku tokom treniranja. Veličine tih skupova određuju parametri 
-TEST\_DATASET\_SIZE i VALIDATION\_DATASET\_SIZE, a BATCH\_SIZE predstavlja
+\texttt{TEST\_DATASET\_SIZE} i \texttt{VALIDATION\_DATASET\_SIZE}, a \texttt{BATCH\_SIZE} predstavlja
 broj primjera koji će se odjednom davati mreži na treniranje. Spomenute parametre
 također je moguće podesiti na početku bilježnice. 
 
-Nakon što su skupovi podataka učitani, potrebno je generirati značajke za svaki zvučni zapis.
+Nakon što su skupovi podataka učitani, potrebno je izdvojiti značajke za svaki zvučni zapis.
 Detaljni opis generiranja značajki objašnjen je u \ref{sec:gen}. U dodatku \ref{add:mfcc} prikazano
-je generiranje značajki korišteno za ove podatke (razlika od onog objašnjenog u spomenutom poglavlju
-je što se ovo izvodi na osobnom računalu i napisano je u programskom jeziku Python).
+je izdvajanje značajki korišteno za ove podatke. Razlika od onog objašnjenog u spomenutom poglavlju
+je što se ovo izvodi na osobnom računalu i napisano je u programskom jeziku Python.
 Na slici u dodatku \ref{add:mfccpython} prikazani su valni oblici nasumičnih zvučnih zapisa odabranih 
-kategorija te pripadna matrica značajki generirana na spomenuti način.
+kategorija te pripadna matrica značajki nastala opisanim postupkom.
 
 U ovom trenutku skupovi podataka pripremljeni su za treniranje. Sljedeći korak je definicija 
 konkretne strukture neuronske mreže koja će biti korištena.

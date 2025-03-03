@@ -8,10 +8,11 @@ te računalnog vida. Inspirirane su načinom funkcioniranja moždanog korteksa
 zaduženog za vid kod sisavaca \cite{pycodemates}. Obrada slike koju vide sisavci
 funkcionira hijerarhijski, tj. u mozgu se ne obrađuje cjelokupna slika odjednom,
 nego postoje jednostavnije stanice koje su zadužene za prepoznavanje osnovnijih
-oblika koji se nakon toga stapaju u složenije i složenije. Na posljetku 
+oblika koji se nakon toga stapaju u složenije. Naposljetku 
 organizam može prepoznati cjelokupnu sliku koju gleda očima.
-Međutim, kakve veze ima klasifikacija slika s problemom prepoznavanja glasovnih naredbi?
-Naime, generirana matrica značajki iz poglavlja \ref{sec:gen} predstavlja upravo dvodimenzionalnu
+Veza između prepoznavanja slika i problema klasifikacije glasovnih naredbi možda nije
+vidljiva na prvu. Međutim, generirana matrica značajki iz poglavlja \ref{sec:gen} predstavlja
+upravo dvodimenzionalnu
 sliku koja se može koristiti kao ulaz u konvolucijsku neuronsku mrežu.
 
 Računalni modeli koji koriste strukturu sličnu opisanoj mogu iz
@@ -48,12 +49,12 @@ složenijih ili manje složenih potpuno povezanih slojeva.
 
 Najbitniji dio ovakvog tipa neuronske mreže je konvolucijski sloj 
 (engl. \textit{convolutional layer}) zbog toga što se
-u njemu događa konvolucija. Konvolucija (u neuronskim mrežama) je proces kojim 
-iz ulazne matrice podataka (slike) na izlazu dobijemo matricu značajki ili
-mapu značajki. Neka ulazna matrica bude oblika \( x \in M_{mn}(\mathbb{R}) \).
+u njemu događa konvolucija. Konvolucija (u neuronskim mrežama) je proces kojim se
+iz ulazne matrice podataka (slike) na izlazu dobije matrica značajki ili
+mapa značajki. Neka je ulazna matrica oblika \( x \in M_{mn}(\mathbb{R}) \).
 Umjesto težina (kao kod potpuno povezanog sloja), konvolucijski sloj koristi
 matricu \( \omega \in M_{pr}(\mathbb{R}) \) koju nazivamo filtar ili
-jezgra (eng. \textit{kernel}) \cite{keras_layers}. Svaki konvolucijski 
+jezgra (engl. \textit{kernel}) \cite{keras_layers}. Svaki konvolucijski 
 sloj može imati proizvoljan broj filtara. Izlazna (u ovom slučaju dvodimenzionalna)
 mapa značajki tada se računa na sljedeći način:
 
@@ -71,14 +72,14 @@ h(i, j) = (\omega * x)(i, j) =
 Formula koja se zapravo koristi naziva se unakrsna korelacija, međutim, zbog sličnosti s 
 formulom konvolucije, mreža nosi takav naziv \cite{gracan2020}. Na slici 
 \ref{pic:convolution} prikazan je proces koji se događa tijekom prolaska 
-ulaznog podatka kroz konvolucijski sloj. Ulaz (eng. \textit{input}) se konvolucijski množi
-s jezgrom kako bismo dobili izlaznu matricu značajki \cite{cnn_how}. U slučaju prikazanom na slici,
+ulaznog podatka kroz konvolucijski sloj. Ulaz (engl. \textit{input}) se konvolucijski množi
+s jezgrom kako bi se dobila izlazna matrica značajki \cite{cnn_how}. U slučaju prikazanom na slici,
 ulazna slika je veličine \(4 \times 4\), dok je jezgra veličine \(3 \times 3\). Prvo se podmatrica ulaznog
 podatka veličine jednake veličini jezgre (\(3 \times 3\)) skalarno množi s jezgrom. Izlaz je 
-skalarni umnožak na koji se može dodati konstantna vrijednost (eng. \textit{bias}). Nakon
+skalarni umnožak na koji se može dodati konstantna vrijednost (engl. \textit{bias}). Nakon
 toga se jezgra pomiče po ulaznoj matrici, tj. sljedeći element izlazne matrice je
 skalarni umnožak jezgre i sljedeće podmatrice ulaznog podatka. Koliko će se jezgra
-pomaknuti određuje pomak (eng. \textit{stride}). U slučaju na slici \ref{pic:convolution}
+pomaknuti određuje pomak (engl. \textit{stride}). U slučaju na slici \ref{pic:convolution}
 pomak iznosi jedan.
 
 \begin{figure}[htb]
@@ -93,35 +94,34 @@ obrnuto proporcionalno ovisi o veličini jezgre te pomaku \cite{cnn_whatis}.
 
 Slično procesu koji se odvija u mozgu čovjeka, opisana struktura omogućava hijerarhijsko učenje.
 Naime, svaki konvolucijski sloj sadrži jezgre koje su zadužene za lokalno pretraživanje
-određenih uzoraka (upravo konvolucijom izvlačimo stvari koje su slične između različitih
-ulaznih slika). Koje jezgre se trebaju koristiti? Vrlo jednostavno, proces učenja (treniranja
-mreže) će prepoznati lokalne sličnosti između različitih primjera! Ako strukturiramo mrežu
-tako da se sastoji od više uzastopnih konvolucijskih slojeva, mreža će prvo naučiti najjednostavnije
+određenih uzoraka. Upravo konvolucijom izvlačimo stvari koje su slične između različitih
+ulaznih slika. Koje jezgre se trebaju koristiti određuje proces učenja (treniranja
+mreže) koji prepoznaje lokalne sličnosti između različitih primjera. Ako se mreža sastoji
+od više uzastopnih konvolucijskih slojeva, prvo će naučiti najjednostavnije
 oblike, a zatim u sljedećem sloju takvim oblicima slagati složenije uzorke. Također,
 još jedna prednost konvolucijskog sloja je u dijeljenju parametara. Takav sloj nema vezu 
 svakog neurona sa svakim ulaznim, nego se težine dijele unutar određene jezgre. Zapravo se
 cijeli proces učenja svodi na nalaženje odgovarajućih jezgri koje će prepoznati uzorke \cite{pycodemates}.
-Evo uzmimo, na primjer, dvodimenzionalnu ulaznu sliku. Broj pametara takvog dvodimenzionalnog
-sloja iznosit će:
+U slučaju dvodimenzionalne ulazne slike, broj parametara ovakvog sloja iznosit će:
 
 \begin{equation}
     N = (n \cdot m \cdot C_{\text{in}} + 1) \cdot C_{\text{out}}
 \end{equation}
 
-Gdje:
+gdje su:
 \begin{itemize}
-    \item \(N\): ukupni broj parametara
-    \item \(n\) i \(m\): visina i širina filtra (jezgre)
-    \item \(C_{\text{in}}\): Broj ulaznih kanala (npr. 1 za crno-bijele slike, 3 za RGB slike).
-    \item \(+1\): konstanta svakog filtra
-    \item \(C_{\text{out}}\): Broj filtara (odnosno mapa izlaznih značajki).
+    \item \(N\): ukupni broj parametara,
+    \item \(n\) i \(m\): visina i širina filtra (jezgre),
+    \item \(C_{\text{in}}\): broj ulaznih kanala (npr. 1 za crno-bijele slike, 3 za RGB slike),
+    \item \(+1\): konstanta svakog filtra,
+    \item \(C_{\text{out}}\): broj filtara (odnosno mapa izlaznih značajki).
 \end{itemize}
 
-Kako bismo bolje dočarali razliku u broju parametara između ovakvog sloja i potpuno povezanog sloja,
-uzmimo za primjer sliku \ref{pic:convolution}. Ulazna slika je veličine \(4 \times 4\),
+Kako bi se bolje dočarala razlika u broju parametara između ovakvog sloja i potpuno povezanog sloja,
+kao primjer može se uzeti slika \ref{pic:convolution}. Ulazna slika je veličine \(4 \times 4\),
 jezgra \(3 \times 3\), a izlaz 
 \(2 \times 2\). Neka je slika jednokanalna, a broj jezgri jedan (sve kao na slici). Konvolucijski sloj
-će imati 10 parametara, dok će potpuno povezani sloj (16 ulaznih vrijednosti, 4 izlazne te
+će u tom slučaju imati 10 parametara, dok će potpuno povezani sloj (16 ulaznih vrijednosti, 4 izlazne te
 4 konstante za svaki neuron) imati 68 parametara! Formula za broj parametara u tom slučaju
 je sljedeća:
 
@@ -129,17 +129,17 @@ je sljedeća:
     N = n_{\text{in}} \cdot n_{\text{out}} + n_{\text{out}}
 \end{equation}
 
-Gdje:
+gdje je:
 \begin{itemize}
-    \item \(N\): ukupni broj parametara
-    \item \(n_{\text{in}}\): broj ulaznih neurona
-    \item \(n_{\text{out}}\): broj izlaznih neurona
+    \item \(N\): ukupni broj parametara,
+    \item \(n_{\text{in}}\): broj ulaznih neurona,
+    \item \(n_{\text{out}}\): broj izlaznih neurona.
 \end{itemize}
 
 Također, kao što je opisano u poglavlju \ref{pog:neuronska_mreza} vrijednost neurona (čvora) na
 izlazu iz sloja potrebno je provući kroz aktivacijsku funkciju. Postoje različite vrste funkcija
 koje se koriste u različitim granama strojnog i dubokog učenja \cite{activation_fcn}, a za
-primjenu u konvolucijskim slojevima, najefektivnija se pokazala ReLu (eng. \textit{Rectified linear units})
+primjenu u konvolucijskim slojevima, najefektivnija se pokazala ReLu (engl. \textit{Rectified linear units})
 \cite{relu}. To je funkcija koja vraća nulu ako joj je ulaz negativan, a za svaki pozitivan
 ulaz samo prosljeđuje istu vrijednost na izlaz. Modelirana je formulama \ref{eq:relu1} i 
 \ref{eq:relu2}, a prikazana je na slici \ref{pic:relu}. 
@@ -219,7 +219,7 @@ na slici \ref{pic:cnn}. Na slici \ref{pic:flatten} prikazana je uloga ovog sloja
 Potpuno povezani sloj (engl. \textit{fully connected layer}) detaljnije je pojašnjen u poglavlju
 \ref{pog:neuronska_mreza}. Nakon prijašnjih slojeva koji su služili za izvlačenje
 značajki iz ulaznih podataka, na red dolazi klasifikacija. Budući da je prethodnik
-prvom ovakvom sloju sloj za poravnavanje, nemamo problem sa spajanjem ovog sloja na dosad
+prvom ovakvom sloju sloj za poravnavanje, ne postoji problem sa spajanjem ovog sloja na dosad
 objašnjenu strukturu. Uloga ovog sloja (ili više ovakvih slojeva) je, najjednostavnije
 rečeno, klasifikacija. Značajke naučene tijekom konvolucije se ovdje predaju gustoj mreži
 neurona koja je sposobna odraditi posao do kraja, tj. naučiti kako različite značajke
@@ -227,11 +227,11 @@ pridonose određenoj izlaznoj klasi.
 
 \subsection{Izlazni sloj}
 \label{sub:output}
-Izlazni (engl. \textit{output layer}) je posljednji sloj potpuno povezanog sloja (a ujedno i cijele
-neuronske mreže). Ima onoliko neurona koliko želimo imati klasa, pojedina vrijednost
-neurona predstavlja vjerojatnost pripadnosti klasi. Da bi to stvarno funkcioniralo na takav
-način, potrebno je odrediti prikladnu aktivacijsku funkciju. Funkcija koja radi baš to 
-naziva se funkcija softmax. 
+Izlazni (engl. \textit{output layer}) je posljednji sloj potpuno povezanog sloja, a time ujedno i cijele
+neuronske mreže. Ima onoliko neurona koliko se želi imati klasa, a pojedina vrijednost
+neurona predstavlja vjerojatnost pripadnosti određenoj klasi. Da bi to stvarno funkcioniralo na takav
+način, potrebno je odrediti prikladnu aktivacijsku funkciju. Funkcija koja to radi 
+naziva se funkcija \textit{softmax}. 
 Formalno, \( \text{softmax} : \mathbb{R}^n \to \mathbb{R}^n \),
 gdje je \( k \)-ta komponenta izlaznog vektora definirana kao:
 \begin{equation}
@@ -256,11 +256,11 @@ da je neprekidna i diferencijabilna, za razliku od klasične \( \max \) funkcije
     \label{pic:softmax}
 \end{figure}
 
-\subsection{Regularizacija}
+\subsection{Regularizacija odbacivanjem težina}
 Regularizacija je postupak kojim se smanjuje složenost modela kako bi se spriječila
 prenaučenost (engl. \textit{overfitting}). Prenaučenost se događa kada model ima preveliku  
 sposobnost prilagodbe podacima za treniranje, ali ne i za podacima za testiranje.
-U neuronskim mrežama je implementiran u obliku sloja koji tijekom
+U neuronskim mrežama je, uz sloj za poduzorkovanje, implementirana u obliku sloja koji tijekom
 treniranja slučajnim odabirom postavlja određeni postotak 
 težina u modelu na nulu (engl. \textit{dropout layer}).
 
@@ -270,8 +270,8 @@ učinkovitost. Broj konvolucijskih slojeva, izgled istih (broj filtara, njihova 
 pomak), vrsta slojeva za poduzorkovanje te broj i veličina potpuno povezanih slojeva znatno
 utječu na brzinu izvođenja i preciznost klasifikacije. Naravno, ne postoji jedan recept koji
 najbolje radi na svim vrstama ulaznih podataka, nego različite arhitekture daju bolje rezultate
-u određenim situacijama. Određene arhitekture su kroz povijest ostale zapamćene zbog
-toga kako su utjecale na duboko učenje\cite{indian}:
+u određenim situacijama. Dobro je istaknuti određene arhitekture koje imaju povijesno značenje 
+zbog toga kako su utjecale na područje istraživanja u dubokom učenju\cite{indian}:
 
 \begin{itemize}
     \item \textbf{LeNet-5 (1998):} 

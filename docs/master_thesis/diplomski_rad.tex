@@ -13,29 +13,32 @@
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \lstdefinestyle{mystyle}{
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
-    numberstyle=\tiny\color{codegray},
-    stringstyle=\color{codepurple},
-    basicstyle=\footnotesize\ttfamily,
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    keepspaces=true,
-    numbersep=5pt,
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
+  backgroundcolor=\color{backcolour},
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  numberstyle=\tiny\color{codegray},
+  stringstyle=\color{codepurple},
+  basicstyle=\footnotesize\ttfamily,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
     tabsize=2,
     numbers=left,
-    frame=single, % Single frame around the code
+    frame=none, % Single frame around the code
     frameround=tttt, % Frame corners are rounded
-    framesep=20pt, % Frame separation
+    framesep=10pt, % Frame separation
     rulecolor=\color{black} % Frame color
-}
-\lstset{style=mystyle}
+    }
+  \lstset{style=mystyle}
+
 
 %--- PODACI O RADU / THESIS INFORMATION ----------------------------------------
 
@@ -117,10 +120,10 @@
 \begin{sazetak}
   Diplomski rad opisuje razvoj sustava za prepoznavanje govornih naredbi
   ustvarnom vremenu na ESP32 mikrokontroleru. Rad uključuje opis modularne
-  arhitekture sustava koja koristi Mel kepstralne koeficijente (MFCC),
-  dobivene iz akviziranog zvučnog signala, za treniranje konvolucijske
+  arhitekture sustava koja koristi Mel-kepstralne koeficijente (MFCC),
+  dobivene iz zvučnih signala, za treniranje konvolucijske
   neuronske mreže (CNN). Uz samu implementaciju, rad opisuje teorijsku
-  pozadinu generiranja Mel kepstralnih koeficijenata te strukture i
+  pozadinu izdvajanja Mel-kepstralnih koeficijenata te strukture i
   treniranja neuronske mreže. Implementirani sustav može pouzdano
   prepoznati 5 različitih govornih naredbi te pokrenuti odgovarajući
   posao povezan sa svakom od njih.
