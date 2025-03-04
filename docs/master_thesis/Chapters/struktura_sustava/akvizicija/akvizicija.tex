@@ -2,7 +2,7 @@
 \label{sec:acq}
 
 Podsustav za akviziciju zvuka je usko vezan uz računalnu platformu na kojoj
-je sustav implementiran jer izravno komuninicira
+je sustav implementiran jer izravno komunicira
 sa sustavom koji prikuplja stvarne signale sa senzora (mikrofona).
 Kao platforma za implementaciju opisanog sustava odabran je razvojni sustav ESP32 Lyrat Development Board \cite{lyrat} koji ima već ugrađen mikrofon i audio kodek
 s kojim je moguće komunicirati putem I2S protokola. Na slici
@@ -26,7 +26,7 @@ platforma prilagođena razvoju audio sustava, konfiguracija i puštanje u pogon
 akvizicije zvuka je vrlo jednostavno. U programskom kodu \ref{code:ES8388init}
 prikazana je inicijalizacija kodeka.
 
-\begin{lstlisting}[language=C++, caption=Inicijalizacija kodeka, label=code:ES8388init]
+\begin{lstlisting}[language=C++, caption={Inicijalizacija kodeka}, label={code:ES8388init}]
     audio_board_handle_t board_handle = audio_board_init();
     audio_hal_ctrl_codec(board_handle->audio_hal, AUDIO_HAL_CODEC_MODE_ENCODE, AUDIO_HAL_CTRL_START);
 \end{lstlisting}
@@ -40,7 +40,7 @@ Nakon inicijalizacije kodeka i definiranja konfiguracije postavki I2S komunikaci
 potrebno je pokrenuti protočni akvizicijski sustav (engl. \textit{pipeline}), 
 a to je prikazano u programskom kodu \ref{code:pipeline} .
 
-\begin{lstlisting}[language=C++, caption=Pokretanje akvizicijskog sustava, label=code:pipeline]
+\begin{lstlisting}[language={C++}, caption={Pokretanje akvizicijskog sustava}, label={code:pipeline}]
     ESP_LOGI(TAG, "Creating i2s stream");
     audio_element_handle_t i2s_stream_reader;
     i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();
@@ -61,7 +61,7 @@ Frekvencija otipkavanja postavljena u konfiguraciji iznosi 16000 Hz što
 je dovoljno za ovakav tip sustava za prepoznavanje glasovnih naredbi \cite{wardentinyml}.
 Nakon pokretanja akvizicijskog podsustava preostalo je uzimati nove
 podatke s kraja protočne strukture podsustava. Konstantno uzimanje novih uzoraka, tj. komunikacija
-s ES8388 kodekom, odvojeno je u posebnu dretvu. Na taj način programski je 
+s ES8388 kodekom, odvojeno je u posebnu dretvu. Tako je programski 
 odvojena akvizicija sirovih uzoraka zvuka od ostatka sustava u kojima se obavlja obrada nad njima. Ovaj podsustav je proizvođač novih podataka, dok je ostatak sustava potrošač, koji je također realiziran u posebnoj dretvi. Kako su prikupljanje podataka i njihova obrada realizirani pomoći dvije odvojene dretve, potrebno je implementirati pouzdan i efikasan način komunikacije između njih. Za tu svrhu odabran je
 kružni međuspremnik (engl. \textit{ring buffer}) koji omogućuje asinkrono pisanje i čitanje. Implementacija takve strukture dostupna je kao objekta FreeRTOS-a 
 \cite{ringbufferrr}, koji je odabran kao operacijski sustav za rad u stvarnom vremenu na kojem je realizirano višedretveno rješenje. 
@@ -84,11 +84,11 @@ class AudioRecorder
 \end{lstlisting}
 
 Opisani podsustav za akviziciju zvuka u programskom kodu strukturiran je u razred imena 
-AudioRecorder \ref{code:AudioRecorder} kako bi ga se lakše koristilo. Razred sadrži metodu
+\texttt{AudioRecorder} \ref{code:AudioRecorder} kako bi ga se lakše koristilo. Razred sadrži metodu
 \texttt{uint32\_t getSamples(int16\_t* samples, size\_t numOfSamples)} koja 
 omogućuje dohvaćanje proizvoljnog broja \texttt{uint16\_t} podataka jer 
 se akvizirani zvučni signal pohranjuje u tom obliku. U glavnoj petlji sustava potrebno je kreirati objekt
-razreda AudioRecorder, alocirati memorijski spremnik za dohvaćanje podataka i kontinuirano
+razreda \texttt{AudioRecorder}, alocirati memorijski spremnik za dohvaćanje podataka i kontinuirano
 pozivati navedenu funkciju koja kao argumente prima pokazivač na alocirani spremnik
 i željeni broj audio uzoraka za dohvat.
 

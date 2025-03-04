@@ -1,7 +1,7 @@
 \section{Izdvajanje značajki}
 \label{sec:gen}
 
-Izdvajanje značajki je drugi podsustav implementiranog sustava i prikazan je na slici 
+Izdvajanje značajki (engl. \textit{feature extraction}) drugi je podsustav implementiranog sustava i prikazan je na slici 
 \ref{pic:struktura_sustava}. Nakon što je provedena akvizicija
 zvučnih uzoraka, potrebno ih je obraditi kako bi se mogli predati neuronskoj mreži 
 na klasifikaciju. Naime, modeli strojnog učenja tipično ne rade izravno nad sirovim 
@@ -21,7 +21,7 @@ rezultirati i bitno manjom količinom podataka, što će biti obrazloženo u nas
 \label{sec:speech}
 
 Kako bi se identificiralo kojim značajkama bi bilo korisno opisati ljudski govor i time glasovne naredbe,
-potrebno je razumijeti na koji način se modelira nastanak glasa. Prilikom govorne komunikacije,
+potrebno je razumjeti na koji način se modelira nastanak glasa. Prilikom govorne komunikacije,
 pluća govornika se pod djelovanjem mišića prsnog koša stišću i potiskuju zrak kroz
 vokalni trakt čiji su glavni dijelovi prikazani na slici \ref{pic:glas}.
 
@@ -66,9 +66,9 @@ Opisani sustav može se prikazati jednadžbom \eqref{eq:govor} .
 
 gdje su:
 \begin{itemize}
-    \item \(X(f)\) odziv sustava (govor),
-    \item \(E(f)\) pobuda (kvazi-periodični impuls),
-    \item \(H(f)\) prijenosna funkcija vokalnog trakta.
+    \item \(X(f)\): odziv sustava (govor),
+    \item \(E(f)\): pobuda (kvazi-periodični impuls),
+    \item \(H(f)\): prijenosna funkcija vokalnog trakta.
 \end{itemize}
 
 U vremenskoj domeni isti sustav može se prikazati jednadžbom \eqref{eq:govor_vremenska} .
@@ -112,7 +112,7 @@ tzv. Mel-kepstralni koeficijenti.
 
 \subsection{Mel-kepstralni koeficijenti}
 \label{MFCCconstruction}
-Mel kepstralni koeficijenti (engl. \textit{Mel frequency cepstral coefficients ili MFCC}) predstavljaju mjeru 
+Mel-kepstralni koeficijenti (engl. \textit{Mel frequency cepstral coefficients ili MFCC}) predstavljaju mjeru 
 euklidske udaljenosti MFCC vektora i jedna su od najčešće korištenih mjera u automatskom 
 prepoznavanju govora i govornika \cite{vasilijevic2011perceptual}. 
 MFC koeficijenti (koji čine MFC vektor) pokazali su se odličnim načinom za pohranjivanje informacije
@@ -143,8 +143,8 @@ a određeni dio su novi uzorci dobiveni od podsustava za akviziciju.
 \end{figure}
 
 U glavnoj petlji programskog koda inicijalizirano je polje koje sprema nove uzorke te 
-polje koje zaduženo za spremanje trenutnog prozora podataka. Alokacija polja i algoritam
-pomicanja starih podataka u polju koje čuva trenutni prozor prikazani su u isječku programskog
+polje koje zaduženo za spremanje trenutačnog prozora podataka. Alokacija polja i algoritam
+pomicanja starih podataka u polju koje čuva trenutačni prozor prikazani su u isječku programskog
 koda \ref{code:sliding} .
 
 \begin{lstlisting}[language=C++, caption=Algoritam za korištenje novodohvaćenih podataka, label=code:sliding]
@@ -198,9 +198,9 @@ matematičkim izrazom \eqref{eq:window} .
 
 gdje su:
 \begin{itemize}
-    \item \( x_w[n] \) signal nakon primjene Hannovog prozora,
-    \item \( x[n] \) originalni diskretni signal,
-    \item \( w[n] \) Hann prozor definiran kao:
+    \item \( x_w[n] \): signal nakon primjene Hannovog prozora,
+    \item \( x[n] \): originalni diskretni signal,
+    \item \( w[n] \): Hann prozor definiran kao:
     \begin{equation}
         w[n] = 0.54 - 0.46 \cdot \cos\left( \frac{2 \pi n}{N-1} \right)
     \end{equation}
@@ -287,10 +287,10 @@ osmišljena je tzv. Melova skala (engl. \textit{Mel scale}). Preslikavanje na ta
     \label{eq:mel}
 \end{equation}
 
-gdje je:
+gdje su:
 \begin{itemize}
-    \item \(m(f)\) frekvencija u Mel skali,
-    \item \(f\) frekvencija u Hertzima.
+    \item \(m(f)\): frekvencija na Melovoj skali,
+    \item \(f\): frekvencija u Hertzima.
 \end{itemize}
 
 Na slici \ref{pic:mel} prikazano je preslikavanje iz Hertzove ljestvice u Melovu. Vidljivo je da
@@ -363,7 +363,7 @@ void MelSpectrogram::generate(float *spectrogram, float *melSpectrogram){
 
 \subsubsection{Diskretna kosinusna transformacija}
 
-Posljednji korak u procesu generiranja Mel-kepstralnih koeficijenata (MFCC) je primjena diskretne
+Posljednji korak u procesu izdvajanja Mel-kepstralnih koeficijenata (MFCC) je primjena diskretne
 kosinusne transformacije (engl. \textit{Discrete Cosine Transform ili DCT}) na vektor Melovih spektralnih
 koeficijenata. Ona pretvara signal iz vremenske ili frekvencijske domene u 
 domenu kosinusnih komponenti. Rezultat DCT-a je niz koeficijenata koji predstavljaju energiju 
@@ -432,7 +432,7 @@ void DCT::compute(const float *input, float *output) {
 
 Rezultat cijelog procesa izdvajanja značajki prikupljenog zvuka je \texttt{NUMBER\_OF\_MFCCS} Mel-kepstralnih
 koeficijenata. Naziv dolazi od toga što su ti koeficijenti temeljeni na Melovoj frekvencijskoj
-skali koja je opisana u \ref{sec:mel}, ali možda nije odmah jasno zašto se zovi i kepstralni.
+skali koja je opisana u \ref{sec:mel}, ali možda nije odmah jasno zašto se zovu i kepstralni.
 To dolazi od toga što se tijekom njihovog izračuna moralo posegnuti za dvjema transformacijama.
 Prva je bila FFT koja signal iz vremenske domene transformira u frekvencijsku (spektar
 signala). Druga transformacija bila je DCT, koja još jednom računala spektar, ali

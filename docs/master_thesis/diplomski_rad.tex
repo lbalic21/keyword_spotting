@@ -6,7 +6,12 @@
 %\begin{lstlisting}[language=..., caption=...] 
 %\end{lstlisting}
 \usepackage{listings}
+\usepackage{chngcntr}
 \renewcommand{\lstlistingname}{Kod}
+\AtBeginDocument{
+  \renewcommand{\thelstlisting}{\arabic{chapter}.\arabic{lstlisting}}
+}
+
 \usepackage{inconsolata}
 
 % Definiranje boja
@@ -30,14 +35,14 @@
   showspaces=false,
   showstringspaces=false,
   showtabs=false,
-    tabsize=2,
-    numbers=left,
-    frame=none, % Single frame around the code
-    frameround=tttt, % Frame corners are rounded
-    framesep=10pt, % Frame separation
-    rulecolor=\color{black} % Frame color
-    }
-  \lstset{style=mystyle}
+  tabsize=2,
+  numbers=left,
+  frame=none, % Single frame around the code
+  frameround=tttt, % Frame corners are rounded
+  framesep=10pt, % Frame separation
+  rulecolor=\color{black} % Frame color
+}
+\lstset{style=mystyle}
 
 
 %--- PODACI O RADU / THESIS INFORMATION ----------------------------------------
@@ -119,7 +124,7 @@
 % Sažetak na hrvatskom
 \begin{sazetak}
   Diplomski rad opisuje razvoj sustava za prepoznavanje govornih naredbi
-  ustvarnom vremenu na ESP32 mikrokontroleru. Rad uključuje opis modularne
+  u stvarnom vremenu na ESP32 mikrokontroleru. Rad uključuje opis modularne
   arhitekture sustava koja koristi Mel-kepstralne koeficijente (MFCC),
   dobivene iz zvučnih signala, za treniranje konvolucijske
   neuronske mreže (CNN). Uz samu implementaciju, rad opisuje teorijsku
