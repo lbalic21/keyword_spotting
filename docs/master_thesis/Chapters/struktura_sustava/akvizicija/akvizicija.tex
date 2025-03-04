@@ -40,7 +40,7 @@ Nakon inicijalizacije kodeka i definiranja konfiguracije postavki I2S komunikaci
 potrebno je pokrenuti protočni akvizicijski sustav (engl. \textit{pipeline}), 
 a to je prikazano u programskom kodu \ref{code:pipeline} .
 
-\begin{lstlisting}[language={C++}, caption={Pokretanje akvizicijskog sustava}, label={code:pipeline}]
+\begin{lstlisting}[language={C++}, caption={Pokretanje akvizicijskog podsustava}, label={code:pipeline}]
     ESP_LOGI(TAG, "Creating i2s stream");
     audio_element_handle_t i2s_stream_reader;
     i2s_stream_cfg_t i2s_cfg = I2S_STREAM_CFG_DEFAULT();

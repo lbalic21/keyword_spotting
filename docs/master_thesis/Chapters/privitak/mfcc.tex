@@ -1,7 +1,8 @@
 \chapter{Izdvajanje značajki}
 \label{add:mfcc}
 
-\begin{lstlisting}[language=Python, caption=Izdvajanje značajki korišteno u Jupyter bilježnici]
+\begin{lstlisting}[language=Python]
+# izdvajanje znacajki koristeno u Jupyter biljeznici
 def generate_mfccs(audio):
     stft = tf.signal.stft(
         audio,
