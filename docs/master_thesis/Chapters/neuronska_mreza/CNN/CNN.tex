@@ -201,9 +201,9 @@ vrijednošću, međutim ono se najrjeđe koristi.
 \label{sub:flat}
 Sloj za poravnavanje (engl. \textit{flatten layer}) je sloj koji dolazi nakon posljednjeg sloja
 za poduzorkovanje. Njegova jedina zadaća je poravnati izlaz iz prijašnjeg sloja.
-Ovaj sloj ništa ne računa, ništa ne uči, jedina zadaća mu je od ulaznih mapa značajki
+Ovaj sloj ništa ne računa, niti išta uči, a jedina mu je zadaća od ulaznih mapa značajki
 napraviti jedan vektor koji je onda moguće povezati na potpuno povezani sloj. Zbog
-toga se često izostavi iz skica koje prikazuju strukture CNN-ova kao što je slučaj
+toga se često izostavlja iz skica koje prikazuju strukture CNN-ova, kao što je slučaj
 na slici \ref{pic:cnn}. Na slici \ref{pic:flatten} prikazana je uloga ovog sloja.
 
 \begin{figure}[htb]
@@ -238,11 +238,11 @@ gdje je \( k \)-ta komponenta izlaznog vektora definirana kao:
 \text{softmax}_k(x_1, \dots, x_n) = \frac{\exp(x_k)}{\sum_{j} \exp(x_j)}
 \end{equation}
 
-Funkcija softmax radi dvije ključne stvari:
+Funkcija \textit{softmax} radi dvije ključne stvari:
 \begin{itemize}
-    \item Normalizira sve vrijednosti tako da njihov zbroj bude \( 1 \), tj. izlazni vektor 
-        predstavlja distribuciju vjerojatnosti.
-    \item Pojačava veće vrijednosti (čini ih dominantnijima) i smanjuje manje vrijednosti.
+    \item normalizira sve vrijednosti tako da njihov zbroj bude \( 1 \), tj. izlazni vektor 
+        predstavlja distribuciju vjerojatnosti,
+    \item pojačava veće vrijednosti (čini ih dominantnijima) i smanjuje manje vrijednosti.
 \end{itemize}
 
 Funkcija nosi naziv \textit{softmax} jer odgovara funkciji \( \max \), ali je "meka" u smislu

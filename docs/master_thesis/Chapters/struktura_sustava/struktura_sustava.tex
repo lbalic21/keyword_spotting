@@ -2,20 +2,20 @@
 \label{pog:struktura_sustava}
 
 Svrha cjelokupnog sustava je detekcija određenog glasovnog uzorka (glasovne naredbe) koja se može koristiti za okidanje obavljanja određenog procesa, pri čemu se prepoznavanje naredbe implementira na ugradbenom računalnom sustavu niske potrošnje i procesorske moći. Također, potrebno je da sustav može pokrenuti
-proces u bilo kojem trenutku te odaziv trebao biti sa što manjom latencijom, što
+proces u bilo kojem trenutku te bi odaziv trebao biti sa što manjom latencijom, što
 znači da cijeli proces prikupljanja zvuka, obrade te izvršavanja akcije mora raditi
 kontinuirano u stvarnom vremenu. Centralni dio sustava koji je zadužen za
-samo prepoznavanje glasovne naredbe implementiran je u neuronske
+samo prepoznavanje glasovne naredbe implementiran je u vidu neuronske
 mreže trenirane na skupu zvučnih zapisa koji sadrže željene naredbe, a čija je struktura
-detaljnije objašnjena u poglavlju koje opisuje samu neuronsku mrežu \ref{pog:neuronska_mreza}.
+detaljnije objašnjena u poglavlju koje opisuje samu neuronsku mrežu \ref{pog:neuronska_mreza}
 Imajući u vidu spomenute ciljeve, sustav je izgrađen od četiri modularna
 podsustava koja su u cijelosti implementirana na odabranom mikrokontroleru, a to su:
 
 \begin{itemize}
-    \item Prikupljanje zvuka
-    \item Izdvajanje značajki 
-    \item Aktivacija neuronske mreže
-    \item Prepoznavanje i aktivacija naredbi
+    \item prikupljanje zvuka,
+    \item izdvajanje značajki,
+    \item aktivacija neuronske mreže,
+    \item prepoznavanje i aktivacija naredbi.
 \end{itemize}
 
 Navedena podjela na podcjeline olakšava prilagodbu cjelokupnog

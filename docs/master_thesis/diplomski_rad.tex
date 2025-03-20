@@ -1,4 +1,4 @@
-\documentclass[diplomskirad, upload]{fer}
+\documentclass[diplomskirad]{fer}
 % Dodaj opciju upload za generiranje konačne verzije koja se učitava na FERWeb
 % Add the option upload to generate the final version which is uploaded to FERWeb
 
@@ -123,36 +123,30 @@
 
 % Sažetak na hrvatskom
 \begin{sazetak}
-  Diplomski rad opisuje razvoj sustava za prepoznavanje govornih naredbi
-  u stvarnom vremenu na ESP32 mikrokontroleru. Rad uključuje opis modularne
-  arhitekture sustava koja koristi Mel-kepstralne koeficijente (MFCC),
-  dobivene iz zvučnih signala, za treniranje konvolucijske
-  neuronske mreže (CNN). Uz samu implementaciju, rad opisuje teorijsku
-  pozadinu izdvajanja Mel-kepstralnih koeficijenata te strukture i
-  treniranja neuronske mreže. Implementirani sustav može pouzdano
-  prepoznati 5 različitih govornih naredbi te pokrenuti odgovarajući
-  posao povezan sa svakom od njih.
+U okviru rada razvijen je sustav za prepoznavanje govornih naredbi u stvarnom vremenu
+temeljen na mikrokontrolerskoj platformi ESP32 Lyrat. Implementacija programskog
+rješenja koje se izvodi na mikrokontroleru obuhvaća podsustave za akviziciju zvuka, 
+izdvajanje značajki govora iz Mel-kepstralnih koeficijanata (MFCC), 
+konvolucijsku neuronsku mrežu (CNN) za prepoznavanje glasovnih naredbi
+i podsustav za aktivaciju radnji na temelju prepoznate naredbe u stvarnom vremenu.
+Za implementaciju neuronske mreže na mikrokontroleru korištena je biblioteka 
+TensorFlow Lite. Za učinkovitu implementaciju rada u stvarnom vremenu korišten 
+je operacijski sustav FreeRTOS. Posebna pažnja posvećena je niskoj latenciji
+i robusnosti sustava na različite izvore pogrešaka i smetnji. Sustav je implementiran modularno te omogućuje jednostavno konfiguriranje naredbi i akcija, kao i prilagodbu za druge sklopovske platforme.
 \end{sazetak}
 
 \begin{kljucnerijeci}
- govorne naredbe; MFCC; CNN; mikrokontroler
+  obrada zvuka u stvarnom vremenu; prepoznavanje govora; Mel-frekvencijski kepstralni koeficijenti (MFCC); strojno učenje na rubnim uređajima; konvolucijske neuronske mreže (CNN); TensorFlow Lite; mikrokontroleri; ESP32 Lyrat
 \end{kljucnerijeci}
 
 
 % Abstract in English
 \begin{abstract}
-  This master's thesis describes the development of a real-time voice command
-  recognition system on the ESP32 microcontroller, also known as keyword spotting (KWS).
-  The thesis includes a description of a system with a modular architecture that uses
-  Mel-frequency cepstral coefficients (MFCC) extracted from the audio signal to train
-  a convolutional neural network (CNN). In addition to the implementation, the thesis
-  describes the theoretical background of generating MFCCs and the structure and training
-  of the neural network. The implemented system can reliably recognize 5 different voice
-  commands and execute the corresponding task associated with that command.
+In this thesis a real-time speech command recognition system was developed, based on the ESP32 Lyrat development system. The software for microcontroller includes modules for audio acquisition, speech feature extraction based on Mel-frequency cepstral coefficients (MFCC), a convolutional neural network (CNN) for speech command recognition, and a subsystem for executing actions based on the recognized command in a real time. The TensorFlow Lite library was used for neural network implementation on the microcontroller. FreeRTOS operating system was used to enable efficient implementation of real-time tasks. Particular attention was paid to low-latency system response and the system robustness in terms of various sources of errors and interference. The system was implemented in a modular manner to allow for easy configuration of commands and actions, as well as adaptation to other hardware platforms.
 \end{abstract}
 
 \begin{keywords}
-  kws; MFCC; CNN; microcontroller
+  real-time audio processing; speech recognition; Mel-frequency cepstral coefficients (MFCC); edge AI; convolutional neural networks (CNN); TensorFlow Lite; microcontrollers; ESP32-LyraT
 \end{keywords}
 
 

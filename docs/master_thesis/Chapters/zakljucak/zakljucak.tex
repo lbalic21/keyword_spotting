@@ -1,24 +1,13 @@
 \chapter{Zaključak}
 \label{pog:zakljucak}
 
-Sustav za prepoznavanje govornih naredbi u stvarnom vremenu uspješno je implementiran
-na mikrokontrolerskoj platformi ESP32 Lyrat. Nudi jednostavniju modularnu
-strukturu od postojećih (\cite{arm_kws}, \cite{tflmicrospeech}) uz sposobnost pouzdanog 
-prepoznavanja većeg skupa
-naredbi. Implementirani sustav može prepoznati pet
-različitih naredbi te aktivirati prikladni posao dodijeljen svakoj od njih. 
-Također, omogućen je odabir 
-drugačijeg podskupa govornih naredbi, a uz malo više truda moguće je proširiti skup naredbi
-željenim zvučnim zapisima koji će predstavljati naredbu prilagođenu korisniku.
-Osim toga, modularna struktura sustava
-omogućuje laganu prilagodnu pojedinih dijelova za različite namjene. Tako je stvorena
-osnova za implementaciju različitih sustava za prepoznavanje drugih vrsta senzorskih podataka
-ili čak korištenje drugih vrsta neuronskih mreža. Ono što bi moglo poboljšati rad sustava
-u budućnosti je
-izbjegavanje korištenja brojeva s pomičnim zarezom u generiranju MFC koeficijenata. Brže, ali 
-implementacijski složenije rješenje je korištenje cjelobrojnih tipova podataka. Na konkretnom
-mikrokontroleru to ne predstavlja prevelik problem zbog jedinice
-za operacije s pomičnim zarezom (engl. \textit{Floating Point Unit ili FPU}),
-ali na drugim mikrokontrolerima bi takav pristup osjetno ubrzao cijeli proces.
+U ovom radu uspješno je implementiran sustav za prepoznavanje govornih naredbi u stvarnom vremenu 
+na mikrokontrolerskoj platformi ESP32 Lyrat. U usporedbi s nekim od javno dostupnih sličnih rješenja otvorenog koda (kao. npr. \cite{arm_kws}, \cite{tflmicrospeech}), omogućuje jednostavniju modularnu izvedbu i mogućnost pouzdanog prepoznavanja većeg skupa glasovnih naredbi. 
 
+Razvijeno je cjelovito programsko rješenje za mikrokontrolerski sustav koje uključuje različite podsustave: akvizicija zvuka s mikrofona, obrada signala u svrhu izdvajanja značajki govora iz Mel-kepstralnih koeficijanta (MFCC), neuronska mreža za prepoznavanje naredbi i podsustav za aktivaciju radnje u stvarnom vremenu na temelju prepoznate glasovne naredbe. Neuronska mreža implementirana je na mikrokontroleru korištenje biblioteke TensorFlow Lite. U implementaciji posebna je pažnja posvećena niskoj latenciji odziva sustava te robusnosti radi minimiziranja mogućnosti pogrešnog prepoznavanja naredbe ili uzastopnog prepoznavanja više naredbi kada je izgovorena samo jedna. Kako bi se osigurala učinkovita implementacija i povezanost svih dijelova sustava, korišten je operacijski sustav za rad u stvarnom vremenu FreeRTOS.
 
+Implementirani sustav može uspješno prepoznati pet predefiniranih glasovnih naredbi nad kojima je trenirana neuronska mreža i aktivirati odgovarajući posao dodijeljen svakoj od njih. Također, omogućena je mogućnost dinamičkog odabira drugačijeg podskupa govornih naredbi bez potrebe za ponovnim treniranjem mreže, a  dodatno je moguće proširiti sam skup naredbi željenim zvučnim zapisima koji će predstavljati naredbu prilagođenu korisniku.
+
+Posebna pažnja posvećena je modularnoj strukturi sustava koja omogućuje jednostavnu prilagodnu pojedinih dijelova sustava za različite namjene ili drugačije sklopovske platforme. Trenutna implementacija može poslužiti kao osnova za implementaciju različitih sustava za prepoznavanje i drugih vrsta senzorskih podataka ili za korištenje drugih vrsta neuronskih mreža. 
+
+Jedno od mogućih budućih poboljšanja sustava odnosi se na izbjegavanje korištenja brojeva u aritmetici s pomičnim zarezom u generiranju MFC koeficijenata korištenjem cjelobrojnih tipova podataka, što bi dodatno pridonijelo brzini izvršavanja i mogućnosti korištenja na manje naprednim sklopovskim platformama. Naime, na mikrokontroleru na kojem je implementiran rad to ne predstavlja problem zbog postojanja jedinice za operacije s pomičnim zarezom (engl. \textit{Floating Point Unit ili FPU}), ali na drugim mikrokontrolerima na kojima ona nije raspoloživa računanje s cjelobrojnim koeficijentima osjetno bi ubrzalo cijeli proces.

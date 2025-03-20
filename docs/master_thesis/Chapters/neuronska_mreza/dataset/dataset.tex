@@ -44,8 +44,7 @@ svega nekoliko minuta takvih zvučnih zapisa, potrebno je na neki način dopunit
 taj podskup podataka. Naime, mreža koju treniramo će preferirati neku od klasa
 ako takvih primjera ima mnogo više od primjera ostalih klasa. Drugim riječima,
 skup podataka za treniranje mora biti balansiran tj. primjera iz svake klase treba
-biti otprilike jednak broj \cite{balance}. Uz to, za rad u stvarnom svijetu, nije 
-loše u skup
+biti otprilike jednak broj \cite{balance}. Uz to, za rad u stvarnom svijetu, preporučljivo je u skup
 dodati zvučni zapis snimljen upravo na sustavu koji će i akvizirati podatke iz okoline.
 Budući da su svi zvučni zapisi 
 riječi u skupu podataka duljine od otprilike jedne sekunde, pozadinske zvukove
@@ -82,7 +81,7 @@ def augment_audio(audio: AudioSegment) -> AudioSegment:
 
 Druga kategorija mora biti sastavljena od kombinacije različitih riječi za koje
 ne želimo klasifikaciju, tj. nisu odabrane u podskup naredbi. Ime te kategorije
-će biti "nepoznato" (engl. \textit{unknown}), a predstavljat će sve riječi koje nisu
+će biti \textit{"nepoznato"} (engl. \textit{unknown}), a predstavljat će sve riječi koje nisu
 naredbe cjelokupnog sustava. Ova kategorija je nužna za rad sustava jer 
 se treniranjem modela na različitim riječima povećava otpornost sustava na riječi
 koje se ne nalaze u željenom skupu naredbi. Kada ova kategorija ne bi postojala,
@@ -94,17 +93,21 @@ sustava što  znači da će ukupan broj klasifikacijskih kategorija biti za dva 
 od broja odabranih naredbi (broj naredbi + pozadinska buka + nepoznato).
 
 Odabir naredbi koje sustav može prepoznati je proizvoljan, a za primjer na kojem
-će daljnja obrada biti opisana odabrane su naredbe "yes", "no", "left", "right" i 
-"zero". Zbog toga ukupni broj
+će daljnja obrada biti opisana odabrane su naredbe \textit{"yes"}, 
+% staviti sve ove naredbe u italic
+\textit{"no"}, \textit{"left"}, \textit{"right"} i 
+\textit{"zero"}. Zbog toga ukupni broj
 klasifikacijskih kategorija iznosi sedam. Uz ostale konfiguracijske parametre,
 odabir naredbi omogućen je na početku Jupyter bilježnice za treniranje neuronske mreže.
 Nakon toga formira se mapa sa sedam datoteka koje predstavljaju sedam klasifikacijskih
 kategorija.
 Broj zapisa u svakoj od kategorija odgovarat će broju zapisa u najmalobrojnijoj 
-kategoriji upravo zbog spomenute potrebe za balansiranim skupom podataka za treniranje
+kategoriji upravo zbog spomenute potrebe za balansiranim skupom podataka za treniranje.
 Višak naredbi u nekoj od kategorija koje predstavljaju naredbe se neće koristiti, broj
 zapisa u kategoriji pozadinske buke generirat će se augmentacijom po potrebi, a broj
-nasumično odabranih zapisa u kategoriji "nepoznato" moguće je napraviti proizvoljno
+nasumično odabranih zapisa u kategoriji \textit{"nepoznato"}
+% ispraviti i drugdje ako treba
+moguće je napraviti proizvoljno
 velikim.
 
 Učitavanje zvučnih zapisa iz datotečnog sustava pojednostavljeno je korištenjem

@@ -9,8 +9,10 @@ Kako bi cjelokupni sustav radio u skladu sa zahtjevima, potrebno je u aplikaciji
 na mikrokontroleru dodati identične naredbe koje su odabrane prilikom treniranja
 modela. Stvaranje naredbi te njihovo dodavanje objektu zaduženom za prepoznavanje
 naredbi prikazano je u isječcima koda \ref{code:commands} i \ref{code:commandsadd}.
-Kategorije "pozadina" (engl. \textit{"background"}) i
-"nepoznato" (engl. \textit{"unknown"}) su predstavljene objektima klase \texttt{BlankCommand}, 
+Kategorije \textit{"pozadina"}
+% predlazem da i hrv nazive kategorija stavite u italic
+ (engl. \textit{"background"}) i
+\textit{"nepoznato"} (engl. \textit{"unknown"}) su predstavljene objektima klase \texttt{BlankCommand}, 
 dok su ostale naredbe 
 instance klase \texttt{PrintCommand}. Rezultat toga je ispis imena naredbe na konzolu u slučaju
 prepoznavanja govorne naredbe. Detalj koji je ključan za ispravan rad sustava je redoslijed
@@ -51,7 +53,7 @@ Kalibracija se radi promjenom parametara pri konstrukciji objekta također prika
 u isječku koda \ref{code:commands}. Značenje pojedinog  parametra detaljno je opisano u 
 \ref{sec:prepoy}. 
 
-Dodatna stvar koju je potrebno eksperimentalno utvrditi je sposobnost sustava da
+Dodatno što je potrebno eksperimentalno utvrditi je sposobnost sustava da
 odradi sve potrebne zadatke na vrijeme. Ne smije se dogoditi propuštanje akviziranja
 novih podataka zbog kašnjenja bilo kojeg drugog dijela sustava jer se time narušava
 svrha rada cjelokupnog sustava. U tablici \ref{tab:rts} prikazana su maksimalna
